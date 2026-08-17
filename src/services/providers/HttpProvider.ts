@@ -1393,7 +1393,7 @@ export class HttpProvider {
     )
     if (!isAddress(consumerAddress))
       throw new Error(
-        'PolicyServerPassthrough failed: "consumerAddress" is not a valid web3 address.'
+        `PolicyServerPassthrough failed: could not resolve a valid web3 "consumerAddress" (got "${consumerAddress}") from the supplied credential.`
       )
     const body = { ...request, consumerAddress, nonce, signature }
     const authHeader = this.getAuthorization(signerOrAuthToken)
@@ -1474,7 +1474,7 @@ export class HttpProvider {
     )
     if (!isAddress(consumerAddress))
       throw new Error(
-        'initializePSVerification failed: "consumerAddress" is not a valid web3 address.'
+        `initializePSVerification failed: could not resolve a valid web3 "consumerAddress" (got "${consumerAddress}") from the supplied credential.`
       )
     const body = { ...request, consumerAddress, nonce, signature }
     const authHeader = this.getAuthorization(signerOrAuthToken)

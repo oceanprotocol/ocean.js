@@ -1534,7 +1534,7 @@ export class P2pProvider {
     )
     if (!isAddress(consumerAddress))
       throw new Error(
-        'PolicyServerPassthrough failed: "consumerAddress" is not a valid web3 address.'
+        `PolicyServerPassthrough failed: could not resolve a valid web3 "consumerAddress" (got "${consumerAddress}") from the supplied credential.`
       )
     return this.sendP2pCommand(
       nodeUri,
@@ -1569,7 +1569,7 @@ export class P2pProvider {
     )
     if (!isAddress(consumerAddress))
       throw new Error(
-        'initializePSVerification failed: "consumerAddress" is not a valid web3 address.'
+        `initializePSVerification failed: could not resolve a valid web3 "consumerAddress" (got "${consumerAddress}") from the supplied credential.`
       )
     return this.sendP2pCommand(
       nodeUri,

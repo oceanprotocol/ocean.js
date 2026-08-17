@@ -13,12 +13,14 @@ export function isDefined(something: any): boolean {
 }
 
 // credentials present on (almost) any payload we send to a node. these must never reach
-// the logs, since they are what authorizes the request in the first place
+// the logs, since they are what authorizes the request in the first place.
+// lowercase: keys are matched case-insensitively, since a header-cased "Authorization" or a
+// caller's own casing inside the free-form policy server blobs leaks just as badly
 const SENSITIVE_PAYLOAD_FIELDS = [
   'authorization', // auth token (JWT), usually sent on the Authorization header
   'signature', // consumer signature authorizing this command
   'aes_encrypted_key', // download: encrypted key material
-  'encryptedDockerRegistryAuth' // compute: encrypted docker registry credentials
+  'encrypteddockerregistryauth' // compute: encrypted docker registry credentials
 ]
 
 const REDACTED = '[REDACTED]'
@@ -60,7 +62,7 @@ export function redactSensitiveFields(
   seen.add(value)
   const copy: any = {}
   for (const [key, item] of Object.entries(value)) {
-    if (SENSITIVE_PAYLOAD_FIELDS.includes(key)) {
+    if (SENSITIVE_PAYLOAD_FIELDS.includes(key.toLowerCase())) {
       copy[key] = isDefined(item) ? REDACTED : item
     } else {
       copy[key] = redactSensitiveFields(item, seen)
