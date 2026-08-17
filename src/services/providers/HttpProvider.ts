@@ -599,10 +599,6 @@ export class HttpProvider {
         },
         signal
       })
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`${errorText}`)
-      }
     } catch (e) {
       LoggerInstance.error('Initialize compute failed: ')
       LoggerInstance.error(e)
@@ -1409,10 +1405,6 @@ export class HttpProvider {
         },
         signal
       })
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`${errorText}`)
-      }
     } catch (e) {
       LoggerInstance.error('PolicyServerPassthrough failed: ')
       LoggerInstance.error(e)
@@ -1490,10 +1482,6 @@ export class HttpProvider {
         },
         signal
       })
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`${errorText}`)
-      }
     } catch (e) {
       LoggerInstance.error('initializePSVerification failed: ')
       LoggerInstance.error(e)
