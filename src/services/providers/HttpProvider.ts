@@ -1341,27 +1341,15 @@ export class HttpProvider {
   }
 
   /** Sends a PolicyServer request to node to be passthrough to PS
-   *
-   * The node authenticates the caller before anything reaches the Policy Server, so a
-   * credential is mandatory: an auth token (sent as the `Authorization` header) or a
-   * signer / precomputed signature over `consumerAddress + nonce + "PolicyServerPassthrough"`.
-   * Requests without one are rejected with a 401. The verified `consumerAddress` is the one
-   * the node forwards, overwriting anything set inside `policyServerPassthrough`.
    * @param {string} nodeUri The provider URI.
-   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken The consumer signer object, auth token or signature.
    * @param {PolicyServerPassthroughCommand} request The request to be passed through to the Policy Server.
    * @param {AbortSignal} signal abort signal
    */
   public async PolicyServerPassthrough(
     nodeUri: string,
-    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     request: PolicyServerPassthroughCommand,
     signal?: AbortSignal
   ): Promise<any> {
-    if (!signerOrAuthToken)
-      throw new Error(
-        'PolicyServerPassthrough failed: a signer, auth token or signature is required.'
-      )
     // the node injects fields into this object, so it has to be a keyed object. arrays are
     // objects too, and would be forwarded as {"0":..,"1":..} with no action
     if (
@@ -1379,29 +1367,13 @@ export class HttpProvider {
       : null
     if (!initializeUrl) return null
 
-    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
-      nodeUri,
-      signerOrAuthToken,
-      PROTOCOL_COMMANDS.POLICY_SERVER_PASSTHROUGH,
-      signal,
-      providerEndpoints,
-      serviceEndpoints
-    )
-    if (!isAddress(consumerAddress))
-      throw new Error(
-        `PolicyServerPassthrough failed: could not resolve a valid web3 "consumerAddress" (got "${consumerAddress}") from the supplied credential.`
-      )
-    const body = { ...request, consumerAddress, nonce, signature }
-    const authHeader = this.getAuthorization(signerOrAuthToken)
-
     let response
     try {
       response = await fetch(initializeUrl, {
         method: 'POST',
-        body: JSON.stringify(body),
+        body: JSON.stringify(request),
         headers: {
-          'Content-Type': 'application/json',
-          ...(authHeader ? { Authorization: authHeader } : {})
+          'Content-Type': 'application/json'
         },
         signal
       })
@@ -1421,7 +1393,7 @@ export class HttpProvider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', JSON.stringify(redactSensitiveFields(body)))
+    LoggerInstance.error('Payload was:', JSON.stringify(redactSensitiveFields(request)))
     throw new Error(JSON.stringify(resolvedResponse))
   }
 

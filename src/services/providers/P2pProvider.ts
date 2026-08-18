@@ -1501,21 +1501,12 @@ export class P2pProvider {
 
   /**
    * PolicyServer passthrough via P2P.
-   *
-   * The node authenticates the caller before anything reaches the Policy Server: the
-   * signed message is `consumerAddress + nonce + "PolicyServerPassthrough"`, or an auth
-   * token is sent instead. Requests without a credential are rejected with a 401.
    */
   public async PolicyServerPassthrough(
     nodeUri: OceanNode,
-    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     request: PolicyServerPassthroughCommand,
     signal?: AbortSignal
   ): Promise<any> {
-    if (!signerOrAuthToken)
-      throw new Error(
-        'PolicyServerPassthrough failed: a signer, auth token or signature is required.'
-      )
     // the node injects fields into this object, so it has to be a keyed object. arrays are
     // objects too, and would be forwarded as {"0":..,"1":..} with no action
     if (
@@ -1526,21 +1517,11 @@ export class P2pProvider {
       throw new Error(
         'PolicyServerPassthrough failed: "policyServerPassthrough" must be an object.'
       )
-    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
-      nodeUri,
-      signerOrAuthToken,
-      PROTOCOL_COMMANDS.POLICY_SERVER_PASSTHROUGH,
-      signal
-    )
-    if (!isAddress(consumerAddress))
-      throw new Error(
-        `PolicyServerPassthrough failed: could not resolve a valid web3 "consumerAddress" (got "${consumerAddress}") from the supplied credential.`
-      )
     return this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.POLICY_SERVER_PASSTHROUGH,
-      { ...request, consumerAddress, nonce, signature },
-      signerOrAuthToken,
+      { ...request },
+      null,
       signal
     )
   }
