@@ -643,16 +643,10 @@ export class BaseProvider {
 
   public async PolicyServerPassthrough(
     nodeUri: OceanNode,
-    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     request: PolicyServerPassthroughCommand,
     signal?: AbortSignal
   ): Promise<any> {
-    return this.getImpl(nodeUri).PolicyServerPassthrough(
-      nodeUri,
-      signerOrAuthToken,
-      request,
-      signal
-    )
+    return this.getImpl(nodeUri).PolicyServerPassthrough(nodeUri, request, signal)
   }
 
   public async initializePSVerification(
