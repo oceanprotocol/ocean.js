@@ -924,7 +924,6 @@ export class HttpProvider {
     signal?: AbortSignal,
     includeMetrics?: boolean
   ): Promise<NodeComputeJob | NodeComputeJob[]> {
-    const consumerAddress = await getConsumerAddress(signerOrAuthToken)
     const computeStatusUrl = this.baseUrl(nodeUri) + '/api/services/compute'
     let consumerAddress: string
     let nonce: string
@@ -934,9 +933,7 @@ export class HttpProvider {
         nodeUri,
         signerOrAuthToken,
         PROTOCOL_COMMANDS.COMPUTE_GET_STATUS,
-        signal,
-        providerEndpoints,
-        serviceEndpoints
+        signal
       ))
     } else {
       consumerAddress = await getConsumerAddress(signerOrAuthToken)
