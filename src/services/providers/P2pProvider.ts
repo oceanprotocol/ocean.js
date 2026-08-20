@@ -11,7 +11,7 @@ import { ping } from '@libp2p/ping'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { lpStream, UnexpectedEOFError } from '@libp2p/utils'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
-import { Signer } from 'ethers'
+import { Signer, isAddress } from 'ethers'
 import { sleep } from '../../utils/General.js'
 import { LoggerInstance } from '../../utils/Logger.js'
 import { concatUint8Arrays } from '../../utils/bytes.js'
@@ -43,6 +43,14 @@ import {
   PersistentStorageFileEntry,
   PersistentStorageObject,
   PersistentStorageUpdateBucketResponse,
+  ServiceJob,
+  ServiceJobListed,
+  ServiceListFilters,
+  ServiceRestartParams,
+  ServiceTemplatePublic,
+  ServiceStartParams,
+  ServiceUserData,
+  ServicePayment,
   OceanNode,
   NodeP2P,
   SignerOrAuthTokenOrSignature,
@@ -50,7 +58,6 @@ import {
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS, NodeLogEntry } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
-import { signRequest } from '../../utils/SignatureUtils.js'
 import {
   getConsumerAddress,
   getSignature,
@@ -511,8 +518,8 @@ export class P2pProvider {
   }
 
   private async getNodePublicKey(nodeUri: OceanNode): Promise<string> {
-    const endpoints = await this.getEndpoints(nodeUri)
-    return endpoints?.nodePublicKey
+    const status = await this.getNodeStatus(nodeUri)
+    return status?.publicKey
   }
 
   protected getAuthorization(s: SignerOrAuthTokenOrSignature) {
@@ -630,6 +637,7 @@ export class P2pProvider {
 
       if (
         command === PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS ||
+        command === PROTOCOL_COMMANDS.SERVICE_GET_STREAMABLE_LOGS ||
         command === PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
       ) {
         const streamableChunks = (async function* () {
@@ -731,22 +739,24 @@ export class P2pProvider {
 
   /**
    * Returns node status via P2P STATUS command.
-   * @param {string} nodeUri - multiaddr of the node
+   * @param {OceanNode} nodeUri - multiaddr of the node
    */
-  async getEndpoints(nodeUri: OceanNode): Promise<any> {
-    try {
-      return await this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.STATUS, {})
-    } catch (e) {
-      LoggerInstance.error('P2P getEndpoints (STATUS) failed:', e)
-      throw e
-    }
-  }
-
   public async getNodeStatus(
     nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<NodeStatus> {
-    return this.getEndpoints(nodeUri)
+    try {
+      return await this.sendP2pCommand(
+        nodeUri,
+        PROTOCOL_COMMANDS.STATUS,
+        {},
+        null,
+        signal
+      )
+    } catch (e) {
+      LoggerInstance.error('P2P getNodeStatus (STATUS) failed:', e)
+      throw e
+    }
   }
 
   public async getNodeJobs(
@@ -1243,18 +1253,44 @@ export class P2pProvider {
 
   /**
    * Get compute status via P2P.
+   * @param {boolean} includeMetrics Owner-only runtime metrics (`runtimeMetrics`) on the
+   *   returned job(s). To receive them, the node needs owner credentials: an auth token
+   *   (`signerOrAuthToken` as a string) is ALWAYS sent, regardless of this flag; a `Signer`'s
+   *   nonce+signature is only computed and sent when this flag is `true` (skipped otherwise
+   *   to avoid an extra nonce round-trip on every plain status poll). Omitted (default): the
+   *   node attaches metrics silently if valid owner credentials made it into the request
+   *   (true automatically for token callers, false for `Signer` callers unless this flag is
+   *   set), and returns exactly today's response otherwise. `true`: metrics are required —
+   *   this method also computes the `Signer`'s signature, and the node answers 400/401 if
+   *   credentials don't verify. `false`: metrics are never attached.
    */
   public async computeStatus(
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId?: string,
     agreementId?: string,
-    signal?: AbortSignal
-  ): Promise<ComputeJob | ComputeJob[]> {
-    const consumerAddress = await getConsumerAddress(signerOrAuthToken)
+    signal?: AbortSignal,
+    includeMetrics?: boolean
+  ): Promise<NodeComputeJob | NodeComputeJob[]> {
+    let consumerAddress: string
+    let nonce: string
+    let signature: string
+    if (includeMetrics === true) {
+      ;({ consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+        nodeUri,
+        signerOrAuthToken,
+        PROTOCOL_COMMANDS.COMPUTE_GET_STATUS,
+        signal
+      ))
+    } else {
+      consumerAddress = await getConsumerAddress(signerOrAuthToken)
+    }
     const body: Record<string, any> = { consumerAddress }
     if (jobId) body.jobId = jobId
     if (agreementId) body.agreementId = agreementId
+    if (includeMetrics !== undefined) body.includeMetrics = includeMetrics
+    if (nonce) body.nonce = nonce
+    if (signature) body.signature = signature
 
     return this.sendP2pCommand(
       nodeUri,
@@ -1343,10 +1379,13 @@ export class P2pProvider {
   ): Promise<string> {
     const address = await consumer.getAddress()
     const nonce = ((await this.getNonce(nodeUri, address, signal)) + 1).toString()
+    const issuerPeerId = (await this.getNodeStatus(nodeUri, signal))?.id
+    if (!issuerPeerId) throw new Error('Could not resolve node peerId for signature.')
     const signature = await getSignature(
       consumer,
       nonce,
-      PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN
+      PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN,
+      issuerPeerId
     )
 
     const result = await this.sendP2pCommand(
@@ -1447,8 +1486,11 @@ export class P2pProvider {
   ): Promise<{ success: boolean }> {
     const consumerAddress = await consumer.getAddress()
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signatureMessage = consumerAddress + nonce
-    const signature = await signRequest(consumer, signatureMessage)
+    const signature = await getSignature(
+      consumer,
+      nonce,
+      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN
+    )
     return this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN,
@@ -1491,6 +1533,16 @@ export class P2pProvider {
     request: PolicyServerPassthroughCommand,
     signal?: AbortSignal
   ): Promise<any> {
+    // the node injects fields into this object, so it has to be a keyed object. arrays are
+    // objects too, and would be forwarded as {"0":..,"1":..} with no action
+    if (
+      !request?.policyServerPassthrough ||
+      typeof request.policyServerPassthrough !== 'object' ||
+      Array.isArray(request.policyServerPassthrough)
+    )
+      throw new Error(
+        'PolicyServerPassthrough failed: "policyServerPassthrough" must be an object.'
+      )
     return this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.POLICY_SERVER_PASSTHROUGH,
@@ -1502,17 +1554,35 @@ export class P2pProvider {
 
   /**
    * Initialize Policy Server verification via P2P.
+   *
+   * A distinct command from the passthrough, so the signed message uses its own command
+   * string: `consumerAddress + nonce + "PolicyServerInitialize"`.
    */
   public async initializePSVerification(
     nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     request: PolicyServerInitializeCommand,
     signal?: AbortSignal
   ): Promise<any> {
+    if (!signerOrAuthToken)
+      throw new Error(
+        'initializePSVerification failed: a signer, auth token or signature is required.'
+      )
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.POLICY_SERVER_INITIALIZE,
+      signal
+    )
+    if (!isAddress(consumerAddress))
+      throw new Error(
+        `initializePSVerification failed: could not resolve a valid web3 "consumerAddress" (got "${consumerAddress}") from the supplied credential.`
+      )
     return this.sendP2pCommand(
       nodeUri,
-      PROTOCOL_COMMANDS.POLICY_SERVER_PASSTHROUGH,
-      { ...request },
-      null,
+      PROTOCOL_COMMANDS.POLICY_SERVER_INITIALIZE,
+      { ...request, consumerAddress, nonce, signature },
+      signerOrAuthToken,
       signal
     )
   }
@@ -1741,6 +1811,245 @@ export class P2pProvider {
       nodeUri,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_DELETE_FILE,
       { ...authPayload, bucketId, fileName },
+      signerOrAuthToken,
+      signal
+    )
+  }
+
+  // ── Service on Demand ────────────────────────────────────────────────
+
+  // Encrypts userData to the node's public key (ECIES): JSON-encode then encrypt.
+  private async encryptServiceUserData(
+    nodeUri: OceanNode,
+    userData?: ServiceUserData
+  ): Promise<string | undefined> {
+    if (userData === undefined || userData === null) return undefined
+    const nodeKey = await this.getNodePublicKey(nodeUri)
+    if (!nodeKey) throw new Error('Cannot resolve node public key to encrypt userData')
+    return eciesencrypt(nodeKey, JSON.stringify(userData))
+  }
+
+  public async getServiceTemplates(
+    nodeUri: OceanNode,
+    chainId?: number,
+    signal?: AbortSignal
+  ): Promise<ServiceTemplatePublic[]> {
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_GET_TEMPLATES,
+      { ...(chainId !== undefined ? { chainId } : {}) },
+      null,
+      signal
+    )
+    return Array.isArray(result) ? result : []
+  }
+
+  public async serviceStart(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    params: ServiceStartParams,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_START,
+      signal
+    )
+    const { userData, ...rest } = params
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_START,
+      {
+        ...authPayload,
+        ...rest,
+        userData: await this.encryptServiceUserData(nodeUri, userData)
+      },
+      signerOrAuthToken,
+      signal
+    )
+    return Array.isArray(result) ? result : [result]
+  }
+
+  public async serviceStop(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_STOP,
+      signal
+    )
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_STOP,
+      { ...authPayload, serviceId },
+      signerOrAuthToken,
+      signal
+    )
+    return Array.isArray(result) ? result : [result]
+  }
+
+  public async serviceExtend(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    additionalDuration: number,
+    payment: ServicePayment,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_EXTEND,
+      signal
+    )
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_EXTEND,
+      { ...authPayload, serviceId, additionalDuration, payment },
+      signerOrAuthToken,
+      signal
+    )
+    return Array.isArray(result) ? result : [result]
+  }
+
+  public async serviceRestart(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    params?: ServiceRestartParams,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const {
+      image,
+      tag,
+      checksum,
+      dockerfile,
+      additionalDockerFiles,
+      userData,
+      dockerCmd,
+      dockerEntrypoint
+    } = params ?? {}
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_RESTART,
+      signal
+    )
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_RESTART,
+      {
+        ...authPayload,
+        serviceId,
+        userData: await this.encryptServiceUserData(nodeUri, userData),
+        // Only send when supplied — an omitted field reuses the node's stored value, whereas an
+        // explicit value REPLACES it (matches ocean-node's restartService REUSE/RESPEC semantics).
+        ...(image !== undefined ? { image } : {}),
+        ...(tag !== undefined ? { tag } : {}),
+        ...(checksum !== undefined ? { checksum } : {}),
+        ...(dockerfile !== undefined ? { dockerfile } : {}),
+        ...(additionalDockerFiles !== undefined ? { additionalDockerFiles } : {}),
+        ...(dockerCmd !== undefined ? { dockerCmd } : {}),
+        ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {})
+      },
+      signerOrAuthToken,
+      signal
+    )
+    return Array.isArray(result) ? result : [result]
+  }
+
+  /**
+   * @param {boolean} includeMetrics Owner-only runtime metrics (`runtimeMetrics`) on the
+   *   returned service(s). This command is already authenticated, so metrics are included
+   *   BY DEFAULT (omitted / `undefined`); pass `false` to opt out.
+   */
+  public async getServiceStatus(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId?: string,
+    signal?: AbortSignal,
+    includeMetrics?: boolean
+  ): Promise<ServiceJob[]> {
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_GET_STATUS,
+      signal
+    )
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_GET_STATUS,
+      {
+        ...authPayload,
+        ...(serviceId ? { serviceId } : {}),
+        ...(includeMetrics !== undefined ? { includeMetrics } : {})
+      },
+      signerOrAuthToken,
+      signal
+    )
+    return Array.isArray(result) ? result : []
+  }
+
+  /**
+   * Node-wide service listing (SERVICE_LIST) via P2P. Authenticated but NOT owner-scoped:
+   * any consumer identity sees every owner's services, listing-sanitized (no userData, no
+   * dockerCmd/dockerEntrypoint, no Dockerfile). Default (no filters) returns only the
+   * services currently holding a resource reservation; see ServiceListFilters.
+   */
+  public async getServices(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    filters?: ServiceListFilters,
+    signal?: AbortSignal
+  ): Promise<ServiceJobListed[]> {
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_LIST,
+      signal
+    )
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_LIST,
+      {
+        ...authPayload,
+        ...(filters?.status !== undefined ? { status: filters.status } : {}),
+        ...(filters?.includeAllStatuses ? { includeAllStatuses: true } : {}),
+        ...(filters?.fromTimestamp ? { fromTimestamp: filters.fromTimestamp } : {}),
+        ...(filters?.updatedSince ? { updatedSince: filters.updatedSince } : {})
+      },
+      signerOrAuthToken,
+      signal
+    )
+    return Array.isArray(result) ? result : []
+  }
+
+  /**
+   * Stream a running service's container logs via P2P. `since` optionally bounds the lower time
+   * (Unix seconds, or a relative duration like '30s'/'2h'); omit for the full history then live.
+   */
+  public async serviceGetStreamableLogs(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    since?: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_GET_STREAMABLE_LOGS,
+      signal
+    )
+    return this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_GET_STREAMABLE_LOGS,
+      { ...authPayload, serviceId, ...(since ? { since } : {}) },
       signerOrAuthToken,
       signal
     )

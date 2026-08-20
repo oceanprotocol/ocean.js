@@ -12,7 +12,6 @@ import {
   ComputeResultStream,
   ProviderInitialize,
   ProviderComputeInitializeResults,
-  ServiceEndpoint,
   UserCustomParameters,
   ComputeResourceRequest,
   ComputeJobMetadata,
@@ -30,6 +29,13 @@ import {
   PersistentStorageFileEntry,
   PersistentStorageObject,
   PersistentStorageUpdateBucketResponse,
+  ServiceJob,
+  ServiceJobListed,
+  ServiceListFilters,
+  ServiceRestartParams,
+  ServiceTemplatePublic,
+  ServiceStartParams,
+  ServicePayment,
   OceanNode,
   NodeP2P,
   CompleteSignature,
@@ -57,7 +63,8 @@ export async function getConsumerAddress(
 export async function getSignature(
   signerOrAuthToken: SignerOrAuthTokenOrSignature,
   nonce: string,
-  command: string
+  command: string,
+  issuerPeerId: string = ''
 ): Promise<string | null> {
   if (typeof signerOrAuthToken === 'string') {
     return null
@@ -65,9 +72,11 @@ export async function getSignature(
   if (isAgentSignature(signerOrAuthToken)) {
     return signerOrAuthToken.signature
   }
-  const message = String(
-    String(await signerOrAuthToken.getAddress()) + String(nonce) + String(command)
-  )
+  const message =
+    String(await signerOrAuthToken.getAddress()) +
+    String(nonce) +
+    String(command) +
+    String(issuerPeerId)
   return signRequest(signerOrAuthToken, message)
 }
 
@@ -144,17 +153,9 @@ export class BaseProvider {
   public async getNonce(
     nodeUri: OceanNode,
     consumerAddress: string,
-    signal?: AbortSignal,
-    providerEndpoints?: any,
-    serviceEndpoints?: ServiceEndpoint[]
+    signal?: AbortSignal
   ): Promise<number> {
-    return this.getImpl(nodeUri).getNonce(
-      nodeUri,
-      consumerAddress,
-      signal,
-      providerEndpoints,
-      serviceEndpoints
-    )
+    return this.getImpl(nodeUri).getNonce(nodeUri, consumerAddress, signal)
   }
 
   public async encrypt(
@@ -422,6 +423,83 @@ export class BaseProvider {
     }
   }
 
+  /**
+   * @param {OceanNode} nodeUri The provider URI the service runs on.
+   * @param {ServiceJob} service The service job just started.
+   */
+  private async notifyIncentiveBackendServiceStarted(
+    nodeUri: OceanNode,
+    service: ServiceJob
+  ): Promise<void> {
+    try {
+      const incentiveBackendUrl = process.env.INCENTIVE_BACKEND_URL
+      if (!incentiveBackendUrl || !service?.serviceId) return
+
+      const baseUrl = incentiveBackendUrl.replace(/\/+$/, '')
+      const peerId = await this.resolveNodePeerId(nodeUri)
+
+      await fetch(
+        `${baseUrl}/services/${encodeURIComponent(service.serviceId)}/started`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            peerId,
+            clusterHash: service.clusterHash,
+            owner: service.owner,
+            status: service.status,
+            statusText: service.statusText,
+            environment: service.environment,
+            image: service.image,
+            tag: service.tag,
+            dockerCmd: service.dockerCmd,
+            exposedPorts: service.exposedPorts,
+            endpoints: service.endpoints,
+            resources: service.resources,
+            duration: service.duration,
+            expiresAt: service.expiresAt,
+            payment: service.payment,
+            dateCreated: service.dateCreated
+          })
+        }
+      )
+    } catch (e) {
+      LoggerInstance.error('Failed to notify incentive backend about started service:')
+      LoggerInstance.error(e)
+    }
+  }
+
+  // Patches the incentive backend's record with the restarted service's new launch command
+  // (the backend derives the model from it), so a model edit isn't stuck on the first-start model.
+  private async notifyIncentiveBackendServiceRestarted(
+    serviceId: string,
+    params: ServiceRestartParams
+  ): Promise<void> {
+    try {
+      const incentiveBackendUrl = process.env.INCENTIVE_BACKEND_URL
+      if (!incentiveBackendUrl || !serviceId) return
+
+      const baseUrl = incentiveBackendUrl.replace(/\/+$/, '')
+
+      const response = await fetch(
+        `${baseUrl}/services/${encodeURIComponent(serviceId)}/restarted`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: params.image,
+            tag: params.tag,
+            dockerCmd: params.dockerCmd
+          })
+        }
+      )
+      if (!response.ok) throw new Error(`incentive backend responded ${response.status}`)
+    } catch (e) {
+      LoggerInstance.error('Failed to notify incentive backend about restarted service:')
+      LoggerInstance.error(e)
+    }
+  }
+
   public async computeStreamableLogs(
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
@@ -452,19 +530,34 @@ export class BaseProvider {
     )
   }
 
+  /**
+   * Get compute status for a specific jobId/documentId/owner.
+   * @param {boolean} includeMetrics Owner-only runtime metrics (`runtimeMetrics`) on the
+   *   returned job(s). To receive them, the node needs owner credentials: an auth token
+   *   (`signerOrAuthToken` as a string) is ALWAYS sent, regardless of this flag; a `Signer`'s
+   *   nonce+signature is only computed and sent when this flag is `true` (skipped otherwise
+   *   to avoid an extra nonce round-trip on every plain status poll). Omitted (default): the
+   *   node attaches metrics silently if valid owner credentials made it into the request
+   *   (true automatically for token callers, false for `Signer` callers unless this flag is
+   *   set), and returns exactly today's response otherwise. `true`: metrics are required —
+   *   this method also computes the `Signer`'s signature, and the node answers 400/401 if
+   *   credentials don't verify. `false`: metrics are never attached.
+   */
   public async computeStatus(
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId?: string,
     agreementId?: string,
-    signal?: AbortSignal
-  ): Promise<ComputeJob | ComputeJob[]> {
+    signal?: AbortSignal,
+    includeMetrics?: boolean
+  ): Promise<NodeComputeJob | NodeComputeJob[]> {
     return this.getImpl(nodeUri).computeStatus(
       nodeUri,
       signerOrAuthToken,
       jobId,
       agreementId,
-      signal
+      signal,
+      includeMetrics
     )
   }
 
@@ -564,10 +657,16 @@ export class BaseProvider {
 
   public async initializePSVerification(
     nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     request: PolicyServerInitializeCommand,
     signal?: AbortSignal
   ): Promise<any> {
-    return this.getImpl(nodeUri).initializePSVerification(nodeUri, request, signal)
+    return this.getImpl(nodeUri).initializePSVerification(
+      nodeUri,
+      signerOrAuthToken,
+      request,
+      signal
+    )
   }
 
   public async downloadNodeLogs(
@@ -736,6 +835,140 @@ export class BaseProvider {
       signerOrAuthToken,
       bucketId,
       fileName,
+      signal
+    )
+  }
+
+  // ── Service on Demand ────────────────────────────────────────────────
+
+  public async getServiceTemplates(
+    nodeUri: OceanNode,
+    chainId?: number,
+    signal?: AbortSignal
+  ): Promise<ServiceTemplatePublic[]> {
+    return this.getImpl(nodeUri).getServiceTemplates(nodeUri, chainId, signal)
+  }
+
+  public async serviceStart(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    params: ServiceStartParams,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const services = await this.getImpl(nodeUri).serviceStart(
+      nodeUri,
+      signerOrAuthToken,
+      params,
+      signal
+    )
+    const startedServices = Array.isArray(services) ? services : [services]
+    startedServices.forEach((service) => {
+      this.notifyIncentiveBackendServiceStarted(nodeUri, service).catch(() => {})
+    })
+    return services
+  }
+
+  public async serviceStop(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    return this.getImpl(nodeUri).serviceStop(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      signal
+    )
+  }
+
+  public async serviceExtend(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    additionalDuration: number,
+    payment: ServicePayment,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    return this.getImpl(nodeUri).serviceExtend(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      additionalDuration,
+      payment,
+      signal
+    )
+  }
+
+  public async serviceRestart(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    params?: ServiceRestartParams,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const services = await this.getImpl(nodeUri).serviceRestart(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      params,
+      signal
+    )
+    // A restart can swap the model (dockerCmd) or the image/tag; patch the record when it does.
+    if (
+      params?.image !== undefined ||
+      params?.tag !== undefined ||
+      params?.dockerCmd !== undefined
+    ) {
+      this.notifyIncentiveBackendServiceRestarted(serviceId, params).catch(() => {})
+    }
+    return services
+  }
+
+  /**
+   * Returns the caller's service jobs (userData stripped). Filter by `serviceId`,
+   * or omit it to list all of the caller's services. Requires a signature.
+   * @param {boolean} includeMetrics Owner-only runtime metrics (`runtimeMetrics`) on the
+   *   returned service(s). This command is already authenticated, so metrics are included
+   *   BY DEFAULT (omitted / `undefined`); pass `false` to opt out.
+   */
+  public async getServiceStatus(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId?: string,
+    signal?: AbortSignal,
+    includeMetrics?: boolean
+  ): Promise<ServiceJob[]> {
+    return this.getImpl(nodeUri).getServiceStatus(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      signal,
+      includeMetrics
+    )
+  }
+
+  public async getServices(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    filters?: ServiceListFilters,
+    signal?: AbortSignal
+  ): Promise<ServiceJobListed[]> {
+    return this.getImpl(nodeUri).getServices(nodeUri, signerOrAuthToken, filters, signal)
+  }
+
+  public async serviceGetStreamableLogs(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    since?: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    return this.getImpl(nodeUri).serviceGetStreamableLogs(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      since,
       signal
     )
   }

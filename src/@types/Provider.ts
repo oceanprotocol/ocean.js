@@ -41,12 +41,6 @@ export interface ProviderComputeInitializeResults {
   payment?: ProviderComputeInitializePayment
 }
 
-export interface ServiceEndpoint {
-  serviceName: string
-  method: string
-  urlPath: string
-}
-
 export interface NodeP2P {
   nodeId: string
   multiaddress?: Multiaddr[]
@@ -129,6 +123,7 @@ export const PROTOCOL_COMMANDS = {
   HANDLE_INDEXING_THREAD: 'handleIndexingThread',
   COLLECT_FEES: 'collectFees',
   POLICY_SERVER_PASSTHROUGH: 'PolicyServerPassthrough',
+  POLICY_SERVER_INITIALIZE: 'PolicyServerInitialize',
   GET_P2P_PEER: 'getP2PPeer',
   GET_P2P_PEERS: 'getP2PPeers',
   GET_P2P_NETWORK_STATS: 'getP2PNetworkStats',
@@ -145,7 +140,15 @@ export const PROTOCOL_COMMANDS = {
   PERSISTENT_STORAGE_LIST_FILES: 'persistentStorageListFiles',
   PERSISTENT_STORAGE_UPLOAD_FILE: 'persistentStorageUploadFile',
   PERSISTENT_STORAGE_GET_FILE_OBJECT: 'persistentStorageGetFileObject',
-  PERSISTENT_STORAGE_DELETE_FILE: 'persistentStorageDeleteFile'
+  PERSISTENT_STORAGE_DELETE_FILE: 'persistentStorageDeleteFile',
+  SERVICE_GET_TEMPLATES: 'serviceGetTemplates',
+  SERVICE_START: 'serviceStart',
+  SERVICE_STOP: 'serviceStop',
+  SERVICE_RESTART: 'serviceRestart',
+  SERVICE_GET_STATUS: 'serviceGetStatus',
+  SERVICE_LIST: 'serviceList',
+  SERVICE_EXTEND: 'serviceExtend',
+  SERVICE_GET_STREAMABLE_LOGS: 'serviceGetStreamableLogs'
 }
 
 export interface NodeLogsParams {

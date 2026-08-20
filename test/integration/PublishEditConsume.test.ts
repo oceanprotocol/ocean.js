@@ -13,7 +13,8 @@ import {
   sendTx,
   transfer,
   amountToUnits,
-  StorageObject
+  StorageObject,
+  isP2pUri
 } from '../../src/index.js'
 import { createAssetHelper, orderAsset, updateAssetMetadata } from './helpers.js'
 import { DDO } from '@oceanprotocol/ddo-js'
@@ -238,6 +239,27 @@ describe('Publish consume test', async () => {
     // resolvedGraphqlAssetDdo = await aquarius.waitForIndexer(grapqlAssetId)
     // assert(resolvedGraphqlAssetDdo, 'Cannot fetch graphql DDO from Aquarius')
   }).timeout(80000)
+
+  it('Finds the resolved asset via querySearch', async function () {
+    // querySearch() has no P2P routing (unlike resolve/waitForIndexer/validate) - it only
+    // ever does a raw HTTP POST, so this can't run against a peerId/multiaddr node.
+    if (isP2pUri(config.oceanNodeUri)) this.skip()
+    // Regression guard for the route fix: querySearch() used to POST to
+    // /api/aquarius/assets/query, which the node never registered (always 404). It now posts
+    // to /api/aquarius/assets/metadata/query, so this must actually find the indexed asset.
+    const result = await aquarius.querySearch({
+      query: {
+        bool: {
+          filter: [{ term: { id: urlAssetId } }]
+        }
+      }
+    })
+    const flatResults = ([] as any[]).concat(...(Array.isArray(result) ? result : []))
+    assert(
+      flatResults.some((doc: any) => doc?.id === urlAssetId),
+      'querySearch should find the just-indexed url asset by DID'
+    )
+  }).timeout(30000)
 
   it('Mint datasets datatokens to publisher', async () => {
     datatoken = new Datatoken(publisherAccount, config.chainId)
