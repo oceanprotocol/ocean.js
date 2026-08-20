@@ -12,7 +12,6 @@ import {
   ComputeResultStream,
   ProviderInitialize,
   ProviderComputeInitializeResults,
-  ServiceEndpoint,
   UserCustomParameters,
   ComputeResourceRequest,
   ComputeJobMetadata,
@@ -154,17 +153,9 @@ export class BaseProvider {
   public async getNonce(
     nodeUri: OceanNode,
     consumerAddress: string,
-    signal?: AbortSignal,
-    providerEndpoints?: any,
-    serviceEndpoints?: ServiceEndpoint[]
+    signal?: AbortSignal
   ): Promise<number> {
-    return this.getImpl(nodeUri).getNonce(
-      nodeUri,
-      consumerAddress,
-      signal,
-      providerEndpoints,
-      serviceEndpoints
-    )
+    return this.getImpl(nodeUri).getNonce(nodeUri, consumerAddress, signal)
   }
 
   public async encrypt(

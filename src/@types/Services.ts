@@ -56,8 +56,6 @@ export interface ServiceTemplatePublic {
 
 // ── Runtime service job ────────────────────────────────────────────────
 
-// Port mapping for a running service (named ServiceJobEndpoint to avoid colliding
-// with the provider-route `ServiceEndpoint` type used for node endpoint discovery).
 export interface ServiceJobEndpoint {
   containerPort: number
   hostPort: number
