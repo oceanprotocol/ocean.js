@@ -924,7 +924,6 @@ export class HttpProvider {
     signal?: AbortSignal,
     includeMetrics?: boolean
   ): Promise<NodeComputeJob | NodeComputeJob[]> {
-    const consumerAddress = await getConsumerAddress(signerOrAuthToken)
     const computeStatusUrl = this.baseUrl(nodeUri) + '/api/services/compute'
     let consumerAddress: string
     let nonce: string
@@ -934,9 +933,7 @@ export class HttpProvider {
         nodeUri,
         signerOrAuthToken,
         PROTOCOL_COMMANDS.COMPUTE_GET_STATUS,
-        signal,
-        providerEndpoints,
-        serviceEndpoints
+        signal
       ))
     } else {
       consumerAddress = await getConsumerAddress(signerOrAuthToken)
@@ -1573,8 +1570,7 @@ export class HttpProvider {
     // browser. undici accepts a streamed body only with `duplex: 'half'` (not in the DOM
     // RequestInit type, so the init object is cast below).
     const RS = (globalThis as any).ReadableStream as
-      | (new (opts: any) => ReadableStream)
-      | undefined
+      (new (opts: any) => ReadableStream) | undefined
     if (typeof RS !== 'function') {
       throw new Error('ReadableStream is not available in this environment')
     }

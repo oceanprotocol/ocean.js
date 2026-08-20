@@ -1,7 +1,13 @@
 {
   "compilerOptions": {
     "resolveJsonModule": true,
+    // TS 6 flipped the default of "strict" to true; the codebase was written against the
+    // old default. Pinned explicitly so the TS 6 bump is behaviour-neutral.
+    "strict": false,
     "moduleResolution": "node",
+    // TS 6 deprecates moduleResolution=node10, removed in TS 7. Kept for now because the
+    // published .d.ts contract and README tell consumers to use moduleResolution: node.
+    "ignoreDeprecations": "6.0",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "lib": ["ESNext", "dom"],
@@ -12,6 +18,7 @@
     "experimentalDecorators": true,
     "preserveConstEnums": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "sourceMap": true,
     "skipLibCheck": true,
   },

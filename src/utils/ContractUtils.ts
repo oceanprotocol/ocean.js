@@ -209,12 +209,12 @@ export async function buildTxOverrides(
         Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_POLYGON
           ? MIN_GAS_FEE_POLYGON
           : Number(chainId) === SEPOLIA_NETWORK_ID &&
-            Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_SEPOLIA
-          ? MIN_GAS_FEE_SEPOLIA
-          : KNOWN_CONFIDENTIAL_EVMS.includes(Number(chainId)) &&
-            Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_SAPPHIRE
-          ? MIN_GAS_FEE_SAPPHIRE
-          : Number(aggressiveFeePriorityFeePerGas),
+              Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_SEPOLIA
+            ? MIN_GAS_FEE_SEPOLIA
+            : KNOWN_CONFIDENTIAL_EVMS.includes(Number(chainId)) &&
+                Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_SAPPHIRE
+              ? MIN_GAS_FEE_SAPPHIRE
+              : Number(aggressiveFeePriorityFeePerGas),
 
       maxFeePerGas:
         (Number(chainId) === MUMBAI_NETWORK_ID ||
@@ -222,12 +222,12 @@ export async function buildTxOverrides(
         Number(aggressiveFeePerGas) < MIN_GAS_FEE_POLYGON
           ? MIN_GAS_FEE_POLYGON
           : Number(chainId) === SEPOLIA_NETWORK_ID &&
-            Number(aggressiveFeePerGas) < MIN_GAS_FEE_SEPOLIA
-          ? MIN_GAS_FEE_SEPOLIA
-          : KNOWN_CONFIDENTIAL_EVMS.includes(Number(chainId)) &&
-            Number(aggressiveFeePerGas) < MIN_GAS_FEE_SAPPHIRE
-          ? MIN_GAS_FEE_SAPPHIRE
-          : Number(aggressiveFeePerGas)
+              Number(aggressiveFeePerGas) < MIN_GAS_FEE_SEPOLIA
+            ? MIN_GAS_FEE_SEPOLIA
+            : KNOWN_CONFIDENTIAL_EVMS.includes(Number(chainId)) &&
+                Number(aggressiveFeePerGas) < MIN_GAS_FEE_SAPPHIRE
+              ? MIN_GAS_FEE_SAPPHIRE
+              : Number(aggressiveFeePerGas)
     }
   } else {
     overrides = {

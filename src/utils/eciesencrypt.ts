@@ -12,12 +12,12 @@ function normalizePublicKey(publicKey: PublicKeyInput): string {
     publicKey instanceof Uint8Array
       ? publicKey
       : Array.isArray(publicKey)
-      ? Uint8Array.from(publicKey)
-      : Uint8Array.from(
-          Object.keys(publicKey)
-            .sort((a, b) => Number(a) - Number(b))
-            .map((key) => publicKey[Number(key)])
-        )
+        ? Uint8Array.from(publicKey)
+        : Uint8Array.from(
+            Object.keys(publicKey)
+              .sort((a, b) => Number(a) - Number(b))
+              .map((key) => publicKey[Number(key)])
+          )
 
   return `0x${bytesToHex(bytes)}`
 }

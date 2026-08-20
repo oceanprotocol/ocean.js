@@ -310,9 +310,8 @@ export class Nft extends SmartContract {
     ) {
       throw new Error(`Caller is not Manager nor DatatokenDeployer`)
     }
-    const estGas = await nftContract.removeFromCreateERC20List.estimateGas(
-      datatokenDeployer
-    )
+    const estGas =
+      await nftContract.removeFromCreateERC20List.estimateGas(datatokenDeployer)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),

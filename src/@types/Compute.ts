@@ -1,10 +1,7 @@
 import { MetadataAlgorithm, ConsumerParameter } from '@oceanprotocol/ddo-js'
 import { StorageObject, EncryptMethod } from './File'
 export type ComputeResultType =
-  | 'algorithmLog'
-  | 'output'
-  | 'configrationLog'
-  | 'publishLog'
+  'algorithmLog' | 'output' | 'configrationLog' | 'publishLog'
 
 // new V2 C2D Compute Environment specs
 export interface RunningPlatform {

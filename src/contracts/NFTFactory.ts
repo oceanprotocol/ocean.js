@@ -307,9 +307,8 @@ export class NftFactory extends SmartContractWithAddress {
     if (templateIndex > (await this.getCurrentNFTTemplateCount()))
       throw new Error(`Template index doesnt exist`)
     if (templateIndex === 0) throw new Error(`Template index cannot be ZERO`)
-    const estGas = await this.contract.reactivate721TokenTemplate.estimateGas(
-      templateIndex
-    )
+    const estGas =
+      await this.contract.reactivate721TokenTemplate.estimateGas(templateIndex)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),

@@ -50,8 +50,9 @@ describe('Service on Demand client wiring', () => {
     const userData = { MODEL_ID: 'Qwen/Qwen2.5-7B-Instruct' }
     const encryptedHex = eciesencrypt(nodeKey.publicKey.toHex(), JSON.stringify(userData))
     assert(/^[0-9a-fA-F]+$/.test(encryptedHex), 'encrypted userData should be hex')
+    // eciesjs >= 0.5 returns a Uint8Array from decrypt(), not a Buffer
     const decrypted = JSON.parse(
-      decrypt(nodeKey.secret, Buffer.from(encryptedHex, 'hex')).toString()
+      new TextDecoder().decode(decrypt(nodeKey.secret, Buffer.from(encryptedHex, 'hex')))
     )
     expect(decrypted).to.deep.equal(userData)
   })
