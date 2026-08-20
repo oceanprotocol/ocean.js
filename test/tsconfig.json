@@ -1,14 +1,14 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     // the root config pins rootDir to ./src for the published .d.ts layout; the test program
     // also spans test/, so widen it back to the repo root here
     "rootDir": "..",
     // TS 6 no longer auto-includes @types/mocha here, so the mocha globals
     // (describe/it/before) have to be requested explicitly
     "types": ["mocha", "node"],
-    "module": "ESNext",
+    "module": "esnext",
     "target": "ESNext",
     "noUnusedLocals": false,
     "allowSyntheticDefaultImports": true,

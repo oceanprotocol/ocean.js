@@ -4,22 +4,20 @@ export interface HeadersObject {
 }
 
 export enum FileObjectType {
-  // eslint-disable-next-line no-unused-vars
   URL = 'url',
-  // eslint-disable-next-line no-unused-vars
+
   IPFS = 'ipfs',
-  // eslint-disable-next-line no-unused-vars
+
   ARWEAVE = 'arweave',
-  // eslint-disable-next-line no-unused-vars
+
   S3 = 's3',
-  // eslint-disable-next-line no-unused-vars
+
   FTP = 'ftp'
 }
 
 export enum EncryptMethod {
-  // eslint-disable-next-line no-unused-vars
   AES = 'AES',
-  // eslint-disable-next-line no-unused-vars
+
   ECIES = 'ECIES'
 }
 

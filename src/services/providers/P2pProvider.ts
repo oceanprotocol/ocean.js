@@ -246,7 +246,6 @@ export class P2pProvider {
   }
 
   private async handleProtocolCommands(stream: Stream, connection: Connection) {
-    // eslint-disable-next-line no-unused-vars
     const { remotePeer, remoteAddr } = connection
 
     // Reserved for future use: we advertise the protocol but do not handle incoming streams yet.

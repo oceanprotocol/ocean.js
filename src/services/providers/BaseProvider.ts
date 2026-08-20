@@ -141,7 +141,6 @@ export class BaseProvider {
   private httpProvider = new HttpProvider()
   private p2pProvider = new P2pProvider()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected getImpl(node: OceanNode): any {
     return isP2pUri(node) ? this.p2pProvider : this.httpProvider
   }

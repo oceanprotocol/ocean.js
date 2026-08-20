@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-named-default
 import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
 import { Config } from '.'
 import { LoggerInstance } from '../utils/Logger.js'

@@ -190,7 +190,7 @@ export async function buildTxOverrides(
 ): Promise<Record<string, any>> {
   const { chainId } = await signer.provider.getNetwork()
   const feeHistory = await signer.provider.getFeeData()
-  let overrides: Record<string, any> = {}
+  let overrides: Record<string, any>
   if (feeHistory.maxPriorityFeePerGas) {
     let aggressiveFeePriorityFeePerGas = feeHistory.maxPriorityFeePerGas.toString()
     let aggressiveFeePerGas = feeHistory.maxFeePerGas.toString()

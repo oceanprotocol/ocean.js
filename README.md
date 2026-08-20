@@ -57,12 +57,34 @@ npm install @oceanprotocol/lib
 - Developers using this library should ensure their tsconfig.json includes the necessary options:
 ```
 {
-  "moduleResolution": "node",
+  "moduleResolution": "bundler",
+  "module": "esnext",
   "esModuleInterop": true,
   "allowSyntheticDefaultImports": true
 }
 ```
-- If using Next.js, they may need "moduleResolution": "bundler" for better compatibility.
+- `"moduleResolution": "nodenext"` works too. The older `"node"` (node10) mode was removed in
+  TypeScript 7, so don't use it — and it cannot resolve this package's `exports` map anyway.
+
+### ESM only
+
+`@oceanprotocol/lib` ships as ES modules only — there is no CommonJS build, because most of
+its runtime dependencies (the libp2p stack, `multiformats`, `uint8arrays`) are themselves
+ESM-only. Import it:
+
+```js
+import { ProviderInstance, ConfigHelper } from '@oceanprotocol/lib'
+```
+
+From CommonJS code, use Node's built-in `require(esm)` support, available from **Node
+22.12**:
+
+```js
+const { ConfigHelper } = require('@oceanprotocol/lib')
+```
+
+On Node 22.0–22.11 this throws `ERR_REQUIRE_ESM`; use a dynamic `await import(...)`
+instead, or move the calling module to ESM.
 
 ## 📖 Documentation
 
