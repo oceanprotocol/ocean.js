@@ -1,5 +1,6 @@
-import { Signer } from 'ethers'
+import { Signer, isAddress } from 'ethers'
 import { LoggerInstance } from '../../utils/Logger.js'
+import { redactSensitiveFields } from '../../utils/General.js'
 import {
   StorageObject,
   FileInfo,
@@ -485,10 +486,6 @@ export class HttpProvider {
         },
         signal
       })
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`${errorText}`)
-      }
     } catch (e) {
       LoggerInstance.error('Initialize compute failed: ')
       LoggerInstance.error(e)
@@ -505,7 +502,10 @@ export class HttpProvider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', JSON.stringify(providerData))
+    LoggerInstance.error(
+      'Payload was:',
+      JSON.stringify(redactSensitiveFields(providerData))
+    )
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
@@ -656,7 +656,7 @@ export class HttpProvider {
     } catch (e) {
       LoggerInstance.error('Compute start failed:')
       LoggerInstance.error(e)
-      LoggerInstance.error('Payload was:', payload)
+      LoggerInstance.error('Payload was:', redactSensitiveFields(payload))
       throw new Error('HTTP request failed calling Provider')
     }
     if (response?.ok) {
@@ -670,7 +670,7 @@ export class HttpProvider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', payload)
+    LoggerInstance.error('Payload was:', redactSensitiveFields(payload))
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
@@ -761,7 +761,7 @@ export class HttpProvider {
     } catch (e) {
       LoggerInstance.error('Compute start failed:')
       LoggerInstance.error(e)
-      LoggerInstance.error('Payload was:', payload)
+      LoggerInstance.error('Payload was:', redactSensitiveFields(payload))
       throw new Error('HTTP request failed calling Provider')
     }
     if (response?.ok) {
@@ -775,7 +775,7 @@ export class HttpProvider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', payload)
+    LoggerInstance.error('Payload was:', redactSensitiveFields(payload))
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
@@ -924,7 +924,6 @@ export class HttpProvider {
     signal?: AbortSignal,
     includeMetrics?: boolean
   ): Promise<NodeComputeJob | NodeComputeJob[]> {
-    const consumerAddress = await getConsumerAddress(signerOrAuthToken)
     const computeStatusUrl = this.baseUrl(nodeUri) + '/api/services/compute'
     let consumerAddress: string
     let nonce: string
@@ -934,9 +933,7 @@ export class HttpProvider {
         nodeUri,
         signerOrAuthToken,
         PROTOCOL_COMMANDS.COMPUTE_GET_STATUS,
-        signal,
-        providerEndpoints,
-        serviceEndpoints
+        signal
       ))
     } else {
       consumerAddress = await getConsumerAddress(signerOrAuthToken)
@@ -1176,6 +1173,16 @@ export class HttpProvider {
     request: PolicyServerPassthroughCommand,
     signal?: AbortSignal
   ): Promise<any> {
+    // the node injects fields into this object, so it has to be a keyed object. arrays are
+    // objects too, and would be forwarded as {"0":..,"1":..} with no action
+    if (
+      !request?.policyServerPassthrough ||
+      typeof request.policyServerPassthrough !== 'object' ||
+      Array.isArray(request.policyServerPassthrough)
+    )
+      throw new Error(
+        'PolicyServerPassthrough failed: "policyServerPassthrough" must be an object.'
+      )
     const initializeUrl = this.baseUrl(nodeUri) + '/api/services/PolicyServerPassthrough'
 
     let response
@@ -1188,10 +1195,6 @@ export class HttpProvider {
         },
         signal
       })
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`${errorText}`)
-      }
     } catch (e) {
       LoggerInstance.error('PolicyServerPassthrough failed: ')
       LoggerInstance.error(e)
@@ -1208,36 +1211,57 @@ export class HttpProvider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', JSON.stringify(request))
+    LoggerInstance.error('Payload was:', JSON.stringify(redactSensitiveFields(request)))
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
   /** Initialize Policy Server verification
+   *
+   * Authenticated exactly like `PolicyServerPassthrough`, but it is a distinct command, so
+   * the signed message uses its own command string:
+   * `consumerAddress + nonce + "PolicyServerInitialize"`. A signature is therefore scoped to
+   * one endpoint and cannot be replayed against the other.
    * @param {string} nodeUri The provider URI.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken The consumer signer object, auth token or signature.
    * @param {PolicyServerInitializeCommand} request The request to be sent to the Policy Server.
    * @param {AbortSignal} signal abort signal
    */
   public async initializePSVerification(
     nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     request: PolicyServerInitializeCommand,
     signal?: AbortSignal
   ): Promise<any> {
+    if (!signerOrAuthToken)
+      throw new Error(
+        'initializePSVerification failed: a signer, auth token or signature is required.'
+      )
     const initializeUrl = this.baseUrl(nodeUri) + '/api/services/initializePSVerification'
+
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.POLICY_SERVER_INITIALIZE,
+      signal
+    )
+    if (!isAddress(consumerAddress))
+      throw new Error(
+        `initializePSVerification failed: could not resolve a valid web3 "consumerAddress" (got "${consumerAddress}") from the supplied credential.`
+      )
+    const body = { ...request, consumerAddress, nonce, signature }
+    const authHeader = this.getAuthorization(signerOrAuthToken)
 
     let response
     try {
       response = await fetch(initializeUrl, {
         method: 'POST',
-        body: JSON.stringify(request),
+        body: JSON.stringify(body),
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(authHeader ? { Authorization: authHeader } : {})
         },
         signal
       })
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`${errorText}`)
-      }
     } catch (e) {
       LoggerInstance.error('initializePSVerification failed: ')
       LoggerInstance.error(e)
@@ -1254,7 +1278,7 @@ export class HttpProvider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', JSON.stringify(request))
+    LoggerInstance.error('Payload was:', JSON.stringify(redactSensitiveFields(body)))
     throw new Error(JSON.stringify(resolvedResponse))
   }
 

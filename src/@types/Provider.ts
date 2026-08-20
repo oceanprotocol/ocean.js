@@ -123,6 +123,7 @@ export const PROTOCOL_COMMANDS = {
   HANDLE_INDEXING_THREAD: 'handleIndexingThread',
   COLLECT_FEES: 'collectFees',
   POLICY_SERVER_PASSTHROUGH: 'PolicyServerPassthrough',
+  POLICY_SERVER_INITIALIZE: 'PolicyServerInitialize',
   GET_P2P_PEER: 'getP2PPeer',
   GET_P2P_PEERS: 'getP2PPeers',
   GET_P2P_NETWORK_STATS: 'getP2PNetworkStats',
