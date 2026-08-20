@@ -1242,9 +1242,7 @@ export class HttpProvider {
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.POLICY_SERVER_INITIALIZE,
-      signal,
-      providerEndpoints,
-      serviceEndpoints
+      signal
     )
     if (!isAddress(consumerAddress))
       throw new Error(
