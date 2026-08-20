@@ -98,6 +98,65 @@ export type ComputeJobMetadata = {
   [key: string]: string | number | boolean
 }
 
+// GPU backend a device's metrics were sampled with. Only 'nvidia' (NVML) is emitted
+// today; 'amd' / 'intel' are reserved for when those backends exist.
+export type GpuVendor = 'nvidia' | 'amd' | 'intel'
+
+// Per-GPU runtime metrics. One entry per GPU resource the job/service holds. Only NVIDIA
+// is emitted today; `null` (not `0`) means the backend could not read that metric.
+export interface GpuMetricsSnapshot {
+  resourceId: string
+  vendor: GpuVendor
+  utilizationPercent: number | null
+  memoryUsedBytes: number | null
+  memoryTotalBytes: number | null
+  temperatureC?: number
+  powerWatts?: number
+  shared?: boolean // true → device-level number, may include other jobs' load
+}
+
+// Best-effort Docker/NVML runtime metrics snapshot for a compute job or service container,
+// as returned by COMPUTE_GET_STATUS / SERVICE_GET_STATUS when `includeMetrics` resolves to
+// true. Sampled on a fixed cadence (node-side `C2D_METRICS_INTERVAL_SECONDS`), so values can
+// be slightly stale — see `collectedAt`. Owner-only; never present on unauthenticated or
+// listing responses.
+export interface ContainerMetricsSnapshot {
+  collectedAt: string // ISO timestamp of the sample
+  containerState: {
+    status: string // 'running' | 'exited' | ...
+    startedAt?: string
+    finishedAt?: string
+    exitCode?: number
+    oomKilled: boolean
+    error?: string
+    restartCount: number
+    health?: string // Docker HEALTHCHECK status, when the image defines one (services)
+  }
+  cpu: {
+    usagePercent: number // % of one host CPU-second per wall-second; can exceed 100
+    allocated: number // cores requested (0 when unconstrained)
+    usagePercentOfAllocated: number // usagePercent / allocated (0 when allocated is 0)
+    cumulativeSeconds: number // total CPU-seconds consumed since start
+    throttledPeriods: number // CFS quota throttling events
+    throttledSeconds: number
+  }
+  memory: {
+    usageBytes: number
+    limitBytes: number
+    usagePercent: number
+    peakUsageBytes: number // max usageBytes observed across samples
+  }
+  disk: {
+    usedBytes: number
+    quotaBytes?: number // present only for jobs with a 'disk' resource
+    usagePercent?: number // present only when quotaBytes is known
+  }
+  network?: { rxBytes: number; txBytes: number } // absent when NetworkMode 'none'
+  blockIO: { readBytes: number; writeBytes: number }
+  pids: { current: number; limit: number }
+  gpu?: GpuMetricsSnapshot[]
+}
+
 export interface ComputeJob {
   owner: string
   did?: string
@@ -139,6 +198,9 @@ export interface NodeComputeJob extends ComputeJob {
   queueMaxWaitTime?: number
   jobIdHash?: string
   maxJobDuration?: number
+  // Best-effort Docker/NVML runtime metrics, present only when computeStatus() was called
+  // with includeMetrics resolving to true for the authenticated job owner.
+  runtimeMetrics?: ContainerMetricsSnapshot
 }
 
 export interface ComputeOutputEncryption {

@@ -904,21 +904,50 @@ export class HttpProvider {
    * @param {string} jobId The ID of a compute job.
    * @param {string} agreementId The ID of the service agreement (tx id)
    * @param {AbortSignal} signal abort signal
-   * @return {Promise<ComputeJob | ComputeJob[]>}
+   * @param {boolean} includeMetrics Owner-only runtime metrics (`runtimeMetrics`) on the
+   *   returned job(s). To receive them, the node needs owner credentials: an auth token
+   *   (`signerOrAuthToken` as a string) is ALWAYS sent, regardless of this flag; a `Signer`'s
+   *   nonce+signature is only computed and sent when this flag is `true` (skipped otherwise
+   *   to avoid an extra nonce round-trip on every plain status poll). Omitted (default): the
+   *   node attaches metrics silently if valid owner credentials made it into the request
+   *   (true automatically for token callers, false for `Signer` callers unless this flag is
+   *   set), and returns exactly today's response otherwise. `true`: metrics are required —
+   *   this method also computes the `Signer`'s signature, and the node answers 400/401 if
+   *   credentials don't verify. `false`: metrics are never attached.
+   * @return {Promise<NodeComputeJob | NodeComputeJob[]>}
    */
   public async computeStatus(
     nodeUri: string,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId?: string,
     agreementId?: string,
-    signal?: AbortSignal
-  ): Promise<ComputeJob | ComputeJob[]> {
+    signal?: AbortSignal,
+    includeMetrics?: boolean
+  ): Promise<NodeComputeJob | NodeComputeJob[]> {
     const consumerAddress = await getConsumerAddress(signerOrAuthToken)
     const computeStatusUrl = this.baseUrl(nodeUri) + '/api/services/compute'
+    let consumerAddress: string
+    let nonce: string
+    let signature: string
+    if (includeMetrics === true) {
+      ;({ consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+        nodeUri,
+        signerOrAuthToken,
+        PROTOCOL_COMMANDS.COMPUTE_GET_STATUS,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      ))
+    } else {
+      consumerAddress = await getConsumerAddress(signerOrAuthToken)
+    }
 
     let url = `?consumerAddress=${consumerAddress}`
     url += (agreementId && `&agreementId=${agreementId}`) || ''
     url += (jobId && `&jobId=${jobId}`) || ''
+    url += includeMetrics !== undefined ? `&includeMetrics=${includeMetrics}` : ''
+    url += nonce ? `&nonce=${nonce}` : ''
+    url += signature ? `&signature=${signature}` : ''
 
     let response
     try {
@@ -1897,13 +1926,17 @@ export class HttpProvider {
   /**
    * Returns the caller's service jobs (userData stripped). Filter by `serviceId`,
    * or omit it to list all of the caller's services. Requires a signature.
+   * @param {boolean} includeMetrics Owner-only runtime metrics (`runtimeMetrics`) on the
+   *   returned service(s). This command is already authenticated, so metrics are included
+   *   BY DEFAULT (omitted / `undefined`); pass `false` to opt out.
    * @return {Promise<ServiceJob[]>} The matching service jobs.
    */
   public async getServiceStatus(
     nodeUri: string,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     serviceId?: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    includeMetrics?: boolean
   ): Promise<ServiceJob[]> {
     const route = this.baseUrl(nodeUri) + '/api/services/serviceStatus'
     const authPayload = await this.getSignedCommandParams(
@@ -1914,7 +1947,8 @@ export class HttpProvider {
     )
     const query = this.buildQuery({
       ...authPayload,
-      ...(serviceId ? { serviceId } : {})
+      ...(serviceId ? { serviceId } : {}),
+      ...(includeMetrics !== undefined ? { includeMetrics: String(includeMetrics) } : {})
     })
     const headers: Record<string, string> = {}
     if (typeof signerOrAuthToken === 'string') headers.Authorization = signerOrAuthToken
