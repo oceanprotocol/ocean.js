@@ -239,7 +239,7 @@ export class Aquarius {
     signal?: AbortSignal,
     authorization?: string
   ): Promise<any> {
-    const path = this.aquariusURL + '/api/aquarius/assets/query'
+    const path = this.aquariusURL + '/api/aquarius/assets/metadata/query'
 
     try {
       const response = await fetch(path, {

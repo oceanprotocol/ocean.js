@@ -1,4 +1,4 @@
-import { ComputeResourceRequest } from './Compute.js'
+import { ComputeResourceRequest, ContainerMetricsSnapshot } from './Compute.js'
 
 // Service-on-Demand client types. Mirror of ocean-node
 // `src/@types/C2D/ServiceOnDemand.ts` (the API surface a client interacts with).
@@ -56,8 +56,6 @@ export interface ServiceTemplatePublic {
 
 // ── Runtime service job ────────────────────────────────────────────────
 
-// Port mapping for a running service (named ServiceJobEndpoint to avoid colliding
-// with the provider-route `ServiceEndpoint` type used for node endpoint discovery).
 export interface ServiceJobEndpoint {
   containerPort: number
   hostPort: number
@@ -120,6 +118,10 @@ export interface ServiceJob {
   resources: any[] // ComputeResourceRequestWithPrice[] on the node
   payment: ServiceJobPayment // initial start payment
   extendPayments?: ServiceJobPayment[] // one entry per successful SERVICE_EXTEND
+  // Best-effort Docker/NVML runtime metrics sampled while the service container runs.
+  // Present only when getServiceStatus() resolved includeMetrics to true; never present
+  // on SERVICE_LIST (see ServiceJobListed).
+  runtimeMetrics?: ContainerMetricsSnapshot
 }
 
 // Returned by SERVICE_LIST, which is authenticated but NOT owner-scoped (any consumer
@@ -129,7 +131,11 @@ export interface ServiceJob {
 // payment metadata are kept; use the owner-scoped SERVICE_GET_STATUS for the full view.
 export type ServiceJobListed = Omit<
   ServiceJob,
-  'dockerCmd' | 'dockerEntrypoint' | 'dockerfile' | 'additionalDockerFiles'
+  | 'dockerCmd'
+  | 'dockerEntrypoint'
+  | 'dockerfile'
+  | 'additionalDockerFiles'
+  | 'runtimeMetrics'
 >
 
 // Filters for SERVICE_LIST (getServices). With no filters the node returns only the

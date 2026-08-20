@@ -71,6 +71,38 @@ describe('Provider tests', async () => {
     assert(Array.isArray(jobs), 'Jobs should be an array')
   })
 
+  it('Alice tests getNodeJobs hits the real /jobs/:job route, not a 404', async function () {
+    // getNodeJobs() swallows both "no jobs" and a 404 into the same [] (see
+    // HttpProvider.getNodeJobs's catch block), so the assertion above can't tell a working
+    // route from a broken one. Hit the exact URL the SDK builds directly to prove the
+    // hardcoded '/api/services/jobs/:job' path (the node's own required, non-optional param -
+    // confirmed by running its real route handler in isolation) still resolves against a live
+    // node instead of regressing to a 404.
+    if (isP2pUri(providerUrl)) this.skip()
+    const response = await fetch(
+      `${providerUrl.replace(/\/+$/, '')}/api/services/jobs/:job`
+    )
+    assert(
+      response.ok,
+      `expected the jobs route to resolve (200), got ${response.status}`
+    )
+    const body = await response.json()
+    assert(Array.isArray(body.jobs), 'response body should contain a jobs array')
+  })
+
+  it('Alice confirms /api/services/jobs without :job 404s against a live node', async function () {
+    // The other half of the story: the node registers this route with a REQUIRED param
+    // (`/jobs/:job`, not `/jobs/:job?`), so dropping the segment entirely isn't an option -
+    // it 404s. This is why the SDK sends the literal placeholder above instead of just
+    // omitting it. Proven here against a live node, not just an isolated route probe.
+    if (isP2pUri(providerUrl)) this.skip()
+    const response = await fetch(`${providerUrl.replace(/\/+$/, '')}/api/services/jobs`)
+    assert(
+      response.status === 404,
+      `expected a 404 without the :job segment, got ${response.status}`
+    )
+  })
+
   it('Alice tests getNonce', async () => {
     const nonce = await ProviderInstance.getNonce(
       config.oceanNodeUri,

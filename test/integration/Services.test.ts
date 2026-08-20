@@ -273,6 +273,30 @@ describe('Service on Demand flow tests', () => {
     assert(running.endpoints[0].url, 'endpoint url missing')
   })
 
+  it('streams service logs via serviceGetStreamableLogs', async function () {
+    if (skipLifecycle || !serviceId) this.skip()
+    this.timeout(30000)
+    const controller = new AbortController()
+    try {
+      const result = await ProviderInstance.serviceGetStreamableLogs(
+        providerUrl,
+        consumerAccount,
+        serviceId,
+        undefined,
+        controller.signal
+      )
+      // A non-null result proves the route resolved (this is the route that used to 404 by
+      // requesting /api/services/serviceGetStreamableLogs instead of .../serviceStreamableLogs).
+      assert(result, 'expected a streamable logs response, not null')
+      assert(
+        typeof (result as any)[Symbol.asyncIterator] === 'function',
+        'expected an async iterable'
+      )
+    } finally {
+      controller.abort()
+    }
+  })
+
   it('returns the service via getServiceStatus (userData stripped)', async function () {
     if (skipLifecycle || !serviceId) this.skip()
     const jobs = await ProviderInstance.getServiceStatus(
