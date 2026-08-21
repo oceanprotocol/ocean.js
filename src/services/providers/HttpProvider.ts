@@ -1597,8 +1597,7 @@ export class HttpProvider {
     // browser. undici accepts a streamed body only with `duplex: 'half'` (not in the DOM
     // RequestInit type, so the init object is cast below).
     const RS = (globalThis as any).ReadableStream as
-      | (new (opts: any) => ReadableStream)
-      | undefined
+      (new (opts: any) => ReadableStream) | undefined
     if (typeof RS !== 'function') {
       throw new Error('ReadableStream is not available in this environment')
     }

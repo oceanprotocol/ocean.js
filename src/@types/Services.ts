@@ -62,7 +62,6 @@ export interface ServiceJobEndpoint {
   url: string // e.g. "http://<nodeHost>:31042"
 }
 
-/* eslint-disable no-unused-vars */
 export enum ServiceStatusNumber {
   Starting = 10, // DB record created by the start handler; awaits background processing
   PullImage = 11, // pulling pre-built image from registry
@@ -79,7 +78,6 @@ export enum ServiceStatusNumber {
   Expired = 75,
   Error = 99
 }
-/* eslint-enable no-unused-vars */
 
 // Payment record attached to a service job (start payment + each extend).
 export interface ServiceJobPayment {

@@ -434,7 +434,7 @@ describe('Compute-to-data example tests', async () => {
     )
     publisherAccount = (await provider.getSigner(0)) as Signer
     consumerAccount = (await provider.getSigner(1)) as Signer
-    const config = new ConfigHelper().getConfig(
+    config = new ConfigHelper().getConfig(
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
     Object.assign(config, getNodeEndpointConfig())

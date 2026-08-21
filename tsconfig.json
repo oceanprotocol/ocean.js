@@ -1,17 +1,21 @@
 {
   "compilerOptions": {
     "resolveJsonModule": true,
-    "moduleResolution": "node",
+    // TS 6 flipped the default of "strict" to true; the codebase was written against the
+    // old default. Pinned explicitly so the TS 6 bump is behaviour-neutral.
+    "strict": false,
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "lib": ["ESNext", "dom"],
     "declaration": true,
-    "module": "ES2020",
+    "module": "esnext",
     "target": "ES2020",
     "removeComments": false,
     "experimentalDecorators": true,
     "preserveConstEnums": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "sourceMap": true,
     "skipLibCheck": true,
   },

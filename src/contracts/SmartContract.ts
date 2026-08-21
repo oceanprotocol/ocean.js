@@ -1,7 +1,7 @@
 import { ethers, Signer, Contract } from 'ethers'
 import { AbiItem } from '../@types/index.js'
 import { Config, ConfigHelper } from '../config/index.js'
-import * as sapphire from '@oasisprotocol/sapphire-paratime'
+import { wrapEthersSigner } from '@oasisprotocol/sapphire-ethers-v6'
 import {
   amountToUnits,
   getFairGasPrice,
@@ -36,7 +36,7 @@ export abstract class SmartContract {
 
   protected getSignerAccordingSdk() {
     return this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-      ? sapphire.wrap(this.signer)
+      ? wrapEthersSigner(this.signer)
       : this.signer
   }
 

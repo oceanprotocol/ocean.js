@@ -1,4 +1,8 @@
-import * as sapphire from '@oasisprotocol/sapphire-paratime'
+import {
+  NETWORKS,
+  wrapEthersProvider,
+  wrapEthersSigner
+} from '@oasisprotocol/sapphire-ethers-v6'
 import addresses from '@oceanprotocol/contracts/addresses/address.json'
 import { ethers, toUtf8Bytes } from 'ethers'
 import { AccesslistFactory } from '../../src/contracts/AccessListFactory.js'
@@ -12,8 +16,8 @@ import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templat
 import { getEventFromTx } from '../../src/utils/index.js'
 
 describe('Sapphire tests', async () => {
-  const provider = sapphire.wrap(
-    ethers.getDefaultProvider(sapphire.NETWORKS.testnet.defaultGateway)
+  const provider = wrapEthersProvider(
+    ethers.getDefaultProvider(NETWORKS.testnet.defaultGateway)
   )
   const privateKey = process.env.PRIVATE_KEY
   const privateKeyConsumer = process.env.PRIVATE_KEY_CONSUMER
@@ -22,7 +26,7 @@ describe('Sapphire tests', async () => {
   }
   const wallet = privateKey ? new ethers.Wallet(privateKey, provider) : null
   const walletWrapped = privateKey
-    ? sapphire.wrap(new ethers.Wallet(privateKey, provider))
+    ? wrapEthersSigner(new ethers.Wallet(privateKey, provider))
     : null
   const consumer = privateKeyConsumer
     ? new ethers.Wallet(privateKeyConsumer, provider)

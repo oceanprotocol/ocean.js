@@ -246,7 +246,6 @@ export class P2pProvider {
   }
 
   private async handleProtocolCommands(stream: Stream, connection: Connection) {
-    // eslint-disable-next-line no-unused-vars
     const { remotePeer, remoteAddr } = connection
 
     // Reserved for future use: we advertise the protocol but do not handle incoming streams yet.
@@ -799,7 +798,7 @@ export class P2pProvider {
       )
       // ocean-node may return a plain number or { nonce: number }
       const nonceValue =
-        typeof result === 'number' ? result : result?.nonce ?? result ?? 0
+        typeof result === 'number' ? result : (result?.nonce ?? result ?? 0)
       return !nonceValue || nonceValue === null ? 0 : Number(nonceValue)
     } catch (e) {
       LoggerInstance.error('P2P getNonce failed:', e)

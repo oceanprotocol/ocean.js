@@ -59,7 +59,7 @@ export class Nft extends SmartContract {
     allowAccessList?: string,
     denyAccessList?: string,
     estimateGas?: G
-  ): Promise<G extends false ? string : BigInt> {
+  ): Promise<G extends false ? string : bigint> {
     const tx = await this.createDatatokenTx(
       nftAddress,
       address,
@@ -310,9 +310,8 @@ export class Nft extends SmartContract {
     ) {
       throw new Error(`Caller is not Manager nor DatatokenDeployer`)
     }
-    const estGas = await nftContract.removeFromCreateERC20List.estimateGas(
-      datatokenDeployer
-    )
+    const estGas =
+      await nftContract.removeFromCreateERC20List.estimateGas(datatokenDeployer)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -871,7 +870,7 @@ export class Nft extends SmartContract {
    * @param {String} nftAddress NFT contract address
    * @return {Promise<Objecta>}
    */
-  public async getMetadata(nftAddress: string): Promise<Object> {
+  public async getMetadata(nftAddress: string): Promise<object> {
     const nftContract = this.getContract(nftAddress)
     return await nftContract.getMetaData()
   }
