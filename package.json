@@ -34,7 +34,7 @@
     "type-check": "npm run build:metadata && tsc --noEmit",
     "doc:json": "node ./scripts/typedoc.js",
     "docs": "typedoc --options typedoc.json --plugin typedoc-plugin-markdown",
-    "release": "release-it --non-interactive",
+    "release": "release-it",
     "changelog": "auto-changelog -p",
     "prepublishOnly": "npm run build",
     "test": "npm run lint && npm run test:unit:cover && npm run test:integration:cover",
