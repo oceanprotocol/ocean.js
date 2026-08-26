@@ -1,4 +1,4 @@
-import { AccessList } from './AccessList'
+import { AccessList } from './AccessList.js'
 export interface HeadersObject {
   [key: string]: string
 }

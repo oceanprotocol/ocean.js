@@ -1,4 +1,4 @@
-import { ConsumeMarketFee, ProviderFees } from '.'
+import { ConsumeMarketFee, ProviderFees } from './index.js'
 
 export interface Template {
   templateAddress: string

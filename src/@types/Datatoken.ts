@@ -1,4 +1,4 @@
-import { ProviderFees, StorageObject } from '.'
+import { ProviderFees, StorageObject } from './index.js'
 
 export interface AssetFiles {
   nftAddress: string
