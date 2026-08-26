@@ -60,6 +60,22 @@ describe('P2P retry policy', () => {
 
   const DEADLINE = { signal: AbortSignal.timeout(20_000) }
 
+  /**
+   * Idle budget for the tests whose peer tears the stream down instead of answering.
+   *
+   * It has to be set explicitly, and leaving it out is what made this file fragile. The
+   * config installed by each test *replaces* the whole object, so omitting this falls back
+   * to the 60 s default — which is exactly these tests' own mocha timeout, and there are up
+   * to three attempts each with their own 60 s first-frame budget. So any delay in the
+   * reset reaching the reader could only ever surface as "Timeout of 60000ms exceeded",
+   * never as the assertion that would say what actually went wrong. Observed in CI on a
+   * loaded runner; the failure carries no information by construction.
+   *
+   * Short enough that a reset which does not arrive fails fast and *as a timeout*, which
+   * is a diagnosis rather than a stopwatch.
+   */
+  const NO_ANSWER_IDLE_MS = 2_000
+
   /** Reads the command frame, answers with `reply`, then ends the stream cleanly. */
   function replyWith(reply: Record<string, unknown>): PeerScript {
     return async (peer) => {
@@ -131,7 +147,11 @@ describe('P2P retry policy', () => {
   })
 
   it('retries a stream reset and reports it as a dial failure', async () => {
-    ;(provider as any).p2pConfig = { maxRetries: 2, retryDelay: 0 }
+    ;(provider as any).p2pConfig = {
+      maxRetries: 2,
+      retryDelay: 0,
+      streamIdleTimeout: NO_ANSWER_IDLE_MS
+    }
     const dials = scriptDials(resetStream)
     const err = await failing(provider.getNodeStatus('test-peer'))
     expect(err).to.be.instanceOf(P2pError)
@@ -177,7 +197,11 @@ describe('P2P retry policy', () => {
     // instead of one. With `maxRetries: 3` that is 15 attempts against a budget that
     // reads as 4, and the schedule is long enough to reveal it.
     const maxRetries = 3
-    ;(provider as any).p2pConfig = { maxRetries, retryDelay: 0 }
+    ;(provider as any).p2pConfig = {
+      maxRetries,
+      retryDelay: 0,
+      streamIdleTimeout: NO_ANSWER_IDLE_MS
+    }
     const schedule: Array<'body' | 'reset'> = []
     const build = (depth: number, wantThrow: boolean): void => {
       if (depth >= maxRetries) {
@@ -221,7 +245,12 @@ describe('P2P retry policy', () => {
   it('gives every attempt its own deadline', async () => {
     // The backoff here is longer than the dial budget, so an attempt that inherited the
     // previous attempt's signal would start already aborted.
-    ;(provider as any).p2pConfig = { maxRetries: 2, retryDelay: 120, dialTimeout: 40 }
+    ;(provider as any).p2pConfig = {
+      maxRetries: 2,
+      retryDelay: 120,
+      dialTimeout: 40,
+      streamIdleTimeout: NO_ANSWER_IDLE_MS
+    }
     const dials = scriptDials(resetStream)
     await failing(provider.getNodeStatus('test-peer'))
     expect(dials.count).to.equal(3)
@@ -232,7 +261,11 @@ describe('P2P retry policy', () => {
   }).timeout(60_000)
 
   it('stops retrying once the caller has given up', async () => {
-    ;(provider as any).p2pConfig = { maxRetries: 5, retryDelay: 0 }
+    ;(provider as any).p2pConfig = {
+      maxRetries: 5,
+      retryDelay: 0,
+      streamIdleTimeout: NO_ANSWER_IDLE_MS
+    }
     const controller = new AbortController()
     const dials = scriptDials(async (peer) => {
       await lpStream(peer).read(DEADLINE)
@@ -251,7 +284,11 @@ describe('P2P retry policy', () => {
   }).timeout(60_000)
 
   it('does not replay a request body it cannot rewind', async () => {
-    ;(provider as any).p2pConfig = { maxRetries: 5, retryDelay: 0 }
+    ;(provider as any).p2pConfig = {
+      maxRetries: 5,
+      retryDelay: 0,
+      streamIdleTimeout: NO_ANSWER_IDLE_MS
+    }
     const dials = scriptDials(resetStream)
     async function* body() {
       yield new TextEncoder().encode('one shot')
