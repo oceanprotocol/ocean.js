@@ -54,6 +54,7 @@ import { signRequest } from '../../utils/SignatureUtils.js'
 import { HttpProvider } from './HttpProvider.js'
 import {
   getSharedP2pProvider,
+  type P2pProvider,
   type P2PConfig,
   type P2PRequestBodyStream,
   type P2pProviderRecord
@@ -64,7 +65,14 @@ export {
   OCEAN_P2P_PROTOCOL,
   type P2PConfig,
   type P2pProviderRecord,
-  type Multiaddr
+  type Multiaddr,
+  // A P2P failure now carries what kind of failure it is, so a caller can branch on
+  // the type instead of matching the message text. Re-exported because the type is
+  // only useful to someone who can name it.
+  P2pError,
+  type P2pErrorType,
+  classifyP2pError,
+  isRetryableP2pError
 } from './P2pProvider.js'
 
 export async function getConsumerAddress(
@@ -455,8 +463,9 @@ export class BaseProvider {
   /**
    * @param signal Cancels the operation. On the P2P transport it covers the whole
    *   transfer — the nonce round-trip, the dial and every frame of the body — so a
-   *   download already running stops when it fires. The HTTP transport only assembles a
-   *   URL string here and performs no I/O, so there is nothing for it to cancel.
+   *   download already running stops when it fires. The HTTP transport returns a URL for
+   *   the caller to fetch and so performs no transfer here, but building that URL from a
+   *   `Signer` does fetch a nonce from the node, and the signal covers that request.
    *   Optional; omitting it keeps the previous behaviour.
    */
   public async getDownloadUrl(
@@ -762,18 +771,25 @@ export class BaseProvider {
    * HTTP-transport only. A P2P peer answers with the result bytes themselves and the
    * protocol carries no location for them, so this rejects for a P2P target — use
    * {@link getComputeResult} there, which returns the bytes as an async iterable.
+   *
+   * @param signal Cancels the nonce round-trip the URL is built from. Only reaches the
+   *   network when `signerOrAuthToken` is a `Signer`; a token or a pre-made signature
+   *   needs no nonce and this becomes pure string assembly. Optional; omitting it keeps
+   *   the previous behaviour.
    */
   public async getComputeResultUrl(
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
-    index: number
+    index: number,
+    signal?: AbortSignal
   ): Promise<string> {
     return this.getImpl(nodeUri).getComputeResultUrl(
       nodeUri,
       signerOrAuthToken,
       jobId,
-      index
+      index,
+      signal
     )
   }
 
@@ -781,8 +797,9 @@ export class BaseProvider {
    * @param signal Cancels the operation. On the P2P transport it covers the whole
    *   transfer — the nonce round-trip, the dial and every frame the returned generator
    *   reads — so a result already being transferred stops when it fires. The HTTP
-   *   transport does not yet thread it into its `fetch`. Optional; omitting it keeps the
-   *   previous behaviour.
+   *   transport covers the same ground: the nonce round-trip, the request and the
+   *   response body. On both, aborting mid-transfer makes the iterable throw rather than
+   *   end quietly. Optional; omitting it keeps the previous behaviour.
    */
   public async getComputeResult(
     nodeUri: OceanNode,
@@ -943,14 +960,56 @@ export class BaseProvider {
     return this.p2pProvider.dispose()
   }
 
+  /**
+   * Every peer this client knows about, with the state of the connection to it.
+   *
+   * `peerId` and `multiaddrs` are unchanged; the connection fields are added. They are
+   * what tells a known peer apart from a reachable one — a peer can sit in the peer store
+   * with three addresses and be unreachable, or be connected only over a circuit relay
+   * that will cut the connection off after a byte budget.
+   */
   public async getDiscoveredNodes(): Promise<
-    Array<{ peerId: string; multiaddrs: string[] }>
+    Awaited<ReturnType<P2pProvider['getDiscoveredNodes']>>
   > {
     return this.p2pProvider.getDiscoveredNodes()
   }
 
+  /**
+   * Whether P2P can do anything, as opposed to whether it is switched on: routing-table
+   * size, DHT mode, the peer store lifetimes the running node applies, and the resolution
+   * lanes.
+   *
+   * The routing table is the one to read first. A DHT lookup against an empty table finds
+   * nothing however many connections are open, because a connection to a peer that does
+   * not speak the DHT protocol is not a place a walk can start.
+   */
+  public getP2pDiagnostics(): ReturnType<P2pProvider['getP2pDiagnostics']> {
+    return this.p2pProvider.getP2pDiagnostics()
+  }
+
   public async getMultiaddrFromPeerId(peerId: string): Promise<string> {
     return this.p2pProvider.getMultiaddrFromPeerId(peerId)
+  }
+
+  /**
+   * Which tier answered each peer-address resolution — an open connection, the peer
+   * store, or a DHT walk — plus cache hits, misses and invalidations.
+   *
+   * Read this to see whether the peer store is doing its job: an address now lives
+   * there as long as the DHT provider record that names it, and the visible effect of
+   * that should be resolutions moving out of the `dht` lane and into `peer-store`.
+   */
+  public getPeerResolutionStats(): Record<string, number> {
+    return this.p2pProvider.getPeerResolutionStats()
+  }
+
+  /**
+   * Forgets the cached addresses for a peer, so the next call to it resolves afresh.
+   * Failed dials already do this; call it directly when something outside the library
+   * knows a node has moved.
+   */
+  public invalidatePeerResolution(peerId: string): void {
+    this.p2pProvider.invalidatePeerResolution(peerId)
   }
 
   public async createPersistentStorageBucket(

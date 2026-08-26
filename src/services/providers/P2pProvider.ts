@@ -6,16 +6,24 @@ import { tcp } from '@libp2p/tcp'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { bootstrap } from '@libp2p/bootstrap'
 import { identify, identifyPush } from '@libp2p/identify'
-import { EventTypes, KadDHT, kadDHT, passthroughMapper } from '@libp2p/kad-dht'
+import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { ping } from '@libp2p/ping'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { isLoopback, isPrivate, lpStream, UnexpectedEOFError } from '@libp2p/utils'
+import { isLoopback, isPrivate } from '@libp2p/utils'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { Signer, isAddress } from 'ethers'
 import { sleep } from '../../utils/General.js'
 import { LoggerInstance } from '../../utils/Logger.js'
 import { concatUint8Arrays } from '../../utils/bytes.js'
+import {
+  LP_RESUME_BELOW_BYTES,
+  LpFrameReader,
+  type LpFramedStream,
+  lpFramedStream,
+  pauseReads,
+  resumeReads
+} from './lpFraming.js'
 import { KEEP_ALIVE } from '@libp2p/interface'
 import type { Connection, Stream, PeerId } from '@libp2p/interface'
 import {
@@ -74,8 +82,29 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 
 export const OCEAN_P2P_PROTOCOL = '/ocean/nodes/1.0.0'
 const OCEAN_DHT_PROTOCOL = '/ocean/nodes/1.0.0/kad/1.0.0'
-const DEFAULT_MAX_RETRIES = 5
+/**
+ * Total retries one P2P command may make, across every kind of failure. One budget
+ * for the whole command rather than one per failure kind — see `sendP2pCommand`.
+ */
+const DEFAULT_MAX_RETRY_ATTEMPTS = 5
 const DEFAULT_RETRY_DELAY_MS = 1000
+/**
+ * Ceiling on a single retry delay. The delay doubles per attempt from `retryDelay`, so
+ * without a cap the last retry of a default configuration waits sixteen times as long
+ * as the first, and a caller that raised `retryDelay` waits far longer than that.
+ */
+const RETRY_BACKOFF_CAP_MS = 15_000
+/**
+ * Retries a command may spend on expired deadlines, inside the overall budget.
+ *
+ * A timeout is the one retryable failure whose own budget is already long: up to the
+ * dial timeout for a dial and up to the per-frame idle timeout — a minute by default —
+ * for a peer that accepts the stream and then says nothing. Retrying that as freely as
+ * a refused dial turns one minute of waiting into six, for a peer that has already
+ * shown it is not answering. One retry is enough to clear a slow hop or a node that was
+ * busy for a moment, and the overall budget still caps everything else.
+ */
+const MAX_TIMEOUT_RETRIES = 1
 const DEFAULT_DIAL_TIMEOUT_MS = 10_000
 /**
  * Per-chunk idle timeout for reading a response body (download, compute result,
@@ -148,6 +177,315 @@ const BOOTSTRAP_KEEP_ALIVE_TAG = `${KEEP_ALIVE}-ocean-bootstrap`
  * itself, on the generation check at the end of `createLibp2pNode`.
  */
 const ADOPTED_CREATION_STOP_TIMEOUT_MS = 5000
+
+/**
+ * How long a resolved address set is reused before the tiers are walked again.
+ *
+ * Chosen against what an address is worth, not against what a lookup costs. A node
+ * that moves to a new address is unreachable at the old one for at most this long,
+ * which is the only real risk here; against that, one DHT walk per peer per
+ * three-quarters of a minute is already far cheaper than the walk itself. Long enough
+ * that a burst aimed at one peer — a provider fan-out, a compute lifecycle, a paged
+ * download — shares a single lookup; short enough that a fleet redeploy is followed
+ * within a minute without anybody restarting anything.
+ *
+ * This is only worth having now. While the peer store discarded an address after an
+ * hour, an app-level cache in front of it was caching something the layer underneath
+ * had already thrown away; now that an address lives as long as the provider record
+ * that points at it, there is something real to hold on to.
+ */
+const PEER_RESOLUTION_TTL_MS = 45_000
+
+/**
+ * How long a peer that resolved to nothing at all is remembered as unresolvable.
+ *
+ * Deliberately a fraction of the positive lifetime: this exists to stop a fan-out
+ * re-walking the DHT once per call for a peer that is simply absent, and for nothing
+ * else. A peer that was briefly down has to become reachable again inside the same
+ * session, so the entry expires on its own clock, is never extended by being read,
+ * and is dropped outright by an invalidation.
+ */
+const PEER_RESOLUTION_NEGATIVE_TTL_MS = 5_000
+
+/**
+ * Which tier of {@link P2pProvider.resolvePeer} produced an address set.
+ *
+ * Returned rather than merely logged because it is the only way to see whether the
+ * peer store is earning its keep. An address now lives there as long as the DHT
+ * provider record that names it, and the whole point of that was to move resolutions
+ * out of the `dht` lane and into `peer-store`; without provenance that is an argument
+ * rather than a measurement.
+ */
+export type PeerAddressSource = 'connection' | 'peer-store' | 'dht' | 'none'
+
+/** One answer from {@link P2pProvider.resolvePeer}. */
+export interface ResolvedPeer {
+  /**
+   * Addresses for the peer: deduplicated, and ordered so a direct public address is
+   * tried before a private one and both before anything relayed.
+   */
+  addresses: Multiaddr[]
+  /** The tier that produced `addresses`, or `'none'` when nothing did. */
+  source: PeerAddressSource
+  /** True when this answer came from the resolution cache instead of a fresh lookup. */
+  cached: boolean
+}
+
+/** Address-resolution outcomes. Exactly one is counted per `resolvePeer` call. */
+const RESOLVE_CONNECTION_HIT = 'resolve:connection-hit'
+const RESOLVE_CACHE_HIT = 'resolve:cache-hit'
+const RESOLVE_PEERSTORE_HIT = 'resolve:peerstore-hit'
+const RESOLVE_DHT_HIT = 'resolve:dht-hit'
+const RESOLVE_NEGATIVE_CACHE_HIT = 'resolve:negative-cache-hit'
+const RESOLVE_MISS = 'resolve:miss'
+/** Counted separately: an invalidation is not the outcome of a resolution. */
+const RESOLVE_INVALIDATED = 'resolve:invalidated'
+
+/**
+ * Resolution counters, so a change to how long the peer store keeps an address can be
+ * measured rather than argued about. Seeded at module load, so a lane that has not
+ * been used reads `0` — which is information — rather than being absent, which is not.
+ *
+ * Module scope for the same reason the libp2p node is: one node, one peer store, one
+ * set of counters, whichever provider object asked.
+ */
+const peerResolutionCounters: Record<string, number> = {
+  [RESOLVE_CONNECTION_HIT]: 0,
+  [RESOLVE_CACHE_HIT]: 0,
+  [RESOLVE_PEERSTORE_HIT]: 0,
+  [RESOLVE_DHT_HIT]: 0,
+  [RESOLVE_NEGATIVE_CACHE_HIT]: 0,
+  [RESOLVE_MISS]: 0,
+  [RESOLVE_INVALIDATED]: 0
+}
+
+function countPeerResolution(key: string): void {
+  peerResolutionCounters[key] = (peerResolutionCounters[key] ?? 0) + 1
+}
+
+interface CachedPeerResolution {
+  addresses: Multiaddr[]
+  source: PeerAddressSource
+  expiresAt: number
+}
+
+/** Peers whose addresses are known, keyed by peer id string. */
+const peerResolutionCache = new Map<string, CachedPeerResolution>()
+/** Peers that resolved to nothing, keyed by peer id string; value is the expiry. */
+const peerResolutionMisses = new Map<string, number>()
+
+/**
+ * Drops every cached resolution. Called when the libp2p node goes away: the next node
+ * has its own peer store and its own routing table, so an address learned through the
+ * old one is a guess with no provenance left behind it.
+ */
+function clearPeerResolutionCache(): void {
+  peerResolutionCache.clear()
+  peerResolutionMisses.clear()
+}
+
+/**
+ * What went wrong with a P2P operation, as a value.
+ *
+ * Retry decisions used to be made by testing error *messages* for substrings, which
+ * is fragile in a way this file has already paid for: an unrelated error had to have
+ * its wording chosen so that it would not accidentally look retryable. A closed set
+ * of types cannot be tripped that way.
+ *
+ * - `resolve_failed` — no address for the peer, from any tier. Nothing was dialled.
+ * - `dial_failed` — there were addresses and the transport did not deliver: the dial
+ *   was refused, or a connection or stream died under the command. Also covers the
+ *   peer reporting that *it* could not reach the node the command was addressed to.
+ * - `protocol_failed` — the exchange itself failed: the peer answered with an error
+ *   envelope, or answered something this protocol cannot use.
+ * - `timeout` — a deadline expired: the caller's signal, a dial budget, or the
+ *   per-frame idle budget.
+ * - `peer_mismatch` — a dial succeeded and the peer on the other end is not the peer
+ *   that was asked for.
+ */
+export type P2pErrorType =
+  'resolve_failed' | 'dial_failed' | 'protocol_failed' | 'timeout' | 'peer_mismatch'
+
+/**
+ * A P2P failure carrying its {@link P2pErrorType}.
+ *
+ * Extends `Error` and keeps the message text the untyped code produced, so existing
+ * handling — `instanceof Error`, logging, message matching — is unaffected; `type` is
+ * additional information, not a replacement for any of it.
+ */
+export class P2pError extends Error {
+  /** What kind of failure this is. */
+  readonly type: P2pErrorType
+  /** The peer the operation concerned, when one was known. */
+  readonly peerId?: string
+  /**
+   * The reply body, when the failure was reported by the peer inside an otherwise
+   * well-formed response. Kept so an exhausted retry budget can hand the caller the
+   * same object the untyped code returned, instead of raising where it used to return.
+   */
+  readonly peerResponse?: { value: unknown }
+
+  constructor(
+    type: P2pErrorType,
+    message: string,
+    options: { cause?: unknown; peerId?: string; peerResponse?: { value: unknown } } = {}
+  ) {
+    super(message, options.cause == null ? undefined : { cause: options.cause })
+    this.name = 'P2pError'
+    this.type = type
+    this.peerId = options.peerId
+    this.peerResponse = options.peerResponse
+  }
+}
+
+/**
+ * libp2p error names that mean the transport did not deliver. Every one of them is
+ * answered the same way — throw the connection away and, if the budget allows, start
+ * a new one — which is why they share a single type.
+ *
+ * `UnexpectedEOFError` belongs here: from the reader's side a body that stops early is
+ * a transport failure, and a clean end of stream is recognised before this point.
+ */
+const TRANSPORT_ERROR_NAMES: ReadonlySet<string> = new Set([
+  'StreamResetError',
+  'StreamAbortedError',
+  'StreamStateError',
+  'StreamBufferError',
+  'MuxerClosedError',
+  'ConnectionClosedError',
+  'ConnectionClosingError',
+  'ConnectionFailedError',
+  'LimitedConnectionError',
+  'DialError',
+  'NoValidAddressesError',
+  'TransportUnavailableError',
+  'UnexpectedEOFError'
+])
+
+/** Names an expired deadline arrives under, depending on who aborted. */
+const TIMEOUT_ERROR_NAMES: ReadonlySet<string> = new Set(['AbortError', 'TimeoutError'])
+
+/**
+ * Classifies a thrown value.
+ *
+ * Errors raised inside this file are already typed, so they answer for themselves;
+ * everything else is recognised by its constructor name, which libp2p sets on every
+ * error it defines and which — unlike a message — is part of its API.
+ *
+ * The fallback is `protocol_failed`, and that choice is deliberate: it is the type
+ * that is *not* retried. An unrecognised failure gets one attempt rather than six, so
+ * a new error from a dependency cannot turn into a retry storm on upgrade.
+ */
+export function classifyP2pError(err: unknown): P2pErrorType {
+  if (err instanceof P2pError) return err.type
+  const name = (err as { name?: string } | null)?.name
+  if (name != null) {
+    if (TIMEOUT_ERROR_NAMES.has(name)) return 'timeout'
+    if (TRANSPORT_ERROR_NAMES.has(name)) return 'dial_failed'
+  }
+  return 'protocol_failed'
+}
+
+/**
+ * Which failures are worth another attempt, and why the rest are not.
+ *
+ * - `dial_failed` — yes. A refused dial or a stream lost mid-command is the ordinary
+ *   transient: the address is good and the socket was not. This is also what the two
+ *   substring-matched paths this replaces were really retrying.
+ * - `timeout` — yes. A deadline says how long we waited, not that the peer is gone,
+ *   and a slow hop or a busy node commonly clears. (A retry is skipped anyway when it
+ *   was the *caller's* signal that fired: their budget is spent, not ours.)
+ * - `resolve_failed` — no. Resolution has already walked all three tiers, the DHT leg
+ *   under its own budget, so a retry re-runs the same walk against the same routing
+ *   table. The negative cache would answer the first retries from memory in any case,
+ *   turning them into pure latency. This matches what the untyped code did, which
+ *   retried neither of its resolution failures.
+ * - `protocol_failed` — no. The peer answered; it will answer the same way again.
+ * - `peer_mismatch` — no. Dialling the same address reaches the same wrong peer. The
+ *   cached resolution is invalidated instead, so the caller's *next* call resolves
+ *   afresh rather than this one spinning against a known-wrong address.
+ */
+const RETRYABLE_P2P_ERROR_TYPES: ReadonlySet<P2pErrorType> = new Set<P2pErrorType>([
+  'dial_failed',
+  'timeout'
+])
+
+export function isRetryableP2pError(type: P2pErrorType): boolean {
+  return RETRYABLE_P2P_ERROR_TYPES.has(type)
+}
+
+/**
+ * Final error for a failed command. Preserves the `P2P command error: <message>`
+ * shaping the untyped code produced — consumers match on it — and adds the type.
+ */
+function asP2pCommandError(err: unknown, type: P2pErrorType): P2pError {
+  const message = (err as { message?: string } | null)?.message ?? ''
+  return new P2pError(type, `P2P command error: ${message}`, {
+    cause: err,
+    peerId: err instanceof P2pError ? err.peerId : undefined
+  })
+}
+
+/**
+ * Ensures a multiaddr string carries the peer id it belongs to, which is what makes it
+ * dialable on its own.
+ *
+ * The helper this replaces took a single parameter named `peerId` and was called with
+ * an *address*, so the address shadowed the peer id and it appended the address to
+ * itself: `/ip4/…/ws` came back as `/ip4/…/ws/p2p//ip4/…/ws`, which no longer parses
+ * as a multiaddr.
+ */
+function withPeerId(addr: string, peerId: string): string {
+  return addr.includes('/p2p/') ? addr : `${addr}/p2p/${peerId}`
+}
+
+/**
+ * Sort rank for a resolved address; lower is tried first.
+ *
+ * Relayed addresses come last unconditionally. They work, but they are metered by the
+ * relay's data and duration limits and they spend a third party's bandwidth, so they
+ * are a fallback and not a peer. Among direct addresses a routable one comes first: a
+ * private or loopback address is either the local development case — where it is the
+ * only address on offer anyway, so the order between them is moot — or a stale LAN
+ * address left in the peer store from a different network, where dialling it first
+ * only buys a connection timeout.
+ */
+function peerAddressRank(ma: Multiaddr): number {
+  const relayed = /\/p2p-circuit(\/|$)/.test(ma.toString())
+  const local = isLoopback(ma) || isPrivate(ma)
+  return (relayed ? 2 : 0) + (local ? 1 : 0)
+}
+
+/**
+ * Key two spellings of one address agree on.
+ *
+ * The tiers disagree about the trailing `/p2p/<id>`: a connection's `remoteAddr` and a
+ * DHT record usually carry it, peer-store entries usually do not, and the dial path
+ * adds it afterwards. Without normalising, one address reached through two tiers
+ * counts as two and gets dialled twice.
+ */
+function peerAddressKey(ma: Multiaddr, peerId: string): string {
+  const addr = ma.toString()
+  const suffix = `/p2p/${peerId}`
+  return addr.endsWith(suffix) ? addr.slice(0, -suffix.length) : addr
+}
+
+/**
+ * Deduplicates and orders an address set. The sort is stable, so addresses of equal
+ * rank keep the order the tier reported them in, and the first spelling of a
+ * duplicated address is the one kept.
+ */
+function orderPeerAddresses(addrs: Multiaddr[], peerId: string): Multiaddr[] {
+  const seen = new Set<string>()
+  const unique: Multiaddr[] = []
+  for (const ma of addrs) {
+    const key = peerAddressKey(ma, peerId)
+    if (seen.has(key)) continue
+    seen.add(key)
+    unique.push(ma)
+  }
+  return unique.sort((a, b) => peerAddressRank(a) - peerAddressRank(b))
+}
 
 /**
  * True in Node.js / Electron's main process, false in a browser page *and* in a
@@ -225,245 +563,55 @@ function timeoutSignal(
 }
 
 /**
- * Largest length-prefixed frame either side of this protocol will accept.
+ * Ceiling on a response this library buffers whole in memory before returning it.
  *
- * Handed to `lpStream()` as `maxDataLength`, which does two things. A peer declaring a bigger
- * frame fails immediately with `InvalidDataLengthError`, and `lpStream` derives a
- * `maxLengthLength` from it, which caps the length-prefix read — without that cap a peer sending
- * an endless run of varint continuation bytes keeps the prefix loop reading one byte at a time
- * forever.
+ * The framing limits above bound one *frame* and the transport's backlog. They say nothing
+ * about how many frames a caller accumulates, and two paths accumulate all of them: a command
+ * reply and a P2P download, which returns the entire file as one `ArrayBuffer`. Both loops read
+ * until end-of-stream, so a peer that keeps sending — whether it is hostile or merely serving
+ * something far larger than the caller expected — grows the array until the process runs out of
+ * memory. The per-frame idle timeout does not help: a peer sending steadily is never idle.
  *
- * 4 MiB is not a new restriction: it is already the largest frame that can be read at all,
- * because `lpStream`'s default read buffer is 4 MiB and a frame has to fit in the buffer whole
- * before it can be handed over. What changes is the failure mode — a clear error about the
- * declared length instead of an opaque buffer overflow — and that the limit now bounds the
- * flow-control marks below rather than being an accident of a library default.
- *
- * Every frame this protocol emits in practice is far smaller: file and log chunks arrive at the
- * source stream's high-water mark (16—64 KiB), and the largest single frames are whole-payload
- * JSON writes such as a DDO or a status envelope.
+ * Command replies are status envelopes, DDOs and log dumps. 64 MiB is orders of magnitude above
+ * anything this protocol legitimately answers with, and matches the ceiling ocean-node applies
+ * to its own accumulating readers, so the two ends of the same exchange agree.
  */
-const LP_MAX_FRAME_BYTES = 4 * 1024 * 1024
+const MAX_BUFFERED_COMMAND_BYTES = 64 * 1024 * 1024
 
 /**
- * `varint` bytes needed to encode `LP_MAX_FRAME_BYTES`, which is what `lpStream` derives as its
- * `maxLengthLength`. Also the slack on a byte count kept outside `byteStream`: a frame's length
- * prefix is consumed from the read buffer before the frame it belongs to is complete, so such a
- * count can run this far — and no further — ahead of the buffer's real occupancy.
+ * The same ceiling for a P2P download, which is the one case where a large body is the point.
+ *
+ * Separate from the command limit because the sizes are not comparable — a dataset is not a
+ * status envelope — and higher because the caller asked for a file. It is still a limit rather
+ * than none at all: the whole file is held in memory as an `ArrayBuffer` and handed back that
+ * way, so a browser tab is going to fail somewhere regardless, and failing with a clear message
+ * at a known threshold beats an out-of-memory kill at an unknown one.
+ *
+ * A consumer that legitimately needs more should raise `maxBufferedDownloadBytes` deliberately,
+ * which is also the moment to notice that this API buffers rather than streams.
  */
-const LP_MAX_LENGTH_PREFIX_BYTES = 4
+const MAX_BUFFERED_DOWNLOAD_BYTES = 512 * 1024 * 1024
 
 /**
- * How much the transport may buffer on our behalf while reads are paused.
+ * Adds `chunk`'s length to `total` and fails if the running sum has passed `limit`.
  *
- * Pausing reads is the only backpressure lever a libp2p stream has: it withholds the muxer's
- * window updates, so the peer's send window drains and it stops. What it cannot do is stop
- * bytes the peer already had permission to send, and those land in the stream's own buffer —
- * which resets the stream if it passes `maxReadBufferLength`.
- *
- * The library's defaults make that reset a certainty rather than a safeguard: yamux lets its
- * receive window double up to `MAX_STREAM_WINDOW` (16 MiB) on a stream that is being drained
- * quickly, while `maxReadBufferLength` stops at 4 MiB. So pausing a stream that has been going
- * fast — exactly the case where a consumer falls behind — resets it. Measured: a 40 MiB transfer
- * died at frame 160 with `Read buffer length of 4194496 exceeded limit of 4194304, read status
- * is paused`, and because an abort discards the stream buffer without ever dispatching it, the
- * byte accounting saw nothing pending and read the truncation as a clean end.
- *
- * So the buffer is raised to the window it may have to absorb. Bytes only accumulate here while
- * a consumer is behind, and the peer stops once its window is spent.
+ * Checked *after* appending rather than before, so the limit is a true ceiling on what was
+ * accepted rather than on what was accepted plus one more frame.
  */
-const LP_PAUSE_BUFFER_BYTES = 16 * 1024 * 1024
-
-/**
- * Backlog at or below which a paused read loop may let the transport deliver again.
- *
- * Pausing while the consumer works on a frame is not on its own enough, because `resume()`
- * dispatches *everything* the stream buffered while paused as a single `message` event: one
- * cycle admits a whole flush and consumes one frame, so a consumer slower than its peer still
- * accumulates without bound. A loop that has fallen behind therefore stays paused and drains
- * what it is already holding, and only lets more in once the backlog is back below this mark.
- *
- * The value is not free to choose. It has to be at least one maximum-size frame plus its length
- * prefix: while paused, the only way to make progress is to read a complete frame out of the
- * backlog, so a lower mark could leave a loop paused on a backlog holding part of a frame with
- * nothing to release it.
- */
-const LP_RESUME_BELOW_BYTES = LP_MAX_FRAME_BYTES + LP_MAX_LENGTH_PREFIX_BYTES
-
-/**
- * Read-buffer ceiling for every length-prefixed stream in this protocol, and the ceiling on
- * bytes retained per stream.
- *
- * It has to be passed explicitly. `lpStream()` otherwise defaults `maxBufferSize` to 4 MiB and,
- * when an incoming message pushes the unread backlog past that, `byteStream`'s `message`
- * listener discards the *entire* buffer and rejects its `hasBytes` deferred — which is a no-op
- * when no read is pending, i.e. exactly while a consumer is working on a chunk it was just
- * handed. The discard is therefore silent, and it desynchronises the frame parser: later reads
- * take payload bytes for length prefixes and hand out corrupt, out-of-sequence frames. Verified
- * in `@libp2p/utils` 7.3.2, `dist/src/stream-utils.js`.
- *
- * The size follows from the two marks above rather than being picked: a resume can flush a full
- * pause buffer into the read buffer on top of a backlog that is already at the resume mark, so
- * the ceiling has to clear `LP_PAUSE_BUFFER_BYTES + LP_RESUME_BELOW_BYTES` (20 MiB) with room
- * for the frame in progress. 24 MiB does, and is only approached while a consumer is behind —
- * the resume mark keeps the steady state near one frame.
- */
-const LP_MAX_BUFFER_BYTES = 24 * 1024 * 1024
-
-/**
- * Wraps `stream` in the length-prefixed framing this protocol uses, and makes the stream itself
- * safe to pause. Callers must go through this rather than calling `lpStream()` directly: the
- * defaults it would otherwise take are what silently drop bytes under backpressure.
- */
-function lpFramedStream(stream: Stream): ReturnType<typeof lpStream> {
-  if (stream.maxReadBufferLength < LP_PAUSE_BUFFER_BYTES) {
-    stream.maxReadBufferLength = LP_PAUSE_BUFFER_BYTES
+function accumulated(
+  total: number,
+  chunk: Uint8Array,
+  limit: number,
+  what: string
+): number {
+  const next = total + chunk.byteLength
+  if (next > limit) {
+    throw new P2pError(
+      'protocol_failed',
+      `P2P ${what} exceeded the maximum buffered size of ${limit} bytes`
+    )
   }
-  // A fresh options object each call: `lpStream()` writes the `maxLengthLength` it derives back
-  // onto the object it is given.
-  return lpStream(stream, {
-    maxBufferSize: LP_MAX_BUFFER_BYTES,
-    maxDataLength: LP_MAX_FRAME_BYTES
-  })
-}
-
-/**
- * Backpressure for a length-prefixed read loop: while the consumer is holding a frame, stop the
- * transport dispatching `message` events, so the unread backlog cannot grow past
- * `maxBufferSize` and be dropped. Bytes that arrive while paused are held by the stream itself
- * and flushed on resume, and the muxer stops granting the sender window, so this is real
- * end-to-end backpressure rather than local buffering.
- *
- * Guarded on `readStatus` because `pause()` and `resume()` throw `StreamStateError` once the
- * readable end is closing or closed, which happens on the last frames of every transfer — as
- * soon as the peer has closed its write side and the read buffer has drained.
- */
-function pauseReads(stream: Stream): void {
-  if (stream.readStatus === 'readable') {
-    stream.pause()
-  }
-}
-
-/** Counterpart to `pauseReads`: let the transport deliver the next frame. */
-function resumeReads(stream: Stream): void {
-  if (stream.readStatus === 'paused') {
-    stream.resume()
-  }
-}
-
-/** Bytes `lpStream`'s default varint length-prefix takes for a frame of this size. */
-function lpPrefixLength(byteLength: number): number {
-  let length = 1
-  let value = byteLength
-  while (value >= 0x80) {
-    value = Math.floor(value / 0x80)
-    length++
-  }
-  return length
-}
-
-function toFrameBytes(chunk: Uint8Array | { subarray(): Uint8Array }): Uint8Array {
-  return chunk instanceof Uint8Array ? chunk : chunk.subarray()
-}
-
-/**
- * Length-prefixed frame reader that can tell a clean end-of-stream from a truncated
- * transfer.
- *
- * `lpStream.read()` throws `UnexpectedEOFError` for *both*: the peer closing exactly
- * between frames, and the peer declaring a 10-byte frame, sending 3 bytes and
- * vanishing. Swallowing that error by type — which every read loop here used to do —
- * hands a **truncated payload back as success**, so a cut-short download or compute
- * result looks complete.
- *
- * The discriminator is bytes consumed, not the error's name or message. The message
- * is ambiguous as well: a clean end and a frame cut off inside its varint length
- * prefix both read `stream closed while reading 0/1 bytes`, verified against
- * `@libp2p/utils` 7.3.2 over a real `streamPair`. Every byte the transport delivers
- * arrives as a `message` event — the only path into `lpStream`'s internal buffer — so
- * we count those, and count what fully-read frames account for. Equal totals mean the stream ended on a frame
- * boundary: a clean end. Otherwise bytes arrived that never completed a frame, which
- * is truncation and must propagate to the caller.
- *
- * Constraint on this accounting: the `lpStream` handed to the constructor must never
- * be `unwrap()`ped while this reader is in use. `unwrap()` removes only
- * `byteStream`'s own 'message' listener and then `unshift`s its internal buffer back
- * onto the stream, which re-dispatches those bytes as a fresh 'message' event — our
- * listener is still attached, so it would count them a second time, `pendingBytes`
- * would go positive and `isCleanEnd` would report a clean end-of-stream as
- * truncation. Nothing calls `unwrap()` today; anyone adding a call must detach this
- * reader's listener first.
- */
-class LpFrameReader {
-  private received = 0
-  private consumed = 0
-  /** Backlog size at the moment `byteStream` was seen to drop its whole read buffer. */
-  private discarded: number | undefined
-  /** Set when the stream ends in an error, whether raised locally or by the peer. */
-  private closeError: Error | undefined
-
-  constructor(
-    private readonly lp: ReturnType<typeof lpStream>,
-    stream: Stream,
-    maxBufferSize: number = LP_MAX_BUFFER_BYTES
-  ) {
-    // An aborted stream discards whatever it had buffered without ever dispatching it, so the
-    // byte accounting below cannot see those bytes go missing: `pendingBytes` stays at zero
-    // and the end-of-file that follows looks like a clean end of stream. Recording the failure
-    // is what keeps a reset from being read as a completed transfer.
-    stream.addEventListener('close', (evt) => {
-      if (evt.error != null) {
-        this.closeError = evt.error
-      }
-    })
-    stream.addEventListener('message', (evt) => {
-      this.received += evt.data.byteLength
-      // `byteStream` never lets its unread backlog exceed `maxBufferSize`: the listener that
-      // appends to it drops the entire buffer the moment it would, and the rejection it raises
-      // does nothing when no read is pending. So a backlog above the ceiling can only mean the
-      // drop has already happened. Backpressure (`pauseReads`) is what stops that arising;
-      // this turns whatever is left into an immediate, named error at the next read instead of
-      // an end-of-file long afterwards, by which time corrupt frames have been handed over.
-      if (
-        this.discarded === undefined &&
-        this.pendingBytes > maxBufferSize + LP_MAX_LENGTH_PREFIX_BYTES
-      ) {
-        this.discarded = this.pendingBytes
-      }
-    })
-  }
-
-  /** Bytes delivered by the transport that are not yet part of a complete frame. */
-  get pendingBytes(): number {
-    return this.received - this.consumed
-  }
-
-  async read(options: { signal: AbortSignal }): Promise<Uint8Array> {
-    if (this.discarded !== undefined) {
-      throw new Error(
-        `P2P read buffer overflowed — ${this.discarded} bytes were dropped before they could ` +
-          'be read, so frame boundaries can no longer be trusted'
-      )
-    }
-    const frame = toFrameBytes(await this.lp.read(options))
-    this.consumed += lpPrefixLength(frame.byteLength) + frame.byteLength
-    return frame
-  }
-
-  /**
-   * True when `err` is the graceful end of the stream: an end-of-file thrown with
-   * every delivered byte already accounted for by a complete frame. A truncated
-   * frame throws the same error type but leaves bytes pending, and returns false.
-   */
-  isCleanEnd(err: unknown): boolean {
-    if (this.closeError != null) {
-      return false
-    }
-    const isEof =
-      err instanceof UnexpectedEOFError ||
-      (err as { name?: string } | null)?.name === 'UnexpectedEOFError'
-    return isEof && this.pendingBytes === 0
-  }
+  return next
 }
 
 /**
@@ -560,7 +708,7 @@ function toUint8ArrayChunk(chunk: unknown): Uint8Array {
 }
 
 async function writeP2pRequestBodyLp(
-  lp: ReturnType<typeof lpStream>,
+  lp: LpFramedStream,
   body: P2PRequestBodyStream,
   signal: AbortSignal
 ): Promise<void> {
@@ -626,6 +774,17 @@ export interface P2PConfig {
    * than this queues the surplus instead of burst-dialling past `maxConnections`.
    */
   maxConcurrentRequests?: number
+  /**
+   * Ceiling on a buffered command reply, in bytes. Default: 67108864 (64 MiB).
+   * A reply past this fails instead of growing until the process runs out of memory.
+   */
+  maxBufferedCommandBytes?: number
+  /**
+   * Ceiling on a buffered P2P download, in bytes. Default: 536870912 (512 MiB).
+   * `getDownloadUrl` returns the whole file as one `ArrayBuffer`, so this is the size
+   * of the largest file this transport can deliver. Raise it deliberately.
+   */
+  maxBufferedDownloadBytes?: number
 
   /**
    * Enable TCP transport in addition to WebSockets.
@@ -641,8 +800,16 @@ export interface P2PConfig {
   maxConnections?: number
   /**
    * Full libp2p node configuration. Fields provided here override ocean.js
-   * defaults (transports, encrypters, services, connectionManager, etc.).
-   * Unset fields keep ocean.js defaults.
+   * defaults (transports, encrypters, services, etc.). Unset fields keep ocean.js
+   * defaults.
+   *
+   * Three option bags are the exception and are merged **field by field** rather than
+   * replaced wholesale: `peerStore`, `connectionManager` and `connectionMonitor`. They
+   * are bags of independent values, so setting one field and losing the rest to a
+   * library default is never what a caller meant — and for `peerStore` it is actively
+   * harmful, since overriding `maxAddressAge` alone would drop `maxPeerAge` to a value
+   * *shorter* than it and evict peer entries while their addresses are still valid.
+   * Everything else is a whole subsystem and is replaced as stated.
    */
 
   libp2p?: Partial<Libp2pOptions>
@@ -723,6 +890,22 @@ export function getSharedP2pProvider(): P2pProvider {
   return sharedP2pProvider
 }
 
+/**
+ * Transport a connection is running over, named by the protocols its address carries.
+ *
+ * The circuit-relay check comes first and must: every relayed address also carries the
+ * relay's own `/tcp` or `/wss`, so testing for those first would file every relayed
+ * connection under a direct transport and hide exactly the connections worth noticing.
+ */
+function connectionTransport(addr: string): string {
+  if (addr.includes('/p2p-circuit')) return 'circuit-relay'
+  if (addr.includes('/wss') || addr.includes('/tls/ws')) return 'wss'
+  if (addr.includes('/ws')) return 'ws'
+  if (addr.includes('/tcp')) return 'tcp'
+  if (addr.includes('/udp')) return 'udp'
+  return 'other'
+}
+
 export class P2pProvider {
   private get p2pConfig(): P2PConfig {
     return sharedP2pConfig
@@ -780,46 +963,187 @@ export class P2pProvider {
     this.appliedP2pConfig = config
   }
 
-  public async getMultiaddrFromPeerId(peerId: string): Promise<string> {
-    const appendedPeerId = (peerId: string) =>
-      peerId.includes('/p2p/') ? peerId : `${peerId}/p2p/${peerId}`
+  /**
+   * The one place a peer's addresses come from: active connection, then peer store,
+   * then a DHT `findPeer` walk.
+   *
+   * There used to be two of these. `getConnection` resolved inline under one timeout
+   * policy, and the public `getMultiaddrFromPeerId` ran its own walk under another,
+   * returning whichever address happened to sit at index 0 of whichever tier answered
+   * — peer-store order is insertion order, so two callers asking about the same peer
+   * could get different addresses and a relayed one could beat a direct one. Both now
+   * come through here and share the dedup, the ordering and the cache.
+   *
+   * The tiers are ordered by cost and by confidence, and both agree: an open
+   * connection is free and proven, the peer store is a local read, and only the DHT
+   * costs a network walk. A tier only hands over to the next when it produced no
+   * address this runtime could actually dial — a browser handed nothing but TCP
+   * addresses has to keep looking, which is what `isDialable` decides — and what the
+   * earlier tier found is carried forward rather than discarded, so the answer is
+   * always a superset of what any one tier knew.
+   *
+   * Never throws for a peer it cannot find: an empty `addresses` with `source: 'none'`
+   * is the answer, and each caller decides what that means for it.
+   */
+  private async resolvePeer(peerId: PeerId, signal?: AbortSignal): Promise<ResolvedPeer> {
     const node = await this.getOrCreateLibp2pNode()
+    const key = peerId.toString()
 
-    // Check existing connections — remoteAddr.toString() gives the full multiaddr
-    const connection = node
-      .getConnections()
-      .find((c) => c.remotePeer.toString() === peerId)
-    if (connection?.remoteAddr) {
-      const addr = connection.remoteAddr.toString()
-      return appendedPeerId(addr)
+    // An open connection is the one address we know works, because we are using it.
+    const live = node
+      .getConnections(peerId)
+      .filter((c) => c.status === 'open' && c.remoteAddr != null)
+      .map((c) => c.remoteAddr)
+    if (live.length > 0) {
+      countPeerResolution(RESOLVE_CONNECTION_HIT)
+      return {
+        addresses: orderPeerAddresses(live, key),
+        source: 'connection',
+        cached: false
+      }
     }
 
-    // Check peerStore (populated by peer:discovery, DHT, and connections)
-    try {
-      const peerData = await node.peerStore.get(peerIdFromString(peerId))
-      if (peerData?.addresses?.length > 0) {
-        const addr = peerData.addresses[0].multiaddr.toString()
-        return appendedPeerId(addr)
+    const cached = peerResolutionCache.get(key)
+    if (cached != null) {
+      if (cached.expiresAt > Date.now()) {
+        countPeerResolution(RESOLVE_CACHE_HIT)
+        return { addresses: cached.addresses, source: cached.source, cached: true }
       }
-    } catch {}
+      peerResolutionCache.delete(key)
+    }
 
-    // DHT lookup as last resort
-    const dht = node.services.dht as KadDHT
-    const lookup = this.dhtLookupSignal()
+    const missUntil = peerResolutionMisses.get(key)
+    if (missUntil != null) {
+      if (missUntil > Date.now()) {
+        countPeerResolution(RESOLVE_NEGATIVE_CACHE_HIT)
+        return { addresses: [], source: 'none', cached: true }
+      }
+      // Expired entries are dropped when read and never renewed by a read, so a peer
+      // that was briefly down is looked up again on the first call after the lifetime
+      // rather than staying suppressed for as long as somebody keeps asking for it.
+      peerResolutionMisses.delete(key)
+    }
+
+    const found: Multiaddr[] = []
+    let source: PeerAddressSource = 'none'
+
     try {
-      for await (const event of dht.findPeer(peerIdFromString(peerId), {
-        signal: lookup.signal
-      })) {
-        if (event.type === EventTypes.FINAL_PEER && event.peer.multiaddrs.length > 0) {
-          const addr = event.peer.multiaddrs[0].toString()
-          return appendedPeerId(addr)
+      const peerData = await node.peerStore.get(peerId)
+      for (const addr of peerData?.addresses ?? []) found.push(addr.multiaddr)
+      if (found.length > 0) source = 'peer-store'
+    } catch {
+      LoggerInstance.debug(`[P2P] ${key}: not in peerStore`)
+    }
+
+    if (!found.some((ma) => this.isDialable(ma))) {
+      const lookup = this.dhtLookupSignal(signal)
+      try {
+        // `useCache` lets the walk be answered from what libp2p already knows about
+        // this peer instead of going to the network — see the note on the resolution
+        // lifetime above for why that is worth having now and was not before.
+        const peerInfo = await node.peerRouting.findPeer(peerId, {
+          signal: lookup.signal,
+          useCache: true
+        })
+        if (peerInfo?.multiaddrs?.length > 0) {
+          for (const ma of peerInfo.multiaddrs) found.push(ma)
+          source = 'dht'
         }
+      } catch (err: any) {
+        LoggerInstance.debug(`[P2P] ${key}: DHT findPeer failed: ${err?.message}`)
+      } finally {
+        // Drops this composite's listeners on the caller's signal. Without it a
+        // caller that holds one AbortController for a whole session accumulates one
+        // uncollectable composite per DHT fallback.
+        lookup.cleanup()
       }
-    } finally {
-      lookup.cleanup()
     }
 
-    throw new Error(`No multiaddrs found for peer id ${peerId}`)
+    if (found.length === 0) {
+      countPeerResolution(RESOLVE_MISS)
+      peerResolutionMisses.set(key, Date.now() + PEER_RESOLUTION_NEGATIVE_TTL_MS)
+      return { addresses: [], source: 'none', cached: false }
+    }
+
+    const addresses = orderPeerAddresses(found, key)
+    countPeerResolution(source === 'dht' ? RESOLVE_DHT_HIT : RESOLVE_PEERSTORE_HIT)
+    peerResolutionCache.set(key, {
+      addresses,
+      source,
+      expiresAt: Date.now() + PEER_RESOLUTION_TTL_MS
+    })
+    return { addresses, source, cached: false }
+  }
+
+  /**
+   * Forgets what we know about how to reach `peerId`, so the next call resolves from
+   * the tiers again.
+   *
+   * This is the part of the cache that carries its weight. Serving an address that no
+   * longer reaches the peer is worse than not caching at all if there is no way to
+   * correct it, so every failure that proves an address wrong — a dial that did not
+   * connect, a connection that turned out to be a different peer — calls this. The
+   * negative entry goes too: an invalidation is a reason to look again, never a reason
+   * to stop looking.
+   */
+  public invalidatePeerResolution(peerId: string): void {
+    const had = peerResolutionCache.delete(peerId)
+    const hadMiss = peerResolutionMisses.delete(peerId)
+    if (had || hadMiss) countPeerResolution(RESOLVE_INVALIDATED)
+  }
+
+  /**
+   * Resolution counters: one lane per tier, plus cache hits, misses and
+   * invalidations. A copy, so a reader cannot mutate them.
+   *
+   * These are what makes the peer store's longer address lifetime observable. Its
+   * purpose was to move resolutions out of the `dht` lane and into `peer-store`, and
+   * to leave `miss` where a DHT provider record names a peer whose addresses have not
+   * been thrown away yet; a peer store holding addresses for too long would instead
+   * show up as peer-store hits followed by invalidations.
+   */
+  public getPeerResolutionStats(): Record<string, number> {
+    return { ...peerResolutionCounters }
+  }
+
+  /** Resets the resolution counters. A test seam; a running client never calls it. */
+  public resetPeerResolutionStats(): void {
+    for (const lane of Object.keys(peerResolutionCounters)) {
+      peerResolutionCounters[lane] = 0
+    }
+  }
+
+  /**
+   * The address at which `peerId` is best reached, as a string with the peer id
+   * appended.
+   *
+   * Resolution is the shared one, so the list this picks from is deduplicated and
+   * ordered — a direct public address before a private one, and both before anything
+   * relayed — where it used to be whatever sat first in whichever tier answered.
+   */
+  public async getMultiaddrFromPeerId(peerId: string): Promise<string> {
+    // One message for every way this can fail to produce an address, including an
+    // unparseable peer id: the previous implementation reached the same wording by
+    // falling through its tiers, and a caller matching on it should not have to learn
+    // a second one.
+    const unresolved = () =>
+      new P2pError('resolve_failed', `No multiaddrs found for peer id ${peerId}`, {
+        peerId
+      })
+    let parsed: PeerId
+    try {
+      parsed = peerIdFromString(peerId)
+    } catch {
+      throw unresolved()
+    }
+    const resolved = await this.resolvePeer(parsed)
+    const best = resolved.addresses[0]
+    if (best == null) throw unresolved()
+    LoggerInstance.debug(
+      `[P2P] ${peerId}: resolved via ${resolved.source}` +
+        `${resolved.cached ? ' (cached)' : ''}, ${resolved.addresses.length} addr(s)`
+    )
+    return withPeerId(best.toString(), peerId)
   }
 
   /** Returns the underlying libp2p node instance, or null if P2P is not initialized. */
@@ -900,6 +1224,10 @@ export class P2pProvider {
     if (node) nodes.add(node)
     if (pendingNode) nodes.add(pendingNode)
 
+    // The addresses were learned through the peer store and routing table of a node
+    // that is going away, so nothing is left to vouch for them.
+    clearPeerResolutionCache()
+
     for (const target of nodes) {
       try {
         // No hand-rolled connection-close loop here. libp2p's own
@@ -921,15 +1249,143 @@ export class P2pProvider {
   }
 
   /** Returns all peers known to the peerStore (discovered via bootstrap, DHT, or connections). */
+  /**
+   * Every peer this client knows about, with what is currently true of the connection to
+   * it.
+   *
+   * The peer store answers the first half — who is known and at what addresses — and says
+   * nothing about the second, which is the half that decides whether a call to that peer
+   * will work. A peer can be in the store with three addresses and be unreachable; it can
+   * be connected over a circuit relay that will drop the connection after a byte budget;
+   * it can be connected only because *it* dialled *us*. None of that is visible from an
+   * address list.
+   *
+   * The connection fields are added to each entry, never replacing anything: `peerId` and
+   * `multiaddrs` are unchanged for every existing consumer.
+   */
   public async getDiscoveredNodes(): Promise<
-    Array<{ peerId: string; multiaddrs: string[] }>
+    Array<{
+      peerId: string
+      multiaddrs: string[]
+      /** Open connections to this peer right now. `0` means known but not connected. */
+      connections: number
+      /** `inbound` when every connection was dialled by the peer, `outbound` when by us. */
+      direction?: 'inbound' | 'outbound' | 'mixed'
+      /** Transports in use, derived from the connected addresses. */
+      transports: string[]
+      /**
+       * True when *every* open connection is under a circuit-relay budget. Such a peer
+       * looks connected and can carry very little before the relay cuts it off.
+       */
+      limited: boolean
+    }>
   > {
     if (!this.libp2pNode) return []
     const allPeers = await this.libp2pNode.peerStore.all()
-    return allPeers.map((peer) => ({
-      peerId: peer.id.toString(),
-      multiaddrs: peer.addresses.map((a) => a.multiaddr.toString())
-    }))
+    return allPeers.map((peer) => {
+      const connections = this.libp2pNode?.getConnections(peer.id) ?? []
+      const directions = new Set(connections.map((connection) => connection.direction))
+      return {
+        peerId: peer.id.toString(),
+        multiaddrs: peer.addresses.map((a) => a.multiaddr.toString()),
+        connections: connections.length,
+        direction:
+          directions.size === 0
+            ? undefined
+            : directions.size > 1
+              ? 'mixed'
+              : (directions.values().next().value as 'inbound' | 'outbound'),
+        transports: Array.from(
+          new Set(
+            connections.map((connection) =>
+              connectionTransport(connection.remoteAddr.toString())
+            )
+          )
+        ),
+        limited:
+          connections.length > 0 &&
+          connections.every((connection) => connection.limits != null)
+      }
+    })
+  }
+
+  /**
+   * Node-wide facts that decide whether P2P can do anything at all, as opposed to whether
+   * it is switched on.
+   *
+   * Separate from {@link getDiscoveredNodes} rather than folded into it because it answers
+   * a different question and returns one object rather than a list — and because widening
+   * that method's return type would be a breaking change for consumers that destructure
+   * its array elements.
+   *
+   * Every field is optional and absent rather than guessed when libp2p does not expose it:
+   * the routing table and the peer store lifetimes have no public accessor, so they are
+   * read defensively and simply not reported if the shape moves.
+   */
+  public getP2pDiagnostics(): {
+    running: boolean
+    peerId?: string
+    connections: number
+    /**
+     * Peers in the DHT routing table. This is the number that decides whether a lookup can
+     * start: a query against an empty table finds nothing regardless of how many
+     * connections are open, because a connection to a peer that does not speak the DHT
+     * protocol is not somewhere a walk can begin.
+     */
+    routingTablePeers?: number
+    /** `client` or `server`. A library consumer is pinned to `client`. */
+    dhtMode?: string
+    /**
+     * Peer store lifetimes **as the running node applies them**. Read off the node rather
+     * than from configuration, because they are fixed when the node is built: changing the
+     * configuration afterwards does nothing until the node is rebuilt, and nothing else
+     * would reveal that.
+     */
+    peerStore?: { maxAddressAge?: number; maxPeerAge?: number }
+    /** The resolution lanes, the same object {@link getPeerResolutionStats} returns. */
+    resolution: Record<string, number>
+  } {
+    const node = this.libp2pNode
+    if (node == null) {
+      return { running: false, connections: 0, resolution: this.getPeerResolutionStats() }
+    }
+
+    let routingTablePeers: number | undefined
+    let dhtMode: string | undefined
+    try {
+      const dht = (node.services as Record<string, any> | undefined)?.dht as
+        { routingTable?: { size?: number }; getMode?: () => string } | undefined
+      const size = dht?.routingTable?.size
+      routingTablePeers = typeof size === 'number' ? size : undefined
+      dhtMode = typeof dht?.getMode === 'function' ? dht.getMode() : undefined
+    } catch {
+      // an unreachable DHT service is reported as "not known", not as zero
+    }
+
+    let peerStore: { maxAddressAge?: number; maxPeerAge?: number } | undefined
+    try {
+      const { store } = node.peerStore as unknown as {
+        store?: { maxAddressAge?: number; maxPeerAge?: number }
+      }
+      if (store != null) {
+        peerStore = {}
+        if (typeof store.maxAddressAge === 'number')
+          peerStore.maxAddressAge = store.maxAddressAge
+        if (typeof store.maxPeerAge === 'number') peerStore.maxPeerAge = store.maxPeerAge
+      }
+    } catch {
+      // leave it unreported
+    }
+
+    return {
+      running: true,
+      peerId: node.peerId.toString(),
+      connections: node.getConnections().length,
+      routingTablePeers,
+      dhtMode,
+      peerStore,
+      resolution: this.getPeerResolutionStats()
+    }
   }
 
   private bufToHex(val: any): string {
@@ -1020,6 +1476,56 @@ export class P2pProvider {
       multiaddr
     )
 
+    // Three of the option bags below are **merged** with a user override rather than
+    // replaced by it, and the rest of the spread keeps replacing as documented.
+    //
+    // The reason is that these three are plain bags of independent values, so overriding
+    // one field and losing the others is never what a caller meant — and for `peerStore`
+    // it is actively harmful. Passing `libp2p: { peerStore: { maxAddressAge: … } }` alone
+    // used to drop `maxPeerAge` back to the library's 6 h, which is *shorter* than the
+    // address lifetime being set, so the peer entry is evicted while its own addresses
+    // are still inside their lifetime — precisely the inversion the constant above warns
+    // against, produced by trying to configure it.
+    //
+    // Everything else in the spread — `transports`, `services`, `addresses`,
+    // `connectionGater` — is a whole subsystem the caller is replacing on purpose, so
+    // merging those would be wrong.
+    const userLibp2p = (this.p2pConfig.libp2p ?? {}) as Record<string, any>
+    const merge = (defaults: Record<string, any>, key: string): Record<string, any> => {
+      const override = userLibp2p[key]
+      const mergeable =
+        override != null && typeof override === 'object' && !Array.isArray(override)
+      return mergeable ? { ...defaults, ...override } : (override ?? defaults)
+    }
+
+    const peerStoreOptions = merge(
+      { maxAddressAge: PEER_STORE_MAX_AGE_MS, maxPeerAge: PEER_STORE_MAX_AGE_MS },
+      'peerStore'
+    )
+    // The one invariant worth saying out loud rather than silently correcting: a peer
+    // entry that expires before its addresses do takes them with it. The caller's values
+    // are used as given — this is their node — but they are told.
+    if (
+      typeof peerStoreOptions.maxPeerAge === 'number' &&
+      typeof peerStoreOptions.maxAddressAge === 'number' &&
+      peerStoreOptions.maxPeerAge < peerStoreOptions.maxAddressAge
+    ) {
+      LoggerInstance.warn(
+        `[P2P] peerStore.maxPeerAge (${peerStoreOptions.maxPeerAge}ms) is shorter than ` +
+          `peerStore.maxAddressAge (${peerStoreOptions.maxAddressAge}ms): peer entries ` +
+          `will be evicted while their addresses are still within their own lifetime.`
+      )
+    }
+
+    const connectionManagerOptions = merge(
+      { maxConnections: this.p2pConfig.maxConnections ?? CLIENT_MAX_CONNECTIONS },
+      'connectionManager'
+    )
+    const connectionMonitorOptions = merge(
+      { abortConnectionOnPingFailure: false },
+      'connectionMonitor'
+    )
+
     const node = await createLibp2p({
       addresses: { listen: [] },
       transports: [
@@ -1061,17 +1567,15 @@ export class P2pProvider {
         })
       },
       connectionGater: { denyDialMultiaddr: (ma) => this.denyDialMultiaddr(ma) },
-      connectionManager: {
-        maxConnections: this.p2pConfig.maxConnections ?? CLIENT_MAX_CONNECTIONS
-      },
-      connectionMonitor: { abortConnectionOnPingFailure: false },
-      peerStore: {
-        maxAddressAge: PEER_STORE_MAX_AGE_MS,
-        maxPeerAge: PEER_STORE_MAX_AGE_MS
-      },
       // User-supplied config overrides all defaults above.
       // Cast needed: services generics can't be inferred through a Partial<Libp2pOptions> spread.
-      ...(this.p2pConfig.libp2p as any)
+      ...(userLibp2p as any),
+      // After the spread on purpose: each of these already has the caller's own fields
+      // merged into it, so placing them last is what makes the merge stick rather than
+      // being overwritten by the whole-object override the spread would otherwise apply.
+      peerStore: peerStoreOptions,
+      connectionManager: connectionManagerOptions,
+      connectionMonitor: connectionMonitorOptions
     })
 
     await node.start()
@@ -1132,7 +1636,14 @@ export class P2pProvider {
     let failure: string | null = null
     try {
       for await (const result of node.contentRouting.findProviders(cid, {
-        useCache: false,
+        // Let the lookup be answered from what libp2p already holds rather than
+        // insisting on a network walk every time. Worth having only now that a
+        // provider record's addresses outlive the record's own hourly re-publication
+        // in the peer store. Note what it does not do with the current router stack:
+        // kad-dht consults its local provider store either way and does not read this
+        // option, so the saving here is the app-level resolution cache the addresses
+        // then flow into, not this flag.
+        useCache: true,
         useNetwork: true,
         signal
       })) {
@@ -1259,6 +1770,60 @@ export class P2pProvider {
     return this.p2pConfig.streamIdleTimeout ?? STREAM_IDLE_TIMEOUT_MS
   }
 
+  private maxBufferedCommandBytes(): number {
+    return this.p2pConfig.maxBufferedCommandBytes ?? MAX_BUFFERED_COMMAND_BYTES
+  }
+
+  private maxBufferedDownloadBytes(): number {
+    return this.p2pConfig.maxBufferedDownloadBytes ?? MAX_BUFFERED_DOWNLOAD_BYTES
+  }
+
+  /**
+   * Retries one command may make in total, across every kind of failure.
+   *
+   * A single budget, and that is the point. There used to be two retry paths that each
+   * counted up to this number independently, and because one of them recursed from
+   * inside the other's `try`, a failing command could branch on both at every depth:
+   * with the default of five the worst case was 63 attempts, each preceded by a
+   * one-second sleep, rather than the six the value plainly reads as.
+   *
+   * Clamped like the concurrency limit, and for the same reason: a value that is not a
+   * usable finite number falls back to the default rather than producing a loop bound
+   * nobody intended.
+   */
+  private maxRetryAttempts(): number {
+    const configured = this.p2pConfig.maxRetries
+    if (typeof configured !== 'number' || !Number.isFinite(configured)) {
+      return DEFAULT_MAX_RETRY_ATTEMPTS
+    }
+    return Math.max(0, Math.floor(configured))
+  }
+
+  /**
+   * How long to wait before retry `attempt` (1 for the first retry): the base delay
+   * doubled per attempt and capped, then jittered into the upper half of that window.
+   *
+   * Jitter is the load-bearing half. Every client that saw the same event — a node
+   * restarting, a relay dropping, a network blip across a fleet — otherwise computes
+   * the same delay from the same constant and comes back in lockstep, which is how a
+   * recovering node gets knocked over again by the retries of the clients that noticed
+   * it go down. Spreading the return turns one synchronised wave into a ramp.
+   *
+   * Only the upper half of the window is randomised, rather than all of it, because a
+   * retry also needs libp2p to finish tearing down the connection that just failed —
+   * the reason the untyped path slept a flat second before retrying. A draw near zero
+   * would put the next dial back inside that window.
+   */
+  private retryBackoffMs(attempt: number): number {
+    const configured = this.p2pConfig.retryDelay
+    const base =
+      typeof configured === 'number' && Number.isFinite(configured) && configured >= 0
+        ? configured
+        : DEFAULT_RETRY_DELAY_MS
+    const window = Math.min(base * 2 ** (attempt - 1), RETRY_BACKOFF_CAP_MS)
+    return Math.round(window / 2 + Math.random() * (window / 2))
+  }
+
   /* Dials a new connection */
   private async getConnection(
     nodeUri: OceanNode,
@@ -1310,43 +1875,17 @@ export class P2pProvider {
         return existing[0]
       }
     }
-    // if there are no dialable ma, search peerstore
+    // Nothing dialable was supplied, so go and find some. The peer store and the DHT
+    // walk that used to be written out here inline live in `resolvePeer` now, together
+    // with the ordering, the dedup and the cache; the connection tier it starts with
+    // is a no-op by this point, because the check above already returned on a hit.
     if (!hasDialable() && peerId) {
-      try {
-        const peerData = await node.peerStore.get(peerId)
-        if (peerData?.addresses) {
-          for (const addr of peerData.addresses) {
-            addrs.push(addr.multiaddr)
-          }
-          LoggerInstance.debug(
-            `[P2P] ${peerId.toString()}: ${peerData.addresses.length} peerStore addrs`
-          )
-        }
-      } catch {
-        LoggerInstance.debug(`[P2P] ${peerId.toString()}: not in peerStore`)
-      }
-    }
-    // if there are no dialable ma, search dht
-    if (!hasDialable() && peerId) {
-      const lookup = this.dhtLookupSignal(signal)
-      try {
-        const peerInfo = await node.peerRouting.findPeer(peerId, {
-          signal: lookup.signal
-        })
-        for (const ma of peerInfo.multiaddrs) addrs.push(ma)
-        LoggerInstance.debug(
-          `[P2P] ${peerId.toString()}: DHT returned ${peerInfo.multiaddrs.length} addrs`
-        )
-      } catch (err: any) {
-        LoggerInstance.debug(
-          `[P2P] ${peerId.toString()}: DHT findPeer failed: ${err.message}`
-        )
-      } finally {
-        // Drops this composite's listeners on the caller's signal. Without it a
-        // caller that holds one AbortController for a whole session accumulates one
-        // uncollectable composite per DHT fallback.
-        lookup.cleanup()
-      }
+      const resolved = await this.resolvePeer(peerId, signal)
+      for (const ma of resolved.addresses) addrs.push(ma)
+      LoggerInstance.debug(
+        `[P2P] ${peerId.toString()}: ${resolved.addresses.length} addr(s) via ` +
+          `${resolved.source}${resolved.cached ? ' (cached)' : ''}`
+      )
     }
     let dialable = addrs.filter((ma) => this.isDialable(ma))
     const beforePFilter = dialable.length
@@ -1368,13 +1907,17 @@ export class P2pProvider {
       // addresses a browser is not allowed to dial" — the second is by far the
       // more common and the generic message sends people looking in the wrong place.
       if (!isNodeRuntime() && addrs.length > 0) {
-        throw new Error(
+        throw new P2pError(
+          'resolve_failed',
           `No TLS/WSS address advertised for this peer${
             peerId ? ` (${peerId.toString()})` : ''
-          } — browsers require WSS. Advertised: ${addrs.map(String).join(', ')}`
+          } — browsers require WSS. Advertised: ${addrs.map(String).join(', ')}`,
+          { peerId: peerId?.toString() }
         )
       }
-      throw new Error('No valid multiaddresses, cannot connect')
+      throw new P2pError('resolve_failed', 'No valid multiaddresses, cannot connect', {
+        peerId: peerId?.toString()
+      })
     }
     // normalize all mas if we have peerId
     if (peerId) {
@@ -1383,12 +1926,9 @@ export class P2pProvider {
         return str.includes('/p2p/') ? ma : multiaddr(`${str}/p2p/${peerId.toString()}`)
       })
     }
+    let conn: Connection
     try {
-      const conn = await node.dial(dialable, { signal })
-      LoggerInstance.debug(
-        `[P2P] Dial SUCCESS via ${conn.remoteAddr} (limited=${conn.limits != null})`
-      )
-      return conn
+      conn = await node.dial(dialable, { signal })
     } catch (err: any) {
       if (!includeP2PCircuit && afterPFilter < beforePFilter) {
         LoggerInstance.debug(
@@ -1400,15 +1940,43 @@ export class P2pProvider {
           true
         )
       }
-      throw new Error(
+      // A dial that had addresses and still did not connect is the one thing that
+      // proves a cached address set wrong, so it is also the thing that has to be
+      // able to correct it. Without this the cache could serve the same dead address
+      // for its whole lifetime and every attempt would fail the same way.
+      if (peerId) this.invalidatePeerResolution(peerId.toString())
+      throw new P2pError(
+        'dial_failed',
         `Cannot dial peer ${peerId?.toString()}. ` +
           (addrs.length > 0
             ? `Found addrs: ${addrs.map(String).join(', ')}. `
             : 'No addresses found. ') +
           `Active connections: ${node.getConnections().length}. ` +
-          err.message
+          err.message,
+        { cause: err, peerId: peerId?.toString() }
       )
     }
+    LoggerInstance.debug(
+      `[P2P] Dial SUCCESS via ${conn.remoteAddr} (limited=${conn.limits != null})`
+    )
+    // Checked outside the dial's own `catch`, which would otherwise turn a mismatch
+    // into a relay fallback and then into a dial failure.
+    //
+    // Reachable whenever an address already carried a `/p2p/` component, because those
+    // are left as they are: a caller passing `{ nodeId, multiaddress }` whose addresses
+    // name a different peer used to be connected to that peer without a word, and the
+    // command went to the wrong node. It is also the failure a stale cached address
+    // produces once something else has taken over the address.
+    if (peerId && !conn.remotePeer.equals(peerId)) {
+      this.invalidatePeerResolution(peerId.toString())
+      throw new P2pError(
+        'peer_mismatch',
+        `Dialled peer ${peerId.toString()} but the connection at ${conn.remoteAddr} ` +
+          `identified as ${conn.remotePeer.toString()}`,
+        { peerId: peerId.toString() }
+      )
+    }
+    return conn
   }
 
   private async getNodePublicKey(nodeUri: OceanNode): Promise<string> {
@@ -1482,7 +2050,7 @@ export class P2pProvider {
     signal?: AbortSignal,
     requestBody?: P2PRequestBodyStream
   ): Promise<{
-    lp: ReturnType<typeof lpStream>
+    lp: LpFramedStream
     firstBytes: Uint8Array
     frames: LpFrameReader
     connection: Connection
@@ -1494,14 +2062,33 @@ export class P2pProvider {
     const release = await p2pCommandGate.acquire()
     let connection: Connection | undefined
     try {
-      const opSignal =
-        signal ??
-        AbortSignal.timeout(this.p2pConfig.dialTimeout ?? DEFAULT_DIAL_TIMEOUT_MS)
-      connection = await this.getConnection(nodeUri, opSignal)
-      const stream = await connection.newStream(OCEAN_P2P_PROTOCOL, {
-        signal: opSignal,
-        runOnLimitedConnection: true
-      })
+      const dialTimeoutMs = this.p2pConfig.dialTimeout ?? DEFAULT_DIAL_TIMEOUT_MS
+      const opSignal = signal ?? AbortSignal.timeout(dialTimeoutMs)
+      // The dial budget is *composed* with the caller's signal, not replaced by it.
+      // `signal ?? timeout(dialTimeout)` gave a caller who supplied a signal no dial
+      // bound at all, so a peer that accepts a TCP connection and then never completes
+      // the upgrade held the call — and its concurrency slot — for as long as that
+      // signal lived, which for a session-scoped controller is effectively forever.
+      // The bound belongs on the dial and the stream open only: the writes below can
+      // legitimately carry a large request body and must keep running on the caller's
+      // own budget once the connection is up.
+      //
+      // With no caller signal this *is* `opSignal`, the same single timer as before, so
+      // the dial and the writes still share one budget and nothing changes for the
+      // callers that never passed one.
+      const dial = signal
+        ? timeoutSignal(signal, dialTimeoutMs)
+        : { signal: opSignal, cleanup: () => {} }
+      let stream: Stream
+      try {
+        connection = await this.getConnection(nodeUri, dial.signal)
+        stream = await connection.newStream(OCEAN_P2P_PROTOCOL, {
+          signal: dial.signal,
+          runOnLimitedConnection: true
+        })
+      } finally {
+        dial.cleanup()
+      }
       // Leak-guard for the slot — see the note above on what this gate bounds. 'close'
       // fires once the underlying stream is done in both directions, so an abandoned
       // response cannot hold a slot forever.
@@ -1554,14 +2141,82 @@ export class P2pProvider {
     }
   }
 
+  /**
+   * Sends one command, retrying under a single policy keyed on the *type* of failure.
+   *
+   * What this replaces was two policies that did not know about each other: one tested
+   * the reply body for `Cannot connect to peer`, the other tested a caught error's
+   * message for `closed` or `reset`, and each recursed with its own delay. Because the
+   * first recursed from inside the `try` the second guards, a command could take both
+   * branches at every depth, so the attempt count compounded instead of adding up.
+   * Here there is one loop, one counter and one decision, taken on
+   * {@link classifyP2pError} rather than on the wording of a message.
+   *
+   * Each attempt goes through `dialAndStream` afresh, which is what gives it its own
+   * dial deadline — a retry must not inherit the expired budget of the attempt that
+   * just failed. The caller's own signal is the exception, deliberately: it is their
+   * deadline for the whole operation, so once it has fired there is nothing left to
+   * retry inside and the loop stops.
+   */
   private async sendP2pCommand(
     nodeUri: OceanNode,
     command: string,
     body: Record<string, any>,
     signerOrAuthToken?: SignerOrAuthTokenOrSignature | null,
     signal?: AbortSignal,
-    retrialNumber: number = 0,
     requestBody?: P2PRequestBodyStream
+  ): Promise<any> {
+    const maxRetries = this.maxRetryAttempts()
+    let timeoutRetries = 0
+    for (let attempt = 0; ; attempt++) {
+      // A request body is an async iterable the caller hands over once. Nothing can
+      // rewind it, so a second attempt would send an empty or half-consumed body and
+      // report whatever the peer made of that. One attempt only.
+      const lastAttempt = attempt >= maxRetries || requestBody != null
+      try {
+        return await this.attemptP2pCommand(
+          nodeUri,
+          command,
+          body,
+          signerOrAuthToken,
+          signal,
+          requestBody,
+          lastAttempt
+        )
+      } catch (err: any) {
+        const type = classifyP2pError(err)
+        const spent =
+          lastAttempt ||
+          signal?.aborted === true ||
+          (type === 'timeout' && timeoutRetries >= MAX_TIMEOUT_RETRIES)
+        if (!isRetryableP2pError(type) || spent) {
+          // The peer reported the failure inside a well-formed reply, and with the
+          // budget gone the untyped code returned that reply to the caller rather than
+          // raising. Kept, so a consumer reading `.error` off the result still can.
+          if (err instanceof P2pError && err.peerResponse != null) {
+            return err.peerResponse.value
+          }
+          throw asP2pCommandError(err, type)
+        }
+        if (type === 'timeout') timeoutRetries++
+        LoggerInstance.debug(
+          `[P2P] ${command}: ${type} on attempt ${attempt + 1} of ` +
+            `${maxRetries + 1}, retrying...`
+        )
+        await sleep(this.retryBackoffMs(attempt + 1))
+      }
+    }
+  }
+
+  /** One attempt at a command. Retries are decided by `sendP2pCommand`. */
+  private async attemptP2pCommand(
+    nodeUri: OceanNode,
+    command: string,
+    body: Record<string, any>,
+    signerOrAuthToken?: SignerOrAuthTokenOrSignature | null,
+    signal?: AbortSignal,
+    requestBody?: P2PRequestBodyStream,
+    lastAttempt: boolean = true
   ): Promise<any> {
     // The concurrency slot is owned by `dialAndStream` now — see the comment there.
     // This method only decides *when* to hand it back: at the end of the buffered read
@@ -1668,8 +2323,17 @@ export class P2pProvider {
         return streamableChunks
       }
 
-      const chunks: Uint8Array[] = [firstBytes]
+      // Frames of the reply *body*. When the peer opened with a status envelope that
+      // envelope is `firstBytes`, it was parsed into `status` above, and it is not part
+      // of the body — a node that sends data with no envelope leaves `status` null, and
+      // then the first frame is body after all. Copied out of the frame reader for the
+      // same reason the download path copies: these are held across many subsequent
+      // reads, and a view over a buffer the reader owns is not ours to keep.
+      const chunks: Uint8Array[] = status === null ? [new Uint8Array(firstBytes)] : []
+      const commandLimit = this.maxBufferedCommandBytes()
+      let buffered = 0
       try {
+        buffered = accumulated(buffered, firstBytes, commandLimit, 'command reply')
         while (true) {
           // Reads are held when this loop starts (`dialAndStream` pauses them), so each pass
           // has to let the next frame through. This loop never suspends between reads, so it
@@ -1677,24 +2341,40 @@ export class P2pProvider {
           if (frames.pendingBytes <= LP_RESUME_BELOW_BYTES) {
             resumeReads(stream)
           }
-          chunks.push(await readFrame(frames, signal, idleTimeout))
+          const chunk = new Uint8Array(await readFrame(frames, signal, idleTimeout))
+          buffered = accumulated(buffered, chunk, commandLimit, 'command reply')
+          chunks.push(chunk)
         }
       } catch (e) {
         // A truncated response body — `GET_LOGS` is the big one — must not be parsed
-        // and returned as though the peer had finished sending it.
+        // and returned as though the peer had finished sending it. An over-limit body is
+        // in the same position: it is not a complete reply, so it must not be parsed as
+        // one, and the peer is told to stop rather than being left to keep sending.
         if (!frames.isCleanEnd(e)) {
           abortResponseStream(stream, e)
           throw e
         }
       }
 
+      // A reply body arrives in as many frames as the peer's response stream had chunks:
+      // ocean-node writes one frame per chunk, so anything past a stream chunk (16—64 KiB)
+      // is split — a large DDO, a `GET_LOGS` dump, a busy `computeStatus`. The frames have
+      // to be **joined** before parsing. The previous loop parsed each frame in turn and
+      // kept the last result, so a split reply came back as the raw bytes of its final
+      // fragment: measured against a two-frame `{"nonce":42,…}`, `getNonce` returned
+      // `null`. Every reply small enough to fit one frame — which is most of them — was
+      // unaffected, which is why this survived.
       let response: unknown
-      for (let i = 0; i < chunks.length; i++) {
-        const text = new TextDecoder().decode(chunks[i])
+      if (chunks.length === 0) {
+        // Nothing but the status envelope: it is the whole reply, exactly as before.
+        response = status
+      } else {
+        const bodyBytes = concatUint8Arrays(chunks)
         try {
-          response = JSON.parse(text)
+          response = JSON.parse(new TextDecoder().decode(bodyBytes))
         } catch {
-          response = chunks[i]
+          // Not JSON — hand back the bytes, now the whole body rather than its last frame.
+          response = bodyBytes
         }
       }
 
@@ -1706,51 +2386,26 @@ export class P2pProvider {
       }
 
       const errText = (typeof response === 'string' ? response : res?.error) ?? ''
-      if (
-        errText.includes('Cannot connect to peer') &&
-        retrialNumber < (this.p2pConfig.maxRetries ?? DEFAULT_MAX_RETRIES)
-      ) {
+      if (errText.includes('Cannot connect to peer') && !lastAttempt) {
+        // The peer answered, and what it says is that *it* could not reach the node
+        // this command was addressed to: a dial failure one hop further out, and the
+        // one thing another attempt can plausibly fix.
+        //
+        // This is the only place left where a remote failure is recognised from text,
+        // and it is unavoidable: the reply is a string on the wire, so there is no type
+        // to read. What matters is that the match happens once, here, and produces a
+        // type — nothing downstream re-reads the wording to decide anything.
+        //
+        // The slot goes back before the error leaves, so the next attempt queues behind
+        // other callers instead of holding two.
         releaseSlot?.()
-        await new Promise((resolve) =>
-          setTimeout(resolve, this.p2pConfig.retryDelay ?? DEFAULT_RETRY_DELAY_MS)
-        )
-        return this.sendP2pCommand(
-          nodeUri,
-          command,
-          body,
-          signerOrAuthToken,
-          signal,
-          retrialNumber + 1,
-          requestBody
-        )
+        releaseSlot = null
+        throw new P2pError('dial_failed', errText, {
+          peerResponse: { value: response }
+        })
       }
 
       return response
-    } catch (err: any) {
-      const msg: string = err?.message ?? ''
-      if (
-        (msg.includes('closed') || msg.includes('reset')) &&
-        retrialNumber < (this.p2pConfig.maxRetries ?? DEFAULT_MAX_RETRIES)
-      ) {
-        LoggerInstance.debug(
-          `[P2P] Stream reset/closed on attempt ${retrialNumber + 1}, retrying...`
-        )
-
-        // Connection already evicted by dialAndStream catch block.
-        // Brief delay ensures libp2p fully cleans up before retry.
-        releaseSlot?.()
-        await sleep(1000)
-        return this.sendP2pCommand(
-          nodeUri,
-          command,
-          body,
-          signerOrAuthToken,
-          signal,
-          retrialNumber + 1,
-          requestBody
-        )
-      }
-      throw new Error(`P2P command error: ${msg}`)
     } finally {
       // A streaming reply owns the slot from here on; everything else is done with it.
       if (!slotOwnedByStream) releaseSlot?.()
@@ -2064,7 +2719,12 @@ export class P2pProvider {
       // Collect binary file data. If the first frame wasn't a status JSON, it's data.
       const chunks: Uint8Array[] = status === null ? [new Uint8Array(firstBytes)] : []
       const idleTimeout = this.streamIdleTimeoutMs()
+      const downloadLimit = this.maxBufferedDownloadBytes()
+      let buffered = 0
       try {
+        for (const chunk of chunks) {
+          buffered = accumulated(buffered, chunk, downloadLimit, 'download')
+        }
         while (true) {
           // Reads are held when this loop starts (`dialAndStream` pauses them), so each pass
           // has to let the next frame through. This loop never suspends between reads, so it
@@ -2074,12 +2734,15 @@ export class P2pProvider {
           }
           // Every frame is read under the caller's signal as well as the idle timeout,
           // so a download in progress can be cancelled mid-transfer.
-          const chunk = await readFrame(frames, signal, idleTimeout)
-          chunks.push(new Uint8Array(chunk))
+          const chunk = new Uint8Array(await readFrame(frames, signal, idleTimeout))
+          buffered = accumulated(buffered, chunk, downloadLimit, 'download')
+          chunks.push(chunk)
         }
       } catch (e) {
         // A download that was cut short must fail, not return the bytes that did
-        // arrive as a complete file.
+        // arrive as a complete file. A download past the ceiling fails for the same
+        // reason: what is in hand is not the file that was asked for. The `finally`
+        // below resets the stream, so the peer stops sending the rest of it.
         if (!frames.isCleanEnd(e)) throw e
       }
       completed = true
@@ -2905,7 +3568,6 @@ export class P2pProvider {
       { ...authPayload, bucketId, fileName },
       signerOrAuthToken,
       signal,
-      0,
       content
     )
   }
