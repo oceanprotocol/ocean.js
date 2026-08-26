@@ -58,30 +58,38 @@ describe('P2P retry policy', () => {
     return state
   }
 
-  const DEADLINE = { signal: AbortSignal.timeout(20_000) }
+  /**
+   * A fresh read deadline for each peer-script read. It MUST be created per call and not
+   * shared at module scope, and that distinction is the whole bug this file taught:
+   * `AbortSignal.timeout` counts from the moment it is created, so one signal made when
+   * the file loaded is already spent by the time a test 20+ seconds into the run uses it.
+   * A peer whose `read` is handed an already-fired signal throws before it ever reaches
+   * the `peer.abort()` on the next line, so the reset the test is about is never sent and
+   * the client waits out its whole idle budget. It passed locally only because the suite
+   * reached these tests inside the 20 s window; on CI the suite is slower and it did not.
+   */
+  const deadline = (): { signal: AbortSignal } => ({
+    signal: AbortSignal.timeout(20_000)
+  })
 
   /**
    * Idle budget for the tests whose peer tears the stream down instead of answering.
    *
-   * It has to be set explicitly, and leaving it out is what made this file fragile. The
-   * config installed by each test *replaces* the whole object, so omitting this falls back
-   * to the 60 s default — which is exactly these tests' own mocha timeout, and there are up
-   * to three attempts each with their own 60 s first-frame budget. So any delay in the
-   * reset reaching the reader could only ever surface as "Timeout of 60000ms exceeded",
-   * never as the assertion that would say what actually went wrong. Observed in CI on a
-   * loaded runner; the failure carries no information by construction.
-   *
-   * Short enough that a reset which does not arrive fails fast and *as a timeout*, which
-   * is a diagnosis rather than a stopwatch.
+   * With the deadline bug fixed the reset now arrives in milliseconds and this is never
+   * reached — but it is set anyway, and deliberately not left to the 60 s default. That
+   * default is these tests' own mocha timeout, so were the reset ever to stop arriving the
+   * only symptom would again be "Timeout of 60000ms exceeded" rather than an assertion
+   * that says what broke. Set to a value far above any real in-memory delivery and far
+   * below the mocha timeout, so a genuine non-delivery fails fast and *as a timeout*.
    */
-  const NO_ANSWER_IDLE_MS = 2_000
+  const NO_ANSWER_IDLE_MS = 10_000
 
   /** Reads the command frame, answers with `reply`, then ends the stream cleanly. */
   function replyWith(reply: Record<string, unknown>): PeerScript {
     return async (peer) => {
       const lp = lpStream(peer)
-      await lp.read(DEADLINE)
-      await lp.write(new TextEncoder().encode(JSON.stringify(reply)), DEADLINE)
+      await lp.read(deadline())
+      await lp.write(new TextEncoder().encode(JSON.stringify(reply)), deadline())
       await peer.close()
     }
   }
@@ -89,7 +97,7 @@ describe('P2P retry policy', () => {
   /** Reads the command frame and tears the stream down without answering. */
   const resetStream: PeerScript = async (peer) => {
     const lp = lpStream(peer)
-    await lp.read(DEADLINE)
+    await lp.read(deadline())
     peer.abort(new Error('the stream has been reset'))
   }
 
@@ -168,7 +176,7 @@ describe('P2P retry policy', () => {
     const dials = scriptDials(async (peer) => {
       // Reads the command and then says nothing at all, which is the failure a hung
       // node produces and the one the per-frame idle budget exists to bound.
-      await lpStream(peer).read(DEADLINE)
+      await lpStream(peer).read(deadline())
       await new Promise((resolve) => setTimeout(resolve, 5_000))
     })
     const err = await failing(provider.getNodeStatus('test-peer'))
@@ -268,7 +276,7 @@ describe('P2P retry policy', () => {
     }
     const controller = new AbortController()
     const dials = scriptDials(async (peer) => {
-      await lpStream(peer).read(DEADLINE)
+      await lpStream(peer).read(deadline())
       controller.abort()
       peer.abort(new Error('the stream has been reset'))
     })
