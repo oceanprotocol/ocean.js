@@ -199,24 +199,22 @@ function computeResourceMatchesModel(
 }
 
 /**
- * True when at least one of a candidate's real compute environments has `value` or more of
- * `resource` available, and matches `model` when one was requested. This is the verification
- * that a bucket match alone can never substitute for.
+ * True when a single compute environment has `value` or more of `resource` available, and
+ * matches `model` when one was requested. This is the verification that a bucket match alone
+ * can never substitute for.
  */
-function computeEnvironmentsSatisfy(
-  environments: ComputeEnvironment[],
+function computeEnvironmentSatisfies(
+  env: ComputeEnvironment,
   free: boolean,
   resource: string,
   value: number,
   model: string | undefined
 ): boolean {
-  return environments.some((env) =>
-    computeResourcePool(env, free).some(
-      (res) =>
-        computeResourceMatchesId(res, resource) &&
-        res.max >= value &&
-        computeResourceMatchesModel(res, model)
-    )
+  return computeResourcePool(env, free).some(
+    (res) =>
+      computeResourceMatchesId(res, resource) &&
+      res.max >= value &&
+      computeResourceMatchesModel(res, model)
   )
 }
 
@@ -387,13 +385,13 @@ export class BaseProvider {
         continue
       }
 
-      const satisfiesAll = resources.every(({ resource, value }) =>
-        computeEnvironmentsSatisfy(
-          environments,
-          free,
-          resource,
-          value,
-          models?.[resource]
+      // A candidate matches only when a *single* environment satisfies every requested
+      // resource dimension — not when the dimensions are spread across several
+      // environments. So each environment is checked against the whole request, and the
+      // candidate is pushed as soon as one environment clears all of them.
+      const satisfiesAll = environments.some((env) =>
+        resources.every(({ resource, value }) =>
+          computeEnvironmentSatisfies(env, free, resource, value, models?.[resource])
         )
       )
       if (satisfiesAll) providers.push({ node: candidateNode, environments })

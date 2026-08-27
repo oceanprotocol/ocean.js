@@ -109,7 +109,13 @@ export function c2dBucketFor(resource: string, value: number): number {
   if (!Number.isInteger(value) || value < 1) {
     throw new Error(`c2dBucketFor: "value" must be a positive integer, got ${value}`)
   }
-  const ladder = C2D_BUCKET_OVERRIDES[resource]
+  // Read only own entries: a resource named after an inherited member such as
+  // "constructor" would otherwise resolve to an Object.prototype value (a function, not a
+  // ladder), which is truthy and then fails to iterate. Unknown resources fall through to
+  // the default doubling ladder below.
+  const ladder = Object.prototype.hasOwnProperty.call(C2D_BUCKET_OVERRIDES, resource)
+    ? C2D_BUCKET_OVERRIDES[resource]
+    : undefined
   if (ladder && ladder.length > 0) {
     let best: number | undefined
     for (const rung of ladder) {

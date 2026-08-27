@@ -247,6 +247,10 @@ describe('P2P buffered response limits', () => {
     expect(result.data.byteLength).to.equal(250)
 
     const commandProvider = new P2pProvider()
+    ;(commandProvider as any).p2pConfig = {
+      ...(commandProvider as any).p2pConfig,
+      maxBufferedCommandBytes: COMMAND_LIMIT
+    }
     const commandPeer = await createP2pTestPeer({ provider: commandProvider })
     ;(async () => {
       await commandPeer.commandReceived

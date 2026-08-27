@@ -2226,6 +2226,12 @@ export class P2pProvider {
     // recursive attempt queues behind other callers rather than jumping the line.
     let releaseSlot: (() => void) | null = null
     let slotOwnedByStream = false
+    // Set once the buffered read has run to a clean end (or handed the stream to a
+    // generator). Any earlier exit — an error status envelope, a truncated or over-limit
+    // body — must reset the stream so the peer stops producing, exactly as getDownloadUrl
+    // and the streaming generator's finally do.
+    let completed = false
+    let streamToAbort: Stream | null = null
     try {
       const payload = {
         command,
@@ -2238,6 +2244,7 @@ export class P2pProvider {
       const dialed = await this.dialAndStream(nodeUri, payload, signal, requestBody)
       releaseSlot = dialed.release
       const { firstBytes, frames, stream } = dialed
+      streamToAbort = stream
       const idleTimeout = this.streamIdleTimeoutMs()
 
       if (!firstBytes.length) {
@@ -2405,10 +2412,22 @@ export class P2pProvider {
         })
       }
 
+      completed = true
       return response
     } finally {
       // A streaming reply owns the slot from here on; everything else is done with it.
-      if (!slotOwnedByStream) releaseSlot?.()
+      if (!slotOwnedByStream) {
+        // Any non-clean exit of the buffered path (error status envelope, truncated or
+        // over-limit body, a dial-failed retry) must reset the stream before the slot
+        // goes back, so the peer stops streaming into a read buffer nobody will drain.
+        if (!completed && streamToAbort) {
+          abortResponseStream(
+            streamToAbort,
+            new Error('P2P command response is no longer being read')
+          )
+        }
+        releaseSlot?.()
+      }
     }
   }
 
