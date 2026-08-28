@@ -61,7 +61,6 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
           bash -x start_ocean.sh 2>&1 > start_ocean.log &
-
       - name: Install deps & build
         run: npm ci && npm run build:metadata
       - name: Wait for node to be ready
@@ -151,7 +150,6 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
           bash -x start_ocean.sh 2>&1 > start-node.log &
-
       - name: Install deps & build
         run: npm ci && npm run build:metadata
 
@@ -222,7 +220,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: ["22", "20"]
+        node: ["22", "24"]
 
     steps:
       - uses: actions/checkout@v3

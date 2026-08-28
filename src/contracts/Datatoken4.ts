@@ -1,4 +1,3 @@
-/* eslint-disable lines-between-class-members */
 import { Datatoken } from './Datatoken.js'
 import { Signer, TransactionRequest } from 'ethers'
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'

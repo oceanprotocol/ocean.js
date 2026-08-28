@@ -184,7 +184,7 @@ export class NftFactory extends SmartContractWithAddress {
    * @param {String} datatoken Datatoken address to check
    * @return {Promise<Boolean>} return true if deployed from this factory
    */
-  public async checkDatatoken(datatoken: string): Promise<Boolean> {
+  public async checkDatatoken(datatoken: string): Promise<boolean> {
     const isDeployed = await this.contract.erc20List(datatoken)
     return isDeployed
   }
@@ -194,7 +194,7 @@ export class NftFactory extends SmartContractWithAddress {
    * @param {String} nftAddress nftAddress address to check
    * @return {Promise<String>} return address(0) if it's not, or the nftAddress if true
    */
-  public async checkNFT(nftAddress: string): Promise<String> {
+  public async checkNFT(nftAddress: string): Promise<string> {
     const confirmAddress = await this.contract.erc721List(nftAddress)
     return confirmAddress
   }
@@ -307,9 +307,8 @@ export class NftFactory extends SmartContractWithAddress {
     if (templateIndex > (await this.getCurrentNFTTemplateCount()))
       throw new Error(`Template index doesnt exist`)
     if (templateIndex === 0) throw new Error(`Template index cannot be ZERO`)
-    const estGas = await this.contract.reactivate721TokenTemplate.estimateGas(
-      templateIndex
-    )
+    const estGas =
+      await this.contract.reactivate721TokenTemplate.estimateGas(templateIndex)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),

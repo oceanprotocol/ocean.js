@@ -204,7 +204,7 @@ Next, we define the metadata that will describe our data asset. This is what we 
     publisherAccount = (await provider.getSigner(0)) as Signer
     consumerAccount = (await provider.getSigner(1)) as Signer
     stakerAccount = (await provider.getSigner(2)) as Signer
-    const config = new ConfigHelper().getConfig(
+    config = new ConfigHelper().getConfig(
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
     Object.assign(config, getNodeEndpointConfig())

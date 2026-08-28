@@ -15,7 +15,7 @@ import { ProviderInstance } from './Provider.js'
 export interface SearchQuery {
   from?: number
   size?: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   query: any
   sort?: { [jsonPath: string]: string }
   aggs?: any
@@ -239,7 +239,7 @@ export class Aquarius {
     signal?: AbortSignal,
     authorization?: string
   ): Promise<any> {
-    const path = this.aquariusURL + '/api/aquarius/assets/query'
+    const path = this.aquariusURL + '/api/aquarius/assets/metadata/query'
 
     try {
       const response = await fetch(path, {
