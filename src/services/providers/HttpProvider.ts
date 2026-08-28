@@ -521,6 +521,11 @@ export class HttpProvider {
    * @param {UserCustomParameters} userCustomParameters - The user custom parameters.
    * @returns {Promise<any>} The download URL.
    */
+  /**
+   * @param {AbortSignal} signal Cancels the nonce round-trip. No download is performed
+   *   here — the return value is a URL the caller fetches itself — but building that URL
+   *   from a `Signer` requires a nonce from the node, and that request was uncancellable.
+   */
   public async getDownloadUrl(
     did: string,
     serviceId: string,
@@ -529,14 +534,15 @@ export class HttpProvider {
     nodeUri: string,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     policyServer?: any,
-    userCustomParameters?: UserCustomParameters
+    userCustomParameters?: UserCustomParameters,
+    signal?: AbortSignal
   ): Promise<any> {
     const downloadUrl = this.baseUrl(nodeUri) + '/api/services/download'
     const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.DOWNLOAD,
-      undefined
+      signal
     )
     let consumeUrl = downloadUrl
     consumeUrl += `?fileIndex=${fileIndex}`
@@ -990,13 +996,18 @@ export class HttpProvider {
    * @param {SignerOrAuthToken} signerOrAuthToken signer or auth token
    * @param {string} jobId The ID of a compute job.
    * @param {number} index Result index
+   * @param {AbortSignal} signal Cancels the nonce round-trip. This method is often
+   *   described as pure string assembly, and that is only true when a token or a
+   *   pre-made signature is supplied: given a `Signer` it fetches a nonce from the node
+   *   first, and that request had no cancellation at all.
    * @return {Promise<string>}
    */
   public async getComputeResultUrl(
     nodeUri: string,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
-    index: number
+    index: number,
+    signal?: AbortSignal
   ): Promise<string> {
     const isAuthToken = typeof signerOrAuthToken === 'string'
     const computeResultUrl = this.baseUrl(nodeUri) + '/api/services/computeResult'
@@ -1005,7 +1016,7 @@ export class HttpProvider {
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.COMPUTE_GET_RESULT,
-      undefined
+      signal
     )
     let resultUrl = computeResultUrl
     resultUrl += `?consumerAddress=${consumerAddress}`
@@ -1018,22 +1029,31 @@ export class HttpProvider {
     return resultUrl
   }
 
+  /**
+   * @param {AbortSignal} signal Cancels the whole operation: the nonce round-trip, the
+   *   request, and the response body. Aborting mid-transfer makes the returned iterable
+   *   throw rather than end quietly, so a partially read result is never mistaken for a
+   *   complete one.
+   */
   public async getComputeResult(
     nodeUri: string,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
     index: number,
-    offset: number = 0
+    offset: number = 0,
+    signal?: AbortSignal
   ): Promise<ComputeResultStream> {
     const resultUrl = await this.getComputeResultUrl(
       nodeUri,
       signerOrAuthToken,
       jobId,
-      index
+      index,
+      signal
     )
     if (!resultUrl) throw new Error('Could not retrieve compute result URL')
     const response = await fetch(resultUrl, {
-      headers: offset > 0 ? { Range: `bytes=${offset}-` } : {}
+      headers: offset > 0 ? { Range: `bytes=${offset}-` } : {},
+      signal
     })
     if (!response.ok)
       throw new Error(`Failed to fetch compute result: ${response.status}`)

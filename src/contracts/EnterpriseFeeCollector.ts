@@ -1,8 +1,8 @@
 import { Signer } from 'ethers'
 import ContractABI from '@oceanprotocol/contracts/artifacts/contracts/communityFee/EnterpriseFeeCollector.sol/EnterpriseFeeCollector.json'
-import { AbiItem } from '../@types'
-import { Config } from '../config'
-import { SmartContractWithAddress } from './SmartContractWithAddress'
+import { AbiItem } from '../@types/index.js'
+import { Config } from '../config/index.js'
+import { SmartContractWithAddress } from './SmartContractWithAddress.js'
 
 export class EnterpriseFeeCollectorContract extends SmartContractWithAddress {
   getDefaultAbi() {

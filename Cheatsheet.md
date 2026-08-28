@@ -313,14 +313,34 @@ const jobStatus = await ProviderInstance.computeStatus(
 
 ### Get download compute results URL
 
+`getComputeResultUrl` is an HTTP-transport capability. Over a P2P node there is no URL for the
+result — the protocol answers with the result bytes — so call `getComputeResult` (a streaming
+generator) instead. Use `isP2pUri(providerUrl)` to branch.
+
 ```javascript
 
-const downloadURL = await ProviderInstance.getComputeResultUrl(
+if (isP2pUri(providerUrl)) {
+    // P2P node: no URL, the protocol streams the result bytes back.
+    const stream = await ProviderInstance.getComputeResult(
         providerUrl,
         consumerAccount,
         computeJobId,
         0
     )
+    const chunks = []
+    for await (const chunk of stream) {
+        chunks.push(chunk)
+    }
+    const result = Buffer.concat(chunks)
+} else {
+    // HTTP node: fetch a downloadable URL for the result.
+    const downloadURL = await ProviderInstance.getComputeResultUrl(
+        providerUrl,
+        consumerAccount,
+        computeJobId,
+        0
+    )
+}
 
 
 ```

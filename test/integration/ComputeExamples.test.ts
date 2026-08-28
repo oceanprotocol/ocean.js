@@ -151,6 +151,9 @@ import {
   unitsToAmount,
   AssetFiles
 } from '../../src/index.js'
+/// <!--
+import { isP2pUri } from '../../src/index.js'
+/// -->
 import crypto from 'crypto-js'
 import { DDO } from '@oceanprotocol/ddo-js'
 import { EscrowContract } from '../../src/contracts/Escrow.js'
@@ -694,6 +697,12 @@ describe('Compute-to-data example tests', async () => {
 
   it('11.2 Get download compute results URL', async () => {
     /// <!--
+    // HTTP-transport only: a peer answers with the result bytes and carries no URL for
+    // them, so this rejects over P2P and everything below it does not apply. Returning
+    // early rather than calling this.skip(): the guide generator turns the it() line into
+    // a markdown heading by matching an arrow function, so this callback has to stay one,
+    // and an arrow has no mocha context to skip from.
+    if (isP2pUri(providerUrl)) return
     /// -->
     /// ```Typescript
     await sleep(10000)
@@ -912,6 +921,12 @@ describe('Compute-to-data example tests', async () => {
 
   it('13.2 Get download compute results URL', async () => {
     /// <!--
+    // HTTP-transport only: a peer answers with the result bytes and carries no URL for
+    // them, so this rejects over P2P and everything below it does not apply. Returning
+    // early rather than calling this.skip(): the guide generator turns the it() line into
+    // a markdown heading by matching an arrow function, so this callback has to stay one,
+    // and an arrow has no mocha context to skip from.
+    if (isP2pUri(providerUrl)) return
     /// -->
 
     /// ```Typescript

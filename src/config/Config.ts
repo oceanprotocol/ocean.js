@@ -1,5 +1,5 @@
-import { AbiItem } from '../@types'
-import { LogLevel } from '../utils'
+import { AbiItem } from '../@types/index.js'
+import { LogLevel } from '../utils/index.js'
 
 type SDK = 'evm' | 'oasis'
 
