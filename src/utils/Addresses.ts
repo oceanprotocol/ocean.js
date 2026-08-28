@@ -1,9 +1,8 @@
 import { ethers, Signer } from 'ethers'
 import fs from 'fs'
 import { NftFactory } from '../contracts/NFTFactory.js'
-// eslint-disable-next-line import/no-named-default
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/interfaces/IERC20Template.sol/IERC20Template.json'
-// eslint-disable-next-line import/no-named-default, prettier/prettier
+
 import { default as Addresses } from '@oceanprotocol/contracts/addresses/address.json'
 /**
  * Get the artifacts address from the address.json file
@@ -32,7 +31,6 @@ export function getOceanArtifactsAddresses(): any {
  */
 export function getOceanArtifactsAddressesByChainId(chain: number): any {
   try {
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const data = getOceanArtifactsAddresses()
     if (data) {
       const networks = Object.keys(data)

@@ -10,6 +10,7 @@ import {
   sendTx,
   amountToUnits,
   isDefined,
+  isP2pUri,
   unitsToAmount
 } from '../../src/index.js'
 import {
@@ -907,7 +908,33 @@ describe('Compute flow tests', async () => {
     assert(jobStatus, 'Cannot retrieve compute status!')
   })
 
-  it('Get download compute results url', async () => {
+  it('Get download compute results url', async function () {
+    // A URL for a compute result is an HTTP-transport capability and always was. The P2P
+    // protocol answers with the result *bytes* and carries no location for them, so there
+    // is no URL for this to return - it used to return the streaming generator cast to
+    // `string`, which produced the literal "[object AsyncGenerator]" at the call site.
+    // It now rejects, and the P2P run asserts that rather than skipping past it: the next
+    // test is how a P2P caller gets the same result.
+    if (isP2pUri(providerUrl)) {
+      let rejection: Error | null = null
+      try {
+        await ProviderInstance.getComputeResultUrl(
+          providerUrl,
+          consumerAccount,
+          freeComputeJobId,
+          0
+        )
+      } catch (err) {
+        rejection = err as Error
+      }
+      assert(rejection, 'getComputeResultUrl must reject over P2P, not return a value')
+      assert(
+        rejection?.message.includes('getComputeResult'),
+        `the rejection must point at the replacement, got: ${rejection?.message}`
+      )
+      return
+    }
+
     const downloadURL = await ProviderInstance.getComputeResultUrl(
       providerUrl,
       consumerAccount,
@@ -915,6 +942,10 @@ describe('Compute flow tests', async () => {
       0
     )
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
+    assert(
+      downloadURL.startsWith('http'),
+      `expected a fetchable URL, got: ${downloadURL}`
+    )
   })
 
   it('Get compute result as stream', async () => {

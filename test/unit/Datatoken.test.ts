@@ -861,9 +861,8 @@ describe('Datatoken', () => {
   })
 
   it('#setPublishingMarketFee - User should not be able to set the Publishing Market Fee', async () => {
-    const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
-      datatokenAddress
-    )
+    const originalPublishingMarketFee =
+      await datatoken.getPublishingMarketFee(datatokenAddress)
     try {
       await datatoken.setPublishingMarketFee(
         datatokenAddress,
@@ -875,9 +874,8 @@ describe('Datatoken', () => {
     } catch (e) {
       assert(e.message === 'Caller is not the Publishing Market Fee Address')
     }
-    const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
-      datatokenAddress
-    )
+    const newPublishingMarketFee =
+      await datatoken.getPublishingMarketFee(datatokenAddress)
 
     assert(
       newPublishingMarketFee.publishMarketFeeAddress ===
@@ -896,9 +894,8 @@ describe('Datatoken', () => {
   it('#setPublishingMarketFee - Marketplace fee address should be able to set the Publishing Market Fee', async () => {
     datatoken = new Datatoken(user2, 8996)
 
-    const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
-      datatokenAddress
-    )
+    const originalPublishingMarketFee =
+      await datatoken.getPublishingMarketFee(datatokenAddress)
     try {
       await datatoken.setPublishingMarketFee(
         datatokenAddress,
@@ -910,9 +907,8 @@ describe('Datatoken', () => {
     } catch (e) {
       console.log('Error:', e)
     }
-    const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
-      datatokenAddress
-    )
+    const newPublishingMarketFee =
+      await datatoken.getPublishingMarketFee(datatokenAddress)
 
     assert(newPublishingMarketFee !== originalPublishingMarketFee)
     assert(newPublishingMarketFee.publishMarketFeeAddress === (await user2.getAddress()))

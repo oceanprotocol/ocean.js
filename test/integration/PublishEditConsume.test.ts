@@ -43,14 +43,6 @@ let ipfsAssetId
 let resolvedIpfsAssetDdo
 // let resolvedIpfsAssetDdoAfterUpdate
 
-let onchainAssetId
-let resolvedOnchainAssetDdo
-let resolvedOnchainAssetDdoAfterUpdate
-
-let grapqlAssetId
-let resolvedGraphqlAssetDdo
-let resolvedGraphqlAssetDdoAfterUpdate
-
 let urlOrderTx
 let arwaveOrderTx
 let ipfsOrderTx
@@ -233,11 +225,8 @@ describe('Publish consume test', async () => {
     resolvedIpfsAssetDdo = await aquarius.waitForIndexer(ipfsAssetId)
     assert(resolvedIpfsAssetDdo, 'Cannot fetch ipfs DDO from Aquarius')
 
-    // resolvedOnchainAssetDdo = await aquarius.waitForIndexer(onchainAssetId)
-    // assert(resolvedOnchainAssetDdo, 'Cannot fetch onchain DDO from Aquarius')
-
-    // resolvedGraphqlAssetDdo = await aquarius.waitForIndexer(grapqlAssetId)
-    // assert(resolvedGraphqlAssetDdo, 'Cannot fetch graphql DDO from Aquarius')
+    // The onchain and graphql asset flows are disabled end to end in this file — publish,
+    // resolve, mint, order and download are all commented out — so nothing resolves them.
   }).timeout(80000)
 
   it('Finds the resolved asset via querySearch', async function () {
@@ -480,46 +469,16 @@ describe('Publish consume test', async () => {
     //   aquarius
     // )
     // assert(updateIpfsTx, 'Failed to update ipfs asset metadata')
+  }).timeout(40000)
 
-    it('Should update onchain dataset', async () => {
-      resolvedOnchainAssetDdo.metadata.name = 'updated onchain asset name'
-      const updateOnchainTx = await updateAssetMetadata(
-        publisherAccount,
-        resolvedOnchainAssetDdo,
-        providerUrl,
-        aquarius
-      )
-      assert(updateOnchainTx, 'Failed to update ipfs asset metadata')
-    })
+  it('Should resolve updated datasets', async () => {
+    resolvedUrlAssetDdoAfterUpdate = await aquarius.waitForIndexer(urlAssetId)
+    assert(resolvedUrlAssetDdoAfterUpdate, 'Cannot fetch url DDO from Aquarius')
 
-    it('Should update graphql dataset', async () => {
-      resolvedGraphqlAssetDdo.metadata.name = 'updated graphql asset name'
-      const updateGraphqlTx = await updateAssetMetadata(
-        publisherAccount,
-        resolvedGraphqlAssetDdo,
-        providerUrl,
-        aquarius
-      )
-      assert(updateGraphqlTx, 'Failed to update graphql asset metadata')
-    })
-
-    delay(10000) // let's wait for aquarius to index the updated ddo's
-
-    it('Should resolve updated datasets', async () => {
-      resolvedUrlAssetDdoAfterUpdate = await aquarius.waitForIndexer(urlAssetId)
-      assert(resolvedUrlAssetDdoAfterUpdate, 'Cannot fetch url DDO from Aquarius')
-
-      resolvedArweaveAssetDdoAfterUpdate = await aquarius.waitForIndexer(arweaveAssetId)
-      assert(resolvedArweaveAssetDdoAfterUpdate, 'Cannot fetch arwave DDO from Aquarius')
-      // To be fixed in #1849
-      // resolvedIpfsAssetDdoAfterUpdate = await aquarius.waitForAqua(ipfsAssetId)
-      // assert(resolvedIpfsAssetDdoAfterUpdate, 'Cannot fetch ipfs DDO from Aquarius')
-
-      resolvedOnchainAssetDdoAfterUpdate = await aquarius.waitForIndexer(onchainAssetId)
-      assert(resolvedOnchainAssetDdoAfterUpdate, 'Cannot fetch onchain DDO from Aquarius')
-
-      resolvedGraphqlAssetDdoAfterUpdate = await aquarius.waitForIndexer(grapqlAssetId)
-      assert(resolvedGraphqlAssetDdoAfterUpdate, 'Cannot fetch onchain DDO from Aquarius')
-    })
+    resolvedArweaveAssetDdoAfterUpdate = await aquarius.waitForIndexer(arweaveAssetId)
+    assert(resolvedArweaveAssetDdoAfterUpdate, 'Cannot fetch arwave DDO from Aquarius')
+    // To be fixed in #1849
+    // resolvedIpfsAssetDdoAfterUpdate = await aquarius.waitForAqua(ipfsAssetId)
+    // assert(resolvedIpfsAssetDdoAfterUpdate, 'Cannot fetch ipfs DDO from Aquarius')
   }).timeout(40000)
 })

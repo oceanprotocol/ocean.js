@@ -151,6 +151,9 @@ import {
   unitsToAmount,
   AssetFiles
 } from '../../src/index.js'
+<!--
+import { isP2pUri } from '../../src/index.js'
+-->
 import crypto from 'crypto-js'
 import { DDO } from '@oceanprotocol/ddo-js'
 import { EscrowContract } from '../../src/contracts/Escrow.js'
@@ -434,7 +437,7 @@ We need to load the configuration. Add the following code into your `run(){ }` f
     )
     publisherAccount = (await provider.getSigner(0)) as Signer
     consumerAccount = (await provider.getSigner(1)) as Signer
-    const config = new ConfigHelper().getConfig(
+    config = new ConfigHelper().getConfig(
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
     Object.assign(config, getNodeEndpointConfig())
@@ -694,6 +697,12 @@ Now, let's see the current status of the previously started computer job
 
   ### 11.2 Get download compute results URL
 <!--
+    // HTTP-transport only: a peer answers with the result bytes and carries no URL for
+    // them, so this rejects over P2P and everything below it does not apply. Returning
+    // early rather than calling this.skip(): the guide generator turns the it() line into
+    // a markdown heading by matching an arrow function, so this callback has to stay one,
+    // and an arrow has no mocha context to skip from.
+    if (isP2pUri(providerUrl)) return
 -->
 ```Typescript
     await sleep(10000)
@@ -912,6 +921,12 @@ Now, let's see the current status of the previously started computer job
 
   ### 13.2 Get download compute results URL
 <!--
+    // HTTP-transport only: a peer answers with the result bytes and carries no URL for
+    // them, so this rejects over P2P and everything below it does not apply. Returning
+    // early rather than calling this.skip(): the guide generator turns the it() line into
+    // a markdown heading by matching an arrow function, so this callback has to stay one,
+    // and an arrow has no mocha context to skip from.
+    if (isP2pUri(providerUrl)) return
 -->
 
 ```Typescript

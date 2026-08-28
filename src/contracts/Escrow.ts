@@ -4,7 +4,7 @@ import {
   buildTxOverrides,
   buildUnsignedTx,
   sendPreparedTransaction
-} from '../utils/ContractUtils'
+} from '../utils/ContractUtils.js'
 import {
   AbiItem,
   ReceiptOrEstimate,
@@ -13,10 +13,10 @@ import {
   PermitData,
   AuthData,
   LockData
-} from '../@types'
-import { Config } from '../config'
-import { SmartContractWithAddress } from './SmartContractWithAddress'
-import { Datatoken } from './Datatoken'
+} from '../@types/index.js'
+import { Config } from '../config/index.js'
+import { SmartContractWithAddress } from './SmartContractWithAddress.js'
+import { Datatoken } from './Datatoken.js'
 import BigNumber from 'bignumber.js'
 
 export class EscrowContract extends SmartContractWithAddress {

@@ -63,7 +63,7 @@ export async function createAsset(
   const value =
     ddoInstance.getDDOData()?.stats?.price?.value ||
     indexedMetadata?.stats[0]?.prices[0]?.price
-  let { chainId: ddoChainId, nftAddress } = ddoInstance.getDDOFields()
+  const { chainId: ddoChainId } = ddoInstance.getDDOFields()
   const { services } = ddoInstance.getDDOFields()
 
   const isAddress = typeof templateIDorAddress === 'string'
@@ -219,7 +219,7 @@ export async function createAsset(
   services[0].datatokenAddress = datatokenAddressAsset
   services[0].serviceEndpoint = providerUrl
 
-  nftAddress = nftAddressFromEvent
+  const nftAddress = nftAddressFromEvent
 
   const id = ddoInstance.makeDid(nftAddress, ddoChainId.toString())
   ddo = ddoInstance.updateFields({ id, nftAddress }) as DDO

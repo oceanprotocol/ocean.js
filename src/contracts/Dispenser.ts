@@ -286,7 +286,7 @@ export class Dispenser extends SmartContractWithAddress {
     datatoken: Datatoken,
     address: string,
     amount: string = '1'
-  ): Promise<Boolean> {
+  ): Promise<boolean> {
     const status = await this.status(dtAddress)
     if (!status) return false
     // check active

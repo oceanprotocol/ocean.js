@@ -1,10 +1,8 @@
 import { MetadataAlgorithm, ConsumerParameter } from '@oceanprotocol/ddo-js'
-import { StorageObject, EncryptMethod } from './File'
+import { StorageObject, EncryptMethod } from './File.js'
+import { NodeP2P } from './Provider.js'
 export type ComputeResultType =
-  | 'algorithmLog'
-  | 'output'
-  | 'configrationLog'
-  | 'publishLog'
+  'algorithmLog' | 'output' | 'configrationLog' | 'publishLog'
 
 // new V2 C2D Compute Environment specs
 export interface RunningPlatform {
@@ -263,3 +261,73 @@ export interface dockerRegistryAuth {
 }
 
 export type ComputeResultStream = AsyncIterable<Uint8Array>
+
+/**
+ * One resource dimension of a compute-provider search, e.g. `{ resource: 'cpu', value: 4 }`.
+ * `resource` is deliberately an open string here too, matching the underlying capability
+ * format — a caller can ask for a resource type this package has no built-in knowledge of
+ * (`'fpga'`, `'pcie'`, anything a compute engine reports) and still get a well-typed request.
+ */
+export interface ComputeSearchDimension {
+  resource: string
+  value: number
+}
+
+/**
+ * A typed request to `BaseProvider.findComputeProviders`. Built entirely from ordinary typed
+ * values — never a hand-built JSON string, never a content id.
+ */
+export interface FindComputeProvidersRequest {
+  free: boolean
+  /** One entry per resource dimension. The result is the intersection of all of them. */
+  resources: ComputeSearchDimension[]
+  /**
+   * Optional per-resource qualifier (e.g. `{ gpu: 'A100' }`) applied only at the verification
+   * step, against a candidate's real compute environments. Never hashed and never part of a
+   * lookup string — nothing that discriminates within a resource is.
+   */
+  models?: Record<string, string>
+  signal?: AbortSignal
+}
+
+/**
+ * A compute provider that announced a matching bucket for every requested dimension *and*
+ * whose real compute environments (fetched during verification) actually satisfy the request.
+ * `node` is directly usable as the `node` argument to other typed calls on this SDK's provider
+ * client (e.g. `getComputeEnvironments`, `initializeCompute`).
+ */
+export interface ComputeProviderMatch {
+  node: NodeP2P
+  environments: ComputeEnvironment[]
+}
+
+/**
+ * The outcome of one requested dimension's provider lookup, before verification and before it
+ * is intersected with any other requested dimension. Carried on the result specifically so an
+ * empty search is never a mystery — a caller can see exactly which dimension(s) had nothing,
+ * instead of a single opaque empty list.
+ */
+export interface ComputeSearchDimensionResult {
+  resource: string
+  /** The value as requested, before bucketing. */
+  value: number
+  /** The bucket this dimension's lookup actually used. */
+  bucket: number
+  /** Provider ids that announced this bucket, before verification or intersection with other dimensions. */
+  providerIds: string[]
+  /** Set when this dimension's lookup ended early. `providerIds` is still real, just possibly incomplete. */
+  partial?: true
+  /** Present alongside `partial`, describing why the lookup ended early. */
+  error?: string
+}
+
+/**
+ * Result of `BaseProvider.findComputeProviders`. Always a typed value, even when nothing
+ * matched — "nothing found" is a normal outcome here, never a thrown error.
+ */
+export interface FindComputeProvidersResult {
+  /** Providers that satisfy every requested dimension, verified against their real environments. */
+  providers: ComputeProviderMatch[]
+  /** One entry per requested dimension, in request order. */
+  dimensions: ComputeSearchDimensionResult[]
+}
