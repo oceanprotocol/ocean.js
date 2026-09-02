@@ -91,6 +91,116 @@ export interface NodeStatus {
     accessLists?: AccessList[]
   }
 }
+
+/**
+ * Shapes for the per-node resource metrics API (`getNodeMetrics` /
+ * `getNodeMetricsHistory`). These mirror the `@types/nodeMetrics.ts` types on the ocean-node
+ * side, so the client payload and the node response have an identical shape.
+ */
+export interface NodeMetricsGpu {
+  resourceId: string
+  vendor?: string
+  utilizationPercent?: number
+  memoryUsedBytes?: number
+  memoryTotalBytes?: number
+  temperatureC?: number
+  powerWatts?: number
+}
+
+export interface NodeMetricsEnvResource {
+  env: string
+  resource: string
+  total: number
+  inUse: number
+}
+
+export interface NodeMetricsSnapshot {
+  // epoch ms when the snapshot was assembled
+  collectedAt: number
+  // Freshness signal: false means NO engine had a fresh compute aggregate, so every scalar
+  // below is a structural zero rather than a genuine reading.
+  hasAggregate: boolean
+  cpu: {
+    usagePercent: number
+    coresAllocated: number
+    hostCores: number
+    throttledCount: number
+    loadAverage: number[]
+  }
+  memory: {
+    usedBytes: number
+    limitBytes: number
+    hostFreeBytes: number
+    hostTotalBytes: number
+  }
+  disk: {
+    usedBytes: number
+  }
+  network: {
+    rxBytes: number
+    txBytes: number
+  }
+  jobs: {
+    running: number
+    runningFree: number
+    queued: number
+    queuedFree: number
+  }
+  gpu: NodeMetricsGpu[]
+  env: NodeMetricsEnvResource[]
+  meta: {
+    sampledContainers: number
+    oldestSampleAgeSeconds: number
+  }
+}
+
+/**
+ * One hourly bucket returned by `getNodeMetricsHistory`. Scalars are arithmetic means over the
+ * hour's samples; `sampleCount` is how many minute-samples fed the average.
+ */
+export interface NodeMetricsHourly {
+  // epoch ms of the floored UTC hour this bucket covers
+  hourStart: number
+  sampleCount: number
+  cpu: {
+    usagePercent: number
+    coresAllocated: number
+    hostCores: number
+    throttledCount: number
+  }
+  memory: {
+    usedBytes: number
+    limitBytes: number
+    hostFreeBytes: number
+    hostTotalBytes: number
+  }
+  disk: {
+    usedBytes: number
+  }
+  network: {
+    rxBytes: number
+    txBytes: number
+  }
+  jobs: {
+    running: number
+    runningFree: number
+    queued: number
+    queuedFree: number
+  }
+  gpu: NodeMetricsGpu[]
+  env: NodeMetricsEnvResource[]
+  meta: {
+    sampledContainers: number
+  }
+}
+
+export interface NodeMetricsHistoryResult {
+  startTime: number
+  stopTime: number
+  count: number
+  buckets: NodeMetricsHourly[]
+}
+
 export interface UserCustomParameters {
   [key: string]: any
 }
@@ -127,6 +237,8 @@ export const PROTOCOL_COMMANDS = {
   GET_P2P_PEER: 'getP2PPeer',
   GET_P2P_PEERS: 'getP2PPeers',
   GET_P2P_NETWORK_STATS: 'getP2PNetworkStats',
+  GET_NODE_METRICS: 'getNodeMetrics',
+  GET_NODE_METRICS_HISTORY: 'getNodeMetricsHistory',
   FIND_PEER: 'findPeer',
   CREATE_AUTH_TOKEN: 'createAuthToken',
   INVALIDATE_AUTH_TOKEN: 'invalidateAuthToken',

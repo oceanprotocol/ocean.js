@@ -46,6 +46,8 @@ import {
   ComputeResultStream,
   NodeStatus,
   NodeComputeJob,
+  NodeMetricsSnapshot,
+  NodeMetricsHistoryResult,
   PersistentStorageAccessList,
   PersistentStorageBucket,
   PersistentStorageCreateBucketRequest,
@@ -2472,6 +2474,57 @@ export class P2pProvider {
     } catch (e) {
       LoggerInstance.error('P2P getNodeJobs failed:', e)
       return []
+    }
+  }
+
+  /**
+   * Returns the live per-node resource metrics snapshot via the P2P GET_NODE_METRICS command.
+   * @param {OceanNode} nodeUri - peerId/multiaddr of the node
+   */
+  public async getNodeMetrics(
+    nodeUri: OceanNode,
+    signal?: AbortSignal
+  ): Promise<NodeMetricsSnapshot> {
+    try {
+      return await this.sendP2pCommand(
+        nodeUri,
+        PROTOCOL_COMMANDS.GET_NODE_METRICS,
+        {},
+        null,
+        signal
+      )
+    } catch (e) {
+      LoggerInstance.error('P2P getNodeMetrics failed:', e)
+      throw e
+    }
+  }
+
+  /**
+   * Returns the hourly per-node resource history via the P2P GET_NODE_METRICS_HISTORY command.
+   * @param {OceanNode} nodeUri - peerId/multiaddr of the node
+   * @param {number | string} startTime - optional range start (epoch ms or ISO-8601)
+   * @param {number | string} stopTime - optional range end (epoch ms or ISO-8601)
+   */
+  public async getNodeMetricsHistory(
+    nodeUri: OceanNode,
+    startTime?: number | string,
+    stopTime?: number | string,
+    signal?: AbortSignal
+  ): Promise<NodeMetricsHistoryResult> {
+    try {
+      const body: Record<string, any> = {}
+      if (startTime !== undefined) body.startTime = startTime
+      if (stopTime !== undefined) body.stopTime = stopTime
+      return await this.sendP2pCommand(
+        nodeUri,
+        PROTOCOL_COMMANDS.GET_NODE_METRICS_HISTORY,
+        body,
+        null,
+        signal
+      )
+    } catch (e) {
+      LoggerInstance.error('P2P getNodeMetricsHistory failed:', e)
+      throw e
     }
   }
 

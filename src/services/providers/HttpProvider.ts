@@ -21,6 +21,8 @@ import {
   NodeStatus,
   NodeComputeJob,
   NodeLogEntry,
+  NodeMetricsSnapshot,
+  NodeMetricsHistoryResult,
   PersistentStorageAccessList,
   PersistentStorageBucket,
   PersistentStorageCreateBucketRequest,
@@ -141,6 +143,61 @@ export class HttpProvider {
     } catch (e) {
       LoggerInstance.error('getNodeJobs failed:', e)
       return []
+    }
+  }
+
+  /**
+   * Returns the live per-node resource metrics snapshot via `GET /nodeMetrics`.
+   * @param {string} nodeUri - node HTTP endpoint
+   */
+  public async getNodeMetrics(
+    nodeUri: string,
+    signal?: AbortSignal
+  ): Promise<NodeMetricsSnapshot> {
+    const url = this.baseUrl(nodeUri) + '/nodeMetrics'
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+      if (response?.ok) return response.json()
+      return null
+    } catch (e) {
+      LoggerInstance.error('getNodeMetrics failed:', e)
+      return null
+    }
+  }
+
+  /**
+   * Returns the hourly per-node resource history via `GET /nodeMetrics/history`.
+   * @param {string} nodeUri - node HTTP endpoint
+   * @param {number | string} startTime - optional range start (epoch ms or ISO-8601)
+   * @param {number | string} stopTime - optional range end (epoch ms or ISO-8601)
+   */
+  public async getNodeMetricsHistory(
+    nodeUri: string,
+    startTime?: number | string,
+    stopTime?: number | string,
+    signal?: AbortSignal
+  ): Promise<NodeMetricsHistoryResult> {
+    let url = this.baseUrl(nodeUri) + '/nodeMetrics/history'
+    const params = new URLSearchParams()
+    if (startTime !== undefined) params.append('startTime', String(startTime))
+    if (stopTime !== undefined) params.append('stopTime', String(stopTime))
+    const query = params.toString()
+    if (query) url += `?${query}`
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+      if (response?.ok) return response.json()
+      return null
+    } catch (e) {
+      LoggerInstance.error('getNodeMetricsHistory failed:', e)
+      return null
     }
   }
 

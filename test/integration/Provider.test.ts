@@ -103,6 +103,57 @@ describe('Provider tests', async () => {
     )
   })
 
+  it('Alice tests getNodeMetrics', async () => {
+    const metrics = await ProviderInstance.getNodeMetrics(config.oceanNodeUri)
+    assert(metrics, 'No node metrics returned')
+    assert(typeof metrics.collectedAt === 'number', 'metrics missing collectedAt')
+    assert(typeof metrics.hasAggregate === 'boolean', 'metrics missing hasAggregate flag')
+    assert(metrics.cpu, 'metrics missing cpu block')
+    assert(
+      typeof metrics.cpu.usagePercent === 'number',
+      'metrics missing cpu.usagePercent'
+    )
+    assert(metrics.memory, 'metrics missing memory block')
+    assert(metrics.jobs, 'metrics missing jobs block')
+    assert(Array.isArray(metrics.gpu), 'metrics.gpu should be an array')
+    assert(Array.isArray(metrics.env), 'metrics.env should be an array')
+  })
+
+  it('Alice tests getNodeMetricsHistory', async () => {
+    // History is best-effort and gated on NODE_METRICS_HISTORY_ENABLED on the node side; when
+    // disabled the node returns 503 and the SDK surfaces null. Tolerate both: a null result is a
+    // valid "history not enabled" answer, otherwise validate the shape.
+    const history = await ProviderInstance.getNodeMetricsHistory(config.oceanNodeUri)
+    if (history === null) return
+    assert(typeof history.startTime === 'number', 'history missing startTime')
+    assert(typeof history.stopTime === 'number', 'history missing stopTime')
+    assert(Array.isArray(history.buckets), 'history.buckets should be an array')
+    assert(
+      history.count === history.buckets.length,
+      'history count must match buckets length'
+    )
+  })
+
+  it('Alice tests getNodeMetricsHistory with an explicit range', async () => {
+    const stopTime = Date.now()
+    const startTime = stopTime - 24 * 60 * 60 * 1000 // last 24h
+    const history = await ProviderInstance.getNodeMetricsHistory(
+      config.oceanNodeUri,
+      startTime,
+      stopTime
+    )
+    if (history === null) return
+    assert(
+      history.startTime >= startTime,
+      'returned startTime should be clamped within range'
+    )
+    assert(
+      history.stopTime <= stopTime,
+      'returned stopTime should be clamped within range'
+    )
+    assert(Array.isArray(history.buckets), 'history.buckets should be an array')
+  })
+
   it('Alice tests getNonce', async () => {
     const nonce = await ProviderInstance.getNonce(
       config.oceanNodeUri,

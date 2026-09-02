@@ -26,6 +26,8 @@ import {
   DownloadResponse,
   NodeStatus,
   NodeComputeJob,
+  NodeMetricsSnapshot,
+  NodeMetricsHistoryResult,
   NodeLogEntry,
   PersistentStorageAccessList,
   PersistentStorageBucket,
@@ -932,6 +934,35 @@ export class BaseProvider {
     signal?: AbortSignal
   ): Promise<NodeComputeJob[]> {
     return this.getImpl(nodeUri).getNodeJobs(nodeUri, fromTimestamp, signal)
+  }
+
+  /**
+   * Returns the live per-node resource metrics snapshot. Routes to HTTP (`GET /nodeMetrics`)
+   * or P2P (GET_NODE_METRICS command) depending on the node target.
+   */
+  public async getNodeMetrics(
+    nodeUri: OceanNode,
+    signal?: AbortSignal
+  ): Promise<NodeMetricsSnapshot> {
+    return this.getImpl(nodeUri).getNodeMetrics(nodeUri, signal)
+  }
+
+  /**
+   * Returns the hourly per-node resource history. Bounds are optional (epoch ms or ISO-8601).
+   * Routes to HTTP (`GET /nodeMetrics/history`) or P2P (GET_NODE_METRICS_HISTORY command).
+   */
+  public async getNodeMetricsHistory(
+    nodeUri: OceanNode,
+    startTime?: number | string,
+    stopTime?: number | string,
+    signal?: AbortSignal
+  ): Promise<NodeMetricsHistoryResult> {
+    return this.getImpl(nodeUri).getNodeMetricsHistory(
+      nodeUri,
+      startTime,
+      stopTime,
+      signal
+    )
   }
 
   public async setupP2P(config: P2PConfig): Promise<void> {

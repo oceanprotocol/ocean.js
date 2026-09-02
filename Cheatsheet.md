@@ -344,3 +344,33 @@ if (isP2pUri(providerUrl)) {
 
 
 ```
+
+### Node resource metrics
+
+Read a node's own per-node resource metrics. `getNodeMetrics` returns a live snapshot (CPU,
+memory, disk, network, jobs, GPU, and per-env resources); `hasAggregate` is `false` when the node
+has no fresh compute aggregate, so every scalar is a structural zero rather than a genuine reading.
+`getNodeMetricsHistory` returns hourly averages over an optional `startTime`/`stopTime` range
+(epoch ms or ISO-8601 strings; defaults to the node's retention window up to now). Both work over
+HTTP and P2P. History is best-effort on the node side — a node without it returns `null`.
+
+```javascript
+
+// Live snapshot
+const metrics = await ProviderInstance.getNodeMetrics(providerUrl)
+console.log(metrics.hasAggregate, metrics.cpu.usagePercent, metrics.memory.usedBytes)
+
+// Hourly history for the last 24h
+const stopTime = Date.now()
+const startTime = stopTime - 24 * 60 * 60 * 1000
+const history = await ProviderInstance.getNodeMetricsHistory(
+    providerUrl,
+    startTime,
+    stopTime
+)
+if (history) {
+    console.log(`${history.count} hourly buckets`)
+}
+
+
+```
