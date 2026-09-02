@@ -661,6 +661,7 @@ export class BaseProvider {
             duration: service.duration,
             expiresAt: service.expiresAt,
             payment: service.payment,
+            metadata: service.metadata,
             dateCreated: service.dateCreated
           })
         }
