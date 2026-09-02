@@ -1978,6 +1978,10 @@ export class HttpProvider {
    * the env (else the node replies 403). `userData`/`dockerCmd`/`dockerEntrypoint` are only
    * sent when supplied — an omitted override reuses the node's stored value, whereas an
    * explicit value (including `[]`) REPLACES it (matches ocean-node's restartService semantics).
+   *
+   * `params.metadata` is an optional owner-supplied label bag that, when supplied, REPLACES the
+   * stored metadata (and does NOT force RESPEC mode). Unlike `userData`, it is transmitted
+   * WITHOUT application-level encryption, so it must not contain sensitive values.
    * @return {Promise<ServiceJob[]>} The restarted service job (single-element array).
    */
   public async serviceRestart(
@@ -1995,7 +1999,8 @@ export class HttpProvider {
       additionalDockerFiles,
       userData,
       dockerCmd,
-      dockerEntrypoint
+      dockerEntrypoint,
+      metadata
     } = params ?? {}
     const route = this.baseUrl(nodeUri) + '/api/services/serviceRestart'
     const authPayload = await this.getSignedCommandParams(
@@ -2023,7 +2028,8 @@ export class HttpProvider {
         ...(dockerfile !== undefined ? { dockerfile } : {}),
         ...(additionalDockerFiles !== undefined ? { additionalDockerFiles } : {}),
         ...(dockerCmd !== undefined ? { dockerCmd } : {}),
-        ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {})
+        ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {}),
+        ...(metadata !== undefined ? { metadata } : {})
       }),
       signal
     })

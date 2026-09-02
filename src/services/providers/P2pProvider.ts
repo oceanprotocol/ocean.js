@@ -3842,7 +3842,8 @@ export class P2pProvider {
       additionalDockerFiles,
       userData,
       dockerCmd,
-      dockerEntrypoint
+      dockerEntrypoint,
+      metadata
     } = params ?? {}
     const authPayload = await this.getSignedCommandParams(
       nodeUri,
@@ -3865,7 +3866,8 @@ export class P2pProvider {
         ...(dockerfile !== undefined ? { dockerfile } : {}),
         ...(additionalDockerFiles !== undefined ? { additionalDockerFiles } : {}),
         ...(dockerCmd !== undefined ? { dockerCmd } : {}),
-        ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {})
+        ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {}),
+        ...(metadata !== undefined ? { metadata } : {})
       },
       signerOrAuthToken,
       signal
