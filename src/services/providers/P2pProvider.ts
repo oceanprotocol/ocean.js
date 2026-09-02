@@ -3594,9 +3594,7 @@ export class P2pProvider {
     signal?: AbortSignal
   ): Promise<ComputeResultStream> {
     if (!Number.isSafeInteger(offset) || offset < 0) {
-      throw new Error(
-        `Invalid offset: ${offset}. Must be a non-negative safe integer.`
-      )
+      throw new Error(`Invalid offset: ${offset}. Must be a non-negative safe integer.`)
     }
     const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
       nodeUri,
