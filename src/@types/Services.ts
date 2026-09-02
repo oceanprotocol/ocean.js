@@ -1,4 +1,8 @@
-import { ComputeResourceRequest, ContainerMetricsSnapshot } from './Compute.js'
+import {
+  ComputeJobMetadata,
+  ComputeResourceRequest,
+  ContainerMetricsSnapshot
+} from './Compute.js'
 
 // Service-on-Demand client types. Mirror of ocean-node
 // `src/@types/C2D/ServiceOnDemand.ts` (the API surface a client interacts with).
@@ -120,6 +124,10 @@ export interface ServiceJob {
   // Present only when getServiceStatus() resolved includeMetrics to true; never present
   // on SERVICE_LIST (see ServiceJobListed).
   runtimeMetrics?: ContainerMetricsSnapshot
+  // Optional owner-supplied label bag set at serviceStart/serviceRestart (≤1 KB, enforced
+  // by the node). Owner-scoped: returned only on SERVICE_GET_STATUS (getServiceStatus),
+  // stripped from the node-wide SERVICE_LIST (see ServiceJobListed).
+  metadata?: ComputeJobMetadata
 }
 
 // Returned by SERVICE_LIST, which is authenticated but NOT owner-scoped (any consumer
@@ -134,6 +142,7 @@ export type ServiceJobListed = Omit<
   | 'dockerfile'
   | 'additionalDockerFiles'
   | 'runtimeMetrics'
+  | 'metadata'
 >
 
 // Filters for SERVICE_LIST (getServices). With no filters the node returns only the
@@ -179,6 +188,10 @@ export interface ServiceContainerSpec {
   userData?: ServiceUserData
   dockerCmd?: string[] // exec-form CMD override (no shell)
   dockerEntrypoint?: string[]
+  // Optional owner-supplied label bag (scalar values only, ≤1 KB — the node enforces the
+  // cap and 400s if oversized). Unlike userData it is NOT encrypted. On serviceRestart it
+  // replaces the stored metadata when supplied and does NOT force RESPEC mode.
+  metadata?: ComputeJobMetadata
 }
 
 // Optional container-spec overrides for serviceRestart. The node treats the restart
