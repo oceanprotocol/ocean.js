@@ -48,7 +48,8 @@ describe('Service on Demand flow tests', () => {
   let hostPort: number
   let expiresAt: number
 
-  // owner-scoped label bag set at start and replaced on restart (mirrors ocean-node #1464)
+  // owner-supplied label bag set at start and replaced on restart; readable on both
+  // owner-scoped status and the node-wide listing (mirrors ocean-node #1464)
   const startMetadata = { env: 'test', run: 1, primary: true }
   const restartMetadata = { env: 'test', run: 2, primary: false }
 
@@ -333,20 +334,21 @@ describe('Service on Demand flow tests', () => {
     const job = listed.find((j) => j.serviceId === serviceId)
     assert(job, "another consumer's default listing should include the running service")
 
-    // listing-sanitized: no userData, no CMD/ENTRYPOINT overrides, no Dockerfile, no
-    // owner-scoped metadata (SERVICE_LIST strips metadata — see ocean-node #1464)
+    // listing-sanitized: no userData, no CMD/ENTRYPOINT overrides, no Dockerfile
     for (const field of [
       'userData',
       'dockerCmd',
       'dockerEntrypoint',
       'dockerfile',
-      'additionalDockerFiles',
-      'metadata'
+      'additionalDockerFiles'
     ]) {
       expect((job as any)[field], `${field} should be stripped`).to.equal(undefined)
     }
     assert(job.owner, 'identity fields are kept')
     assert(job.payment, 'payment metadata is kept')
+    // metadata labels are now kept on SERVICE_LIST too (see ocean-node #1464) — the same
+    // bag set at start is visible to another consumer's node-wide listing
+    expect(job.metadata).to.deep.equal(startMetadata)
 
     // status filter narrows to ONE specific status
     const running = await ProviderInstance.getServices(providerUrl, consumerAccount, {
