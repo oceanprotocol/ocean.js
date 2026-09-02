@@ -3567,6 +3567,98 @@ export class P2pProvider {
     )
   }
 
+  public async downloadPersistentStorageFile(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    bucketId: string,
+    fileName: string,
+    offset: number = 0,
+    signal?: AbortSignal
+  ): Promise<ComputeResultStream> {
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_DOWNLOAD_FILE,
+      signal
+    )
+    const payload: Record<string, any> = {
+      command: PROTOCOL_COMMANDS.PERSISTENT_STORAGE_DOWNLOAD_FILE,
+      bucketId,
+      fileName,
+      offset,
+      consumerAddress
+    }
+
+    if (typeof signerOrAuthToken === 'string') {
+      payload.authorization = signerOrAuthToken
+    } else {
+      payload.nonce = nonce
+      payload.signature = signature
+    }
+
+    // A stored file is a bulk transfer like a compute result, so this mirrors
+    // `getComputeResult`: `dialAndStream` takes a concurrency slot and the generator
+    // below releases it from its `finally` rather than this method releasing on return.
+    const { firstBytes, frames, stream, release } = await this.dialAndStream(
+      nodeUri,
+      payload,
+      signal
+    )
+
+    let status: Record<string, any>
+    try {
+      // First frame is always a status JSON
+      status = JSON.parse(new TextDecoder().decode(firstBytes))
+      if (typeof status?.httpStatus === 'number' && status.httpStatus >= 400) {
+        throw new Error(
+          status.error ?? `P2P persistent storage download error: ${status.httpStatus}`
+        )
+      }
+    } catch (e) {
+      // Nothing is going to consume the generator, so hand the slot back here.
+      release()
+      throw e
+    }
+
+    const idleTimeout = this.streamIdleTimeoutMs()
+    return (async function* () {
+      let completed = false
+      try {
+        while (true) {
+          // Flow control — see `LP_RESUME_BELOW_BYTES`. A file download is exactly the
+          // transfer where a consumer writing to disk falls behind the sender, and an unread
+          // backlog past `maxBufferSize` is silently dropped by `byteStream`, desynchronising
+          // the frame parser and handing out corrupt, out-of-sequence frames.
+          if (frames.pendingBytes <= LP_RESUME_BELOW_BYTES) {
+            resumeReads(stream)
+          }
+          // Every frame is read under the caller's signal as well as the idle timeout,
+          // so a download in progress can be cancelled mid-flight.
+          const chunk = await readFrame(frames, signal, idleTimeout)
+          pauseReads(stream)
+          yield chunk
+        }
+      } catch (e) {
+        // Truncation and a clean end throw the same error type; only the clean end
+        // may finish the stream, or the consumer writes a short file.
+        if (!frames.isCleanEnd(e)) throw e
+        completed = true
+      } finally {
+        // Never leave the read side paused once nobody is reading any more.
+        resumeReads(stream)
+        // Cancelled, broken, or left early by the consumer: reset the stream so the peer
+        // stops producing a file body nobody will read.
+        if (!completed) {
+          abortResponseStream(
+            stream,
+            new Error('P2P persistent storage download is no longer being read')
+          )
+        }
+        release()
+      }
+    })()
+  }
+
   public async uploadPersistentStorageFile(
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,

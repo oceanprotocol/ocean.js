@@ -1592,6 +1592,40 @@ export class HttpProvider {
     return response.json()
   }
 
+  public async downloadPersistentStorageFile(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    bucketId: string,
+    fileName: string,
+    offset: number = 0,
+    signal?: AbortSignal
+  ): Promise<ComputeResultStream> {
+    const routeBase =
+      this.baseUrl(nodeUri) +
+      `/api/services/persistentStorage/buckets/${encodeURIComponent(
+        bucketId
+      )}/files/${encodeURIComponent(fileName)}`
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_DOWNLOAD_FILE,
+      signal
+    )
+    const query = this.buildQuery({ ...authPayload })
+    const headers: Record<string, string> = {}
+    if (typeof signerOrAuthToken === 'string') {
+      headers.Authorization = signerOrAuthToken
+    }
+    if (offset > 0) headers.Range = `bytes=${offset}-`
+    const response = await fetch(`${routeBase}?${query.toString()}`, {
+      method: 'GET',
+      headers,
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    return responseBodyToAsyncIterable(response.body)
+  }
+
   public async uploadPersistentStorageFile(
     nodeUri: string,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,

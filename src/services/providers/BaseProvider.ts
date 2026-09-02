@@ -1123,6 +1123,24 @@ export class BaseProvider {
     )
   }
 
+  public async downloadPersistentStorageFile(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    bucketId: string,
+    fileName: string,
+    offset: number = 0,
+    signal?: AbortSignal
+  ): Promise<ComputeResultStream> {
+    return this.getImpl(nodeUri).downloadPersistentStorageFile(
+      nodeUri,
+      signerOrAuthToken,
+      bucketId,
+      fileName,
+      offset,
+      signal
+    )
+  }
+
   // ── Service on Demand ────────────────────────────────────────────────
 
   public async getServiceTemplates(

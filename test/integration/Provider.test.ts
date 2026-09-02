@@ -126,6 +126,7 @@ describe('Provider persistent storage tests', function () {
   let nodeUri: string
   let bucketId: string
   const fileName = `oceanjs-persistent-storage-${Date.now()}.txt`
+  const fileContent = `persistent-storage-content-${Date.now()}`
 
   before(async () => {
     ownerSigner = (await provider.getSigner(0)) as Signer
@@ -158,9 +159,7 @@ describe('Provider persistent storage tests', function () {
       bucketId,
       fileName,
       (async function* () {
-        yield isP2pUri(nodeUri)
-          ? new TextEncoder().encode(`persistent-storage-${Date.now()}`)
-          : `persistent-storage-${Date.now()}`
+        yield isP2pUri(nodeUri) ? new TextEncoder().encode(fileContent) : fileContent
       })()
     )
 
@@ -186,6 +185,21 @@ describe('Provider persistent storage tests', function () {
     )
     assert(fileObject?.bucketId === bucketId, 'File object has wrong bucket id')
     assert(fileObject?.fileName === fileName, 'File object has wrong file name')
+  })
+
+  it('downloads the uploaded file bytes', async () => {
+    const stream = await ProviderInstance.downloadPersistentStorageFile(
+      nodeUri,
+      ownerSigner,
+      bucketId,
+      fileName
+    )
+    const chunks: Uint8Array[] = []
+    for await (const chunk of stream) {
+      chunks.push(chunk)
+    }
+    const downloaded = new TextDecoder().decode(Buffer.concat(chunks))
+    assert(downloaded === fileContent, 'Downloaded bytes do not match uploaded content')
   })
 
   it('creates a bucket with a label and renames it', async () => {
