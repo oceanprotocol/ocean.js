@@ -3567,6 +3567,24 @@ export class P2pProvider {
     )
   }
 
+  /**
+   * Downloads a file stored in a persistent-storage bucket over libp2p.
+   *
+   * The transfer mirrors `getComputeResult`: `dialAndStream` takes a concurrency
+   * slot up front, the first frame is a status JSON (an `httpStatus >= 400` throws
+   * and releases the slot immediately), and the returned generator streams the file
+   * body, applying flow control so a slow consumer does not overrun the buffer. If
+   * the caller stops reading early, or `signal` aborts, or the idle timeout fires,
+   * the stream is reset so the peer stops sending, and the concurrency slot is
+   * released from the generator's `finally`.
+   * @param {OceanNode} nodeUri The provider node (peerId / multiaddr).
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken Signer, JWT auth token, or precomputed signature used to authenticate the request.
+   * @param {string} bucketId The bucket holding the file.
+   * @param {string} fileName The name of the file to download.
+   * @param {number} [offset=0] Byte offset to resume the download from, sent to the node in the request payload. Must be a non-negative safe integer.
+   * @param {AbortSignal} [signal] Abort signal that cancels the download mid-flight and tears down the stream.
+   * @return {Promise<ComputeResultStream>} An async-iterable stream of the file body starting at `offset`.
+   */
   public async downloadPersistentStorageFile(
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
@@ -3575,6 +3593,11 @@ export class P2pProvider {
     offset: number = 0,
     signal?: AbortSignal
   ): Promise<ComputeResultStream> {
+    if (!Number.isSafeInteger(offset) || offset < 0) {
+      throw new Error(
+        `Invalid offset: ${offset}. Must be a non-negative safe integer.`
+      )
+    }
     const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
