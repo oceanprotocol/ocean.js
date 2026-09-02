@@ -2484,7 +2484,7 @@ export class P2pProvider {
   public async getNodeMetrics(
     nodeUri: OceanNode,
     signal?: AbortSignal
-  ): Promise<NodeMetricsSnapshot> {
+  ): Promise<NodeMetricsSnapshot | null> {
     try {
       return await this.sendP2pCommand(
         nodeUri,
@@ -2510,7 +2510,7 @@ export class P2pProvider {
     startTime?: number | string,
     stopTime?: number | string,
     signal?: AbortSignal
-  ): Promise<NodeMetricsHistoryResult> {
+  ): Promise<NodeMetricsHistoryResult | null> {
     try {
       const body: Record<string, any> = {}
       if (startTime !== undefined) body.startTime = startTime

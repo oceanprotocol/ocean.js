@@ -153,7 +153,7 @@ export class HttpProvider {
   public async getNodeMetrics(
     nodeUri: string,
     signal?: AbortSignal
-  ): Promise<NodeMetricsSnapshot> {
+  ): Promise<NodeMetricsSnapshot | null> {
     const url = this.baseUrl(nodeUri) + '/nodeMetrics'
     try {
       const response = await fetch(url, {
@@ -180,7 +180,7 @@ export class HttpProvider {
     startTime?: number | string,
     stopTime?: number | string,
     signal?: AbortSignal
-  ): Promise<NodeMetricsHistoryResult> {
+  ): Promise<NodeMetricsHistoryResult | null> {
     let url = this.baseUrl(nodeUri) + '/nodeMetrics/history'
     const params = new URLSearchParams()
     if (startTime !== undefined) params.append('startTime', String(startTime))

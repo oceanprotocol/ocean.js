@@ -943,7 +943,7 @@ export class BaseProvider {
   public async getNodeMetrics(
     nodeUri: OceanNode,
     signal?: AbortSignal
-  ): Promise<NodeMetricsSnapshot> {
+  ): Promise<NodeMetricsSnapshot | null> {
     return this.getImpl(nodeUri).getNodeMetrics(nodeUri, signal)
   }
 
@@ -956,7 +956,7 @@ export class BaseProvider {
     startTime?: number | string,
     stopTime?: number | string,
     signal?: AbortSignal
-  ): Promise<NodeMetricsHistoryResult> {
+  ): Promise<NodeMetricsHistoryResult | null> {
     return this.getImpl(nodeUri).getNodeMetricsHistory(
       nodeUri,
       startTime,
