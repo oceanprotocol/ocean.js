@@ -2495,7 +2495,7 @@ export class P2pProvider {
       )
     } catch (e) {
       LoggerInstance.error('P2P getNodeMetrics failed:', e)
-      throw e
+      return null
     }
   }
 
@@ -2524,7 +2524,7 @@ export class P2pProvider {
       )
     } catch (e) {
       LoggerInstance.error('P2P getNodeMetricsHistory failed:', e)
-      throw e
+      return null
     }
   }
 
