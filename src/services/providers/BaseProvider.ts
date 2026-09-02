@@ -939,6 +939,9 @@ export class BaseProvider {
   /**
    * Returns the live per-node resource metrics snapshot. Routes to HTTP (`GET /nodeMetrics`)
    * or P2P (GET_NODE_METRICS command) depending on the node target.
+   * @param {OceanNode} nodeUri - node HTTP endpoint, peerId or multiaddr
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<NodeMetricsSnapshot | null>} the snapshot, or null if unavailable
    */
   public async getNodeMetrics(
     nodeUri: OceanNode,
@@ -950,6 +953,11 @@ export class BaseProvider {
   /**
    * Returns the hourly per-node resource history. Bounds are optional (epoch ms or ISO-8601).
    * Routes to HTTP (`GET /nodeMetrics/history`) or P2P (GET_NODE_METRICS_HISTORY command).
+   * @param {OceanNode} nodeUri - node HTTP endpoint, peerId or multiaddr
+   * @param {number | string} [startTime] - optional range start (epoch ms or ISO-8601)
+   * @param {number | string} [stopTime] - optional range end (epoch ms or ISO-8601)
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<NodeMetricsHistoryResult | null>} the history, or null if unavailable
    */
   public async getNodeMetricsHistory(
     nodeUri: OceanNode,

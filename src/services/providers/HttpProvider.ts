@@ -149,6 +149,8 @@ export class HttpProvider {
   /**
    * Returns the live per-node resource metrics snapshot via `GET /nodeMetrics`.
    * @param {string} nodeUri - node HTTP endpoint
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<NodeMetricsSnapshot | null>} the snapshot, or null if unavailable
    */
   public async getNodeMetrics(
     nodeUri: string,
@@ -164,6 +166,8 @@ export class HttpProvider {
       if (response?.ok) return response.json()
       return null
     } catch (e) {
+      // A caller-driven cancellation is not a compatibility failure: surface it.
+      if (signal?.aborted) throw e
       LoggerInstance.error('getNodeMetrics failed:', e)
       return null
     }
@@ -174,6 +178,8 @@ export class HttpProvider {
    * @param {string} nodeUri - node HTTP endpoint
    * @param {number | string} startTime - optional range start (epoch ms or ISO-8601)
    * @param {number | string} stopTime - optional range end (epoch ms or ISO-8601)
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<NodeMetricsHistoryResult | null>} the history, or null if unavailable
    */
   public async getNodeMetricsHistory(
     nodeUri: string,
@@ -196,6 +202,8 @@ export class HttpProvider {
       if (response?.ok) return response.json()
       return null
     } catch (e) {
+      // A caller-driven cancellation is not a compatibility failure: surface it.
+      if (signal?.aborted) throw e
       LoggerInstance.error('getNodeMetricsHistory failed:', e)
       return null
     }
