@@ -48,6 +48,11 @@ describe('Service on Demand flow tests', () => {
   let hostPort: number
   let expiresAt: number
 
+  // owner-supplied label bag set at start and replaced on restart; readable on both
+  // owner-scoped status and the node-wide listing (mirrors ocean-node #1464)
+  const startMetadata = { env: 'test', run: 1, primary: true }
+  const restartMetadata = { env: 'test', run: 2, primary: false }
+
   const SERVICE_DURATION = 300
   // serviceStart now returns immediately (Starting); escrow + image pull run in a background
   // pipeline (Starting → Locking → PullImage → Claiming → Running). extend/restart/stop may
@@ -256,6 +261,7 @@ describe('Service on Demand flow tests', () => {
         duration: SERVICE_DURATION,
         resources: requestedResources,
         userData: Object.keys(userData).length ? userData : undefined,
+        metadata: startMetadata,
         payment: { chainId, token: paymentToken }
       },
       opSignal()
@@ -308,6 +314,8 @@ describe('Service on Demand flow tests', () => {
     assert(job, 'service not found by id')
     expect((job as any).userData).to.equal(undefined)
     assert(job.payment, 'payment should be present')
+    // owner-scoped status keeps the metadata set at start
+    expect(job.metadata).to.deep.equal(startMetadata)
 
     // also: listing without a serviceId returns the owner's services
     const all = await ProviderInstance.getServiceStatus(providerUrl, consumerAccount)
@@ -338,6 +346,9 @@ describe('Service on Demand flow tests', () => {
     }
     assert(job.owner, 'identity fields are kept')
     assert(job.payment, 'payment metadata is kept')
+    // metadata labels are now kept on SERVICE_LIST too (see ocean-node #1464) — the same
+    // bag set at start is visible to another consumer's node-wide listing
+    expect(job.metadata).to.deep.equal(startMetadata)
 
     // status filter narrows to ONE specific status
     const running = await ProviderInstance.getServices(providerUrl, consumerAccount, {
@@ -392,11 +403,12 @@ describe('Service on Demand flow tests', () => {
     ).find((j) => j.serviceId === serviceId)
     const oldContainerId = before?.containerId
 
+    // supplying only metadata replaces the stored bag without forcing RESPEC (REUSE mode)
     await ProviderInstance.serviceRestart(
       providerUrl,
       consumerAccount,
       serviceId,
-      undefined,
+      { metadata: restartMetadata },
       opSignal()
     )
     const running = await pollUntil(
@@ -407,6 +419,12 @@ describe('Service on Demand flow tests', () => {
     expect(running.containerId).to.not.equal(oldContainerId)
     expect(running.endpoints[0].hostPort).to.equal(hostPort)
     expect(running.expiresAt).to.equal(expiresAt)
+
+    // the restart's metadata replaced the start metadata on owner-scoped status
+    const after = (
+      await ProviderInstance.getServiceStatus(providerUrl, consumerAccount, serviceId)
+    ).find((j) => j.serviceId === serviceId)
+    expect(after?.metadata).to.deep.equal(restartMetadata)
   })
 
   it('stops the service → Stopped', async function () {

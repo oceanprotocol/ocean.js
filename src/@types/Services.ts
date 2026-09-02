@@ -1,4 +1,8 @@
-import { ComputeResourceRequest, ContainerMetricsSnapshot } from './Compute.js'
+import {
+  ComputeJobMetadata,
+  ComputeResourceRequest,
+  ContainerMetricsSnapshot
+} from './Compute.js'
 
 // Service-on-Demand client types. Mirror of ocean-node
 // `src/@types/C2D/ServiceOnDemand.ts` (the API surface a client interacts with).
@@ -120,13 +124,19 @@ export interface ServiceJob {
   // Present only when getServiceStatus() resolved includeMetrics to true; never present
   // on SERVICE_LIST (see ServiceJobListed).
   runtimeMetrics?: ContainerMetricsSnapshot
+  // Optional owner-supplied label bag set at serviceStart/serviceRestart (≤1 KB, enforced
+  // by the node). Returned on both SERVICE_GET_STATUS (getServiceStatus) and the node-wide
+  // SERVICE_LIST (see ocean-node #1464 — previously stripped from the listing, now kept so
+  // any consumer can read a service's labels).
+  metadata?: ComputeJobMetadata
 }
 
 // Returned by SERVICE_LIST, which is authenticated but NOT owner-scoped (any consumer
 // identity sees every owner's services). On top of the always-stripped userData, the
 // node removes everything that reveals HOW a service is configured — CMD/ENTRYPOINT
-// overrides and any inline Dockerfile. Identity, status, resources, endpoints and
-// payment metadata are kept; use the owner-scoped SERVICE_GET_STATUS for the full view.
+// overrides and any inline Dockerfile. Identity, status, resources, endpoints, payment
+// info and the owner-supplied metadata labels are kept (metadata is listed as of
+// ocean-node #1464); use the owner-scoped SERVICE_GET_STATUS for the full view.
 export type ServiceJobListed = Omit<
   ServiceJob,
   | 'dockerCmd'
@@ -179,6 +189,10 @@ export interface ServiceContainerSpec {
   userData?: ServiceUserData
   dockerCmd?: string[] // exec-form CMD override (no shell)
   dockerEntrypoint?: string[]
+  // Optional owner-supplied label bag (scalar values only, ≤1 KB — the node enforces the
+  // cap and 400s if oversized). Unlike userData it is NOT encrypted. On serviceRestart it
+  // replaces the stored metadata when supplied and does NOT force RESPEC mode.
+  metadata?: ComputeJobMetadata
 }
 
 // Optional container-spec overrides for serviceRestart. The node treats the restart
