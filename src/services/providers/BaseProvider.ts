@@ -1163,6 +1163,35 @@ export class BaseProvider {
     )
   }
 
+  /**
+   * Downloads a file stored in a persistent-storage bucket, dispatching to the HTTP
+   * or P2P transport based on `nodeUri`.
+   * @param {OceanNode} nodeUri The provider target (HTTP URL, or peerId / multiaddr for P2P).
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken Signer, JWT auth token, or precomputed signature used to authenticate the request.
+   * @param {string} bucketId The bucket holding the file.
+   * @param {string} fileName The name of the file to download.
+   * @param {number} [offset=0] Byte offset to resume the download from. Must be a non-negative safe integer. Over HTTP this becomes a `Range` request (server must answer 206 starting at `offset`); over P2P it is sent in the request payload.
+   * @param {AbortSignal} [signal] Abort signal that cancels the download.
+   * @return {Promise<ComputeResultStream>} An async-iterable stream of the file body starting at `offset`.
+   */
+  public async downloadPersistentStorageFile(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    bucketId: string,
+    fileName: string,
+    offset: number = 0,
+    signal?: AbortSignal
+  ): Promise<ComputeResultStream> {
+    return this.getImpl(nodeUri).downloadPersistentStorageFile(
+      nodeUri,
+      signerOrAuthToken,
+      bucketId,
+      fileName,
+      offset,
+      signal
+    )
+  }
+
   // ── Service on Demand ────────────────────────────────────────────────
 
   public async getServiceTemplates(

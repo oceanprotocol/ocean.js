@@ -3168,7 +3168,9 @@ export class P2pProvider {
         throw new Error(status.error ?? `P2P compute result error: ${status.httpStatus}`)
       }
     } catch (e) {
-      // Nothing is going to consume the generator, so hand the slot back here.
+      // Nothing is going to consume the generator, so reset the stream first — otherwise
+      // the peer keeps producing a body nobody will drain — then hand the slot back here.
+      abortResponseStream(stream, e)
       release()
       throw e
     }
@@ -3644,6 +3646,121 @@ export class P2pProvider {
     )
   }
 
+  /**
+   * Downloads a file stored in a persistent-storage bucket over libp2p.
+   *
+   * The transfer mirrors `getComputeResult`: `dialAndStream` takes a concurrency
+   * slot up front, the first frame is a status JSON (an `httpStatus >= 400` throws
+   * and releases the slot immediately), and the returned generator streams the file
+   * body, applying flow control so a slow consumer does not overrun the buffer. If
+   * the caller stops reading early, or `signal` aborts, or the idle timeout fires,
+   * the stream is reset so the peer stops sending, and the concurrency slot is
+   * released from the generator's `finally`.
+   * @param {OceanNode} nodeUri The provider node (peerId / multiaddr).
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken Signer, JWT auth token, or precomputed signature used to authenticate the request.
+   * @param {string} bucketId The bucket holding the file.
+   * @param {string} fileName The name of the file to download.
+   * @param {number} [offset=0] Byte offset to resume the download from, sent to the node in the request payload. Must be a non-negative safe integer.
+   * @param {AbortSignal} [signal] Abort signal that cancels the download mid-flight and tears down the stream.
+   * @return {Promise<ComputeResultStream>} An async-iterable stream of the file body starting at `offset`.
+   */
+  public async downloadPersistentStorageFile(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    bucketId: string,
+    fileName: string,
+    offset: number = 0,
+    signal?: AbortSignal
+  ): Promise<ComputeResultStream> {
+    if (!Number.isSafeInteger(offset) || offset < 0) {
+      throw new Error(`Invalid offset: ${offset}. Must be a non-negative safe integer.`)
+    }
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_DOWNLOAD_FILE,
+      signal
+    )
+    const payload: Record<string, any> = {
+      command: PROTOCOL_COMMANDS.PERSISTENT_STORAGE_DOWNLOAD_FILE,
+      bucketId,
+      fileName,
+      offset,
+      consumerAddress
+    }
+
+    if (typeof signerOrAuthToken === 'string') {
+      payload.authorization = signerOrAuthToken
+    } else {
+      payload.nonce = nonce
+      payload.signature = signature
+    }
+
+    // A stored file is a bulk transfer like a compute result, so this mirrors
+    // `getComputeResult`: `dialAndStream` takes a concurrency slot and the generator
+    // below releases it from its `finally` rather than this method releasing on return.
+    const { firstBytes, frames, stream, release } = await this.dialAndStream(
+      nodeUri,
+      payload,
+      signal
+    )
+
+    let status: Record<string, any>
+    try {
+      // First frame is always a status JSON
+      status = JSON.parse(new TextDecoder().decode(firstBytes))
+      if (typeof status?.httpStatus === 'number' && status.httpStatus >= 400) {
+        throw new Error(
+          status.error ?? `P2P persistent storage download error: ${status.httpStatus}`
+        )
+      }
+    } catch (e) {
+      // Nothing is going to consume the generator, so reset the stream first — otherwise
+      // the peer keeps producing a body nobody will drain — then hand the slot back here.
+      abortResponseStream(stream, e)
+      release()
+      throw e
+    }
+
+    const idleTimeout = this.streamIdleTimeoutMs()
+    return (async function* () {
+      let completed = false
+      try {
+        while (true) {
+          // Flow control — see `LP_RESUME_BELOW_BYTES`. A file download is exactly the
+          // transfer where a consumer writing to disk falls behind the sender, and an unread
+          // backlog past `maxBufferSize` is silently dropped by `byteStream`, desynchronising
+          // the frame parser and handing out corrupt, out-of-sequence frames.
+          if (frames.pendingBytes <= LP_RESUME_BELOW_BYTES) {
+            resumeReads(stream)
+          }
+          // Every frame is read under the caller's signal as well as the idle timeout,
+          // so a download in progress can be cancelled mid-flight.
+          const chunk = await readFrame(frames, signal, idleTimeout)
+          pauseReads(stream)
+          yield chunk
+        }
+      } catch (e) {
+        // Truncation and a clean end throw the same error type; only the clean end
+        // may finish the stream, or the consumer writes a short file.
+        if (!frames.isCleanEnd(e)) throw e
+        completed = true
+      } finally {
+        // Never leave the read side paused once nobody is reading any more.
+        resumeReads(stream)
+        // Cancelled, broken, or left early by the consumer: reset the stream so the peer
+        // stops producing a file body nobody will read.
+        if (!completed) {
+          abortResponseStream(
+            stream,
+            new Error('P2P persistent storage download is no longer being read')
+          )
+        }
+        release()
+      }
+    })()
+  }
+
   public async uploadPersistentStorageFile(
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
@@ -3791,6 +3908,24 @@ export class P2pProvider {
     return Array.isArray(result) ? result : [result]
   }
 
+  /**
+   * Restarts a running service (recreates the container) while keeping the same serviceId,
+   * payment, resources, host port(s) and expiry.
+   *
+   * The node treats the restart atomically. Passing no container-spec fields in `params`
+   * (REUSE mode) bounces the container on its stored spec unchanged. Passing ANY of
+   * `image`/`tag`/`checksum`/`dockerfile`/`additionalDockerFiles` (RESPEC mode) rebuilds the
+   * container entirely from `params`: `image` becomes mandatory, exactly one of
+   * `tag`/`checksum`/`dockerfile` applies, and a `dockerfile` requires `allowImageBuild` on
+   * the env (else the node replies 403). `userData`/`dockerCmd`/`dockerEntrypoint` are only
+   * sent when supplied — an omitted override reuses the node's stored value, whereas an
+   * explicit value (including `[]`) REPLACES it (matches ocean-node's restartService semantics).
+   *
+   * `params.metadata` is an optional owner-supplied label bag that, when supplied, REPLACES the
+   * stored metadata (and does NOT force RESPEC mode). Unlike `userData`, it is transmitted
+   * WITHOUT application-level encryption, so it must not contain sensitive values.
+   * @return {Promise<ServiceJob[]>} The restarted service job (single-element array).
+   */
   public async serviceRestart(
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,

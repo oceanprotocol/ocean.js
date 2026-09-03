@@ -1657,6 +1657,72 @@ export class HttpProvider {
     return response.json()
   }
 
+  /**
+   * Downloads a file stored in a persistent-storage bucket over HTTP.
+   * @param {string} nodeUri The provider URI.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken Signer, JWT auth token, or precomputed signature used to authenticate the request.
+   * @param {string} bucketId The bucket holding the file.
+   * @param {string} fileName The name of the file to download.
+   * @param {number} [offset=0] Byte offset to resume the download from. When greater than 0 a `Range: bytes=<offset>-` header is sent and the server must answer with `206 Partial Content` starting at that offset. Must be a non-negative safe integer.
+   * @param {AbortSignal} [signal] Abort signal that cancels the in-flight request.
+   * @return {Promise<ComputeResultStream>} An async-iterable stream of the file body starting at `offset`.
+   */
+  public async downloadPersistentStorageFile(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    bucketId: string,
+    fileName: string,
+    offset: number = 0,
+    signal?: AbortSignal
+  ): Promise<ComputeResultStream> {
+    if (!Number.isSafeInteger(offset) || offset < 0) {
+      throw new Error(`Invalid offset: ${offset}. Must be a non-negative safe integer.`)
+    }
+    const routeBase =
+      this.baseUrl(nodeUri) +
+      `/api/services/persistentStorage/buckets/${encodeURIComponent(
+        bucketId
+      )}/files/${encodeURIComponent(fileName)}`
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_DOWNLOAD_FILE,
+      signal
+    )
+    const query = this.buildQuery({ ...authPayload })
+    const headers: Record<string, string> = {}
+    if (typeof signerOrAuthToken === 'string') {
+      headers.Authorization = signerOrAuthToken
+    }
+    if (offset > 0) headers.Range = `bytes=${offset}-`
+    const response = await fetch(`${routeBase}?${query.toString()}`, {
+      method: 'GET',
+      headers,
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    if (offset > 0) {
+      // A server that ignores the Range header answers 200 with the full body;
+      // consuming it as if it started at `offset` would corrupt a resumed download,
+      // so require a 206 whose Content-Range begins exactly at the requested offset.
+      if (response.status !== 206) {
+        throw new Error(
+          `Persistent storage range request was not honored: expected 206 Partial Content, got ${response.status}`
+        )
+      }
+      const contentRange = response.headers.get('content-range')
+      const match = contentRange?.match(/bytes\s+(\d+)-/i)
+      if (!match || Number(match[1]) !== offset) {
+        throw new Error(
+          `Persistent storage range request returned an unexpected Content-Range: ${
+            contentRange ?? 'none'
+          } (requested offset ${offset})`
+        )
+      }
+    }
+    return responseBodyToAsyncIterable(response.body)
+  }
+
   public async uploadPersistentStorageFile(
     nodeUri: string,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,

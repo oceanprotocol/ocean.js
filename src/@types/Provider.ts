@@ -253,6 +253,7 @@ export const PROTOCOL_COMMANDS = {
   PERSISTENT_STORAGE_UPLOAD_FILE: 'persistentStorageUploadFile',
   PERSISTENT_STORAGE_GET_FILE_OBJECT: 'persistentStorageGetFileObject',
   PERSISTENT_STORAGE_DELETE_FILE: 'persistentStorageDeleteFile',
+  PERSISTENT_STORAGE_DOWNLOAD_FILE: 'persistentStorageDownloadFile',
   SERVICE_GET_TEMPLATES: 'serviceGetTemplates',
   SERVICE_START: 'serviceStart',
   SERVICE_STOP: 'serviceStop',
