@@ -3091,7 +3091,9 @@ export class P2pProvider {
         throw new Error(status.error ?? `P2P compute result error: ${status.httpStatus}`)
       }
     } catch (e) {
-      // Nothing is going to consume the generator, so hand the slot back here.
+      // Nothing is going to consume the generator, so reset the stream first — otherwise
+      // the peer keeps producing a body nobody will drain — then hand the slot back here.
+      abortResponseStream(stream, e)
       release()
       throw e
     }
@@ -3636,7 +3638,9 @@ export class P2pProvider {
         )
       }
     } catch (e) {
-      // Nothing is going to consume the generator, so hand the slot back here.
+      // Nothing is going to consume the generator, so reset the stream first — otherwise
+      // the peer keeps producing a body nobody will drain — then hand the slot back here.
+      abortResponseStream(stream, e)
       release()
       throw e
     }
@@ -3827,6 +3831,24 @@ export class P2pProvider {
     return Array.isArray(result) ? result : [result]
   }
 
+  /**
+   * Restarts a running service (recreates the container) while keeping the same serviceId,
+   * payment, resources, host port(s) and expiry.
+   *
+   * The node treats the restart atomically. Passing no container-spec fields in `params`
+   * (REUSE mode) bounces the container on its stored spec unchanged. Passing ANY of
+   * `image`/`tag`/`checksum`/`dockerfile`/`additionalDockerFiles` (RESPEC mode) rebuilds the
+   * container entirely from `params`: `image` becomes mandatory, exactly one of
+   * `tag`/`checksum`/`dockerfile` applies, and a `dockerfile` requires `allowImageBuild` on
+   * the env (else the node replies 403). `userData`/`dockerCmd`/`dockerEntrypoint` are only
+   * sent when supplied — an omitted override reuses the node's stored value, whereas an
+   * explicit value (including `[]`) REPLACES it (matches ocean-node's restartService semantics).
+   *
+   * `params.metadata` is an optional owner-supplied label bag that, when supplied, REPLACES the
+   * stored metadata (and does NOT force RESPEC mode). Unlike `userData`, it is transmitted
+   * WITHOUT application-level encryption, so it must not contain sensitive values.
+   * @return {Promise<ServiceJob[]>} The restarted service job (single-element array).
+   */
   public async serviceRestart(
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
