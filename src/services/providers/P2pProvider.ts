@@ -46,6 +46,8 @@ import {
   ComputeResultStream,
   NodeStatus,
   NodeComputeJob,
+  NodeMetricsSnapshot,
+  NodeMetricsHistoryResult,
   PersistentStorageAccessList,
   PersistentStorageBucket,
   PersistentStorageCreateBucketRequest,
@@ -2472,6 +2474,81 @@ export class P2pProvider {
     } catch (e) {
       LoggerInstance.error('P2P getNodeJobs failed:', e)
       return []
+    }
+  }
+
+  /**
+   * Returns the live per-node resource metrics snapshot via the P2P GET_NODE_METRICS command.
+   * @param {OceanNode} nodeUri - peerId/multiaddr of the node
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<NodeMetricsSnapshot | null>} the snapshot, or null if unavailable
+   */
+  public async getNodeMetrics(
+    nodeUri: OceanNode,
+    signal?: AbortSignal
+  ): Promise<NodeMetricsSnapshot | null> {
+    try {
+      const result = await this.sendP2pCommand(
+        nodeUri,
+        PROTOCOL_COMMANDS.GET_NODE_METRICS,
+        {},
+        null,
+        signal
+      )
+      // A well-formed peer failure comes back as an error envelope (a string or an
+      // object carrying `.error`), not a snapshot. Never expose it as a metrics result.
+      if (
+        !result ||
+        typeof result !== 'object' ||
+        typeof result.collectedAt !== 'number'
+      ) {
+        return null
+      }
+      return result
+    } catch (e) {
+      // A caller-driven cancellation is not a compatibility failure: surface it.
+      if (signal?.aborted) throw e
+      LoggerInstance.error('P2P getNodeMetrics failed:', e)
+      return null
+    }
+  }
+
+  /**
+   * Returns the hourly per-node resource history via the P2P GET_NODE_METRICS_HISTORY command.
+   * @param {OceanNode} nodeUri - peerId/multiaddr of the node
+   * @param {number | string} startTime - optional range start (epoch ms or ISO-8601)
+   * @param {number | string} stopTime - optional range end (epoch ms or ISO-8601)
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<NodeMetricsHistoryResult | null>} the history, or null if unavailable
+   */
+  public async getNodeMetricsHistory(
+    nodeUri: OceanNode,
+    startTime?: number | string,
+    stopTime?: number | string,
+    signal?: AbortSignal
+  ): Promise<NodeMetricsHistoryResult | null> {
+    try {
+      const body: Record<string, any> = {}
+      if (startTime !== undefined) body.startTime = startTime
+      if (stopTime !== undefined) body.stopTime = stopTime
+      const result = await this.sendP2pCommand(
+        nodeUri,
+        PROTOCOL_COMMANDS.GET_NODE_METRICS_HISTORY,
+        body,
+        null,
+        signal
+      )
+      // A well-formed peer failure comes back as an error envelope (a string or an
+      // object carrying `.error`), not a history result. Never expose it as one.
+      if (!result || typeof result !== 'object' || !Array.isArray(result.buckets)) {
+        return null
+      }
+      return result
+    } catch (e) {
+      // A caller-driven cancellation is not a compatibility failure: surface it.
+      if (signal?.aborted) throw e
+      LoggerInstance.error('P2P getNodeMetricsHistory failed:', e)
+      return null
     }
   }
 

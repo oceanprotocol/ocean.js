@@ -21,6 +21,8 @@ import {
   NodeStatus,
   NodeComputeJob,
   NodeLogEntry,
+  NodeMetricsSnapshot,
+  NodeMetricsHistoryResult,
   PersistentStorageAccessList,
   PersistentStorageBucket,
   PersistentStorageCreateBucketRequest,
@@ -141,6 +143,69 @@ export class HttpProvider {
     } catch (e) {
       LoggerInstance.error('getNodeJobs failed:', e)
       return []
+    }
+  }
+
+  /**
+   * Returns the live per-node resource metrics snapshot via `GET /nodeMetrics`.
+   * @param {string} nodeUri - node HTTP endpoint
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<NodeMetricsSnapshot | null>} the snapshot, or null if unavailable
+   */
+  public async getNodeMetrics(
+    nodeUri: string,
+    signal?: AbortSignal
+  ): Promise<NodeMetricsSnapshot | null> {
+    const url = this.baseUrl(nodeUri) + '/nodeMetrics'
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+      if (response?.ok) return response.json()
+      return null
+    } catch (e) {
+      // A caller-driven cancellation is not a compatibility failure: surface it.
+      if (signal?.aborted) throw e
+      LoggerInstance.error('getNodeMetrics failed:', e)
+      return null
+    }
+  }
+
+  /**
+   * Returns the hourly per-node resource history via `GET /nodeMetrics/history`.
+   * @param {string} nodeUri - node HTTP endpoint
+   * @param {number | string} startTime - optional range start (epoch ms or ISO-8601)
+   * @param {number | string} stopTime - optional range end (epoch ms or ISO-8601)
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<NodeMetricsHistoryResult | null>} the history, or null if unavailable
+   */
+  public async getNodeMetricsHistory(
+    nodeUri: string,
+    startTime?: number | string,
+    stopTime?: number | string,
+    signal?: AbortSignal
+  ): Promise<NodeMetricsHistoryResult | null> {
+    let url = this.baseUrl(nodeUri) + '/nodeMetrics/history'
+    const params = new URLSearchParams()
+    if (startTime !== undefined) params.append('startTime', String(startTime))
+    if (stopTime !== undefined) params.append('stopTime', String(stopTime))
+    const query = params.toString()
+    if (query) url += `?${query}`
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+      if (response?.ok) return response.json()
+      return null
+    } catch (e) {
+      // A caller-driven cancellation is not a compatibility failure: surface it.
+      if (signal?.aborted) throw e
+      LoggerInstance.error('getNodeMetricsHistory failed:', e)
+      return null
     }
   }
 
