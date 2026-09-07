@@ -70,6 +70,8 @@ export interface ComputeEnvironment {
   storageExpiry?: number // amount of seconds for storage
   minJobDuration?: number // min billable seconds for a paid job
   maxJobDuration?: number // max duration in seconds for a paid job
+  minServiceDuration?: number // min duration in seconds for a paid Service-on-Demand
+  maxServiceDuration?: number // max duration in seconds for a paid Service-on-Demand
   maxJobs?: number // maximum number of simultaneous paid jobs
   runningJobs: number // amount of running jobs (paid jobs)
   runningfreeJobs?: number // amount of running jobs (free jobs)
