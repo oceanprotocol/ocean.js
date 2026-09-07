@@ -210,7 +210,7 @@ export interface ServiceStartParams extends ServiceContainerSpec {
   image: string // required for start (base image name, or build label when dockerfile is set)
   exposedPorts?: number[]
   resources?: ComputeResourceRequest[]
-  duration: number // seconds; capped by serviceOnDemand.maxDurationSeconds
+  duration: number // seconds; must fall within the env's minServiceDuration..maxServiceDuration (node enforces)
   payment: ServicePayment
   outputBucketId?: string // persistent-storage bucket bind-mounted at /data/outputs
 }
