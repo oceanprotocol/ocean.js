@@ -49,7 +49,7 @@ Running a SINGLE test:
 
 ### Unit vs integration split
 
-- `test/unit/**` — pure contract-wrapper tests (Datatoken, Nft, NftFactory, FixedRateExchange, Dispenser, Router, Escrow, EnterpriseFeeCollector, AssetUtils). These still hit a **local chain** (they deploy/interact via the barge Ganache node) but don't require the full Node/Aquarius/Indexer stack the way integration does. `mock-local-storage` and `source-map-support` are auto-required (mocharc).
+- `test/unit/**` — pure contract-wrapper tests (Datatoken, Nft, NftFactory, FixedRateExchange, Dispenser, Router, Escrow, EnterpriseFeeCollector, GrantsSwap, AssetUtils). These still hit a **local chain** (they deploy/interact via the barge Ganache node) but don't require the full Node/Aquarius/Indexer stack the way integration does. `mock-local-storage` and `source-map-support` are auto-required (mocharc).
 - `test/integration/**` — end-to-end flows against the whole Ocean stack: `PublishFlows`, `PublishEditConsume`, `ComputeFlow`, `Provider`, `Auth`, `Sapphire`, plus `CodeExamples`/`ComputeExamples` (see "Generated guides"). `_P2PWarmup.test.ts` warms up the libp2p transport first.
 - Shared test setup is in `test/config.ts` (`getTestConfig`, `getAddresses`, a default `JsonRpcProvider` on the development network) and `test/integration/helpers.ts`.
 
@@ -104,6 +104,7 @@ Wrappers (each maps to an Ocean contract):
 - `Router` (FactoryRouter) — approved base tokens, OPC fees, `buyDatatokenBatch`.
 - `Escrow` — payment escrow (deposit/withdraw/authorize/locks/reLock/bundle); the current feature branch (`feature/new_bundle_for_escrow`) is actively evolving this.
 - `EnterpriseFeeCollector`, plus `AccessList` + `AccessListFactory` (soulbound allow/deny lists used on confidential EVM).
+- `GrantsSwap` — user-facing wrapper for the grants COMPY swap (`getRate`, `getCompyAmount`, `swapToCOMPY`/`swapToCOMPYwithPermit`, `getInputToken`/`getCompyToken`). Interact-only (extends `SmartContractWithAddress`); owner/admin ops (`setRate`, `pause`) are intentionally not wrapped. Input token and COMPY may have different decimals (e.g. USDC 6 ↔ COMPY 18/12/6) — conversions fetch each token's `decimals()` on chain rather than assuming 18; only the `RATE_UNIT` (1e18) rate scale is fixed.
 
 **Dual-method transaction pattern (important — follow it when adding methods).** Every state-changing operation exists as a pair:
 - `fooTx(...) : Promise<TransactionRequest>` — builds the *unsigned* tx (gas estimated via `buildTxOverrides`, assembled via `buildUnsignedTx`).
