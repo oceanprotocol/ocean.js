@@ -34,11 +34,34 @@ const RATE_UNIT_DECIMALS = 18
 export class GrantsSwap extends SmartContractWithAddress {
   private inputTokenAddress: string
   private compyTokenAddress: string
-  private inputTokenDecimals: number
-  private compyTokenDecimals: number
+  // `undefined` = not yet fetched. Kept distinct from a real value because `0` is a
+  // legal ERC20 decimals, so the cache guards check `=== undefined`, not falsiness.
+  private inputTokenDecimals?: number
+  private compyTokenDecimals?: number
 
   getDefaultAbi() {
     return GrantsSwapAbi.abi as AbiItem[]
+  }
+
+  /**
+   * Validate and normalize a caller-provided `gasLimit`. Accepts only positive
+   * base-10 integer strings (in gas units); rejects decimals, zero and negatives
+   * with a `RangeError` rather than letting `BigInt` throw a cryptic error or
+   * silently produce an invalid override.
+   * @param {string} gasLimit gas limit as a positive integer string
+   * @return {bigint}
+   */
+  private normalizeGasLimit(gasLimit: string): bigint {
+    if (!/^\d+$/.test(gasLimit)) {
+      throw new RangeError(
+        `Invalid gasLimit "${gasLimit}": expected a positive base-10 integer string`
+      )
+    }
+    const value = BigInt(gasLimit)
+    if (value <= 0n) {
+      throw new RangeError(`Invalid gasLimit "${gasLimit}": must be greater than 0`)
+    }
+    return value
   }
 
   /**
@@ -126,7 +149,7 @@ export class GrantsSwap extends SmartContractWithAddress {
    * it together with `getRate` to cap the input amount.
    * @return {Promise<string>}
    */
-  public async getCOMPYBalance(): Promise<string> {
+  public async getCompyBalance(): Promise<string> {
     const compyToken = await this.getCompyToken()
     const compyDecimals = await this.getCompyTokenDecimals()
     const tokenContract = this.getContract(compyToken, minAbi as AbiItem[])
@@ -169,6 +192,15 @@ export class GrantsSwap extends SmartContractWithAddress {
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
+  /**
+   * Build the unsigned `swapToCOMPY` transaction (does not sign or send).
+   * @param {String} amount input-token amount to swap (human-readable)
+   * @param {String} [gasLimit] optional pre-computed gas limit (positive integer
+   *   string, in gas units). When provided, the on-chain `estimateGas` simulation is
+   *   skipped — required for batched flows (e.g. an ERC-4337 approve+swap UserOp)
+   *   where allowance is still 0 at build time and the simulation would revert.
+   * @return {Promise<TransactionRequest>} the unsigned transaction
+   */
   public async swapToCOMPYTx(
     amount: string,
     gasLimit?: string
@@ -177,7 +209,7 @@ export class GrantsSwap extends SmartContractWithAddress {
     const amountUnits = await this.amountToUnits(inputToken, amount)
     const estGas =
       gasLimit !== undefined
-        ? BigInt(gasLimit)
+        ? this.normalizeGasLimit(gasLimit)
         : await this.contract.swapToCOMPY.estimateGas(amountUnits)
     const overrides = await buildTxOverrides(
       estGas,
@@ -209,6 +241,15 @@ export class GrantsSwap extends SmartContractWithAddress {
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
+  /**
+   * Build the unsigned `swapToCOMPYwithPermit` transaction (does not sign or send).
+   * @param {String} amount input-token amount to swap (human-readable)
+   * @param {GrantsSwapPermit} permit permit signature (`deadline`, `v`, `r`, `s`)
+   * @param {String} [gasLimit] optional pre-computed gas limit (positive integer
+   *   string, in gas units). When provided, the on-chain `estimateGas` simulation is
+   *   skipped (see `swapToCOMPYTx`).
+   * @return {Promise<TransactionRequest>} the unsigned transaction
+   */
   public async swapToCOMPYwithPermitTx(
     amount: string,
     permit: GrantsSwapPermit,
@@ -219,7 +260,7 @@ export class GrantsSwap extends SmartContractWithAddress {
     const args = [amountUnits, permit.deadline, permit.v, permit.r, permit.s]
     const estGas =
       gasLimit !== undefined
-        ? BigInt(gasLimit)
+        ? this.normalizeGasLimit(gasLimit)
         : await this.contract.swapToCOMPYwithPermit.estimateGas(...args)
     const overrides = await buildTxOverrides(
       estGas,
