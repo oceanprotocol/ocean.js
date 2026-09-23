@@ -14,7 +14,9 @@ import BigNumber from 'bignumber.js'
  * @param {string} account - The address of the caller
  * @param {string} tokenAddress - The address of the token
  * @param {string} spender - The address of the spender
- * @param {String} amount amount of ERC20 Datatokens (always expressed as wei)
+ * @param {String} amount amount of ERC20 Datatokens in human-readable units (NOT wei);
+ *   it is converted to base units internally via `amountToUnits` using the token's
+ *   decimals. Use `approveWei` if you already hold a wei-denominated amount.
  * @param {boolean} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
  * @param {number} [tokenDecimals] optional number of decimals of the token
  * @param {boolean} [estimateGas]  if true, returns the estimate gas cost for calling the method

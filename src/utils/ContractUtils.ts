@@ -247,6 +247,19 @@ export async function buildUnsignedTx(
   return tx
 }
 
+/**
+ * Sends a contract method call and waits for it to be mined.
+ *
+ * IMPORTANT: on any failure — including the user rejecting the wallet prompt or a
+ * revert during `send`/`wait` — this does NOT throw. It logs via `LoggerInstance`
+ * and resolves to `null`. Callers must treat a `null` result as "the transaction
+ * did not go through" and must not assume success from a resolved promise.
+ *
+ * @param {BaseContractMethod} functionToSend - The contract method to call
+ * @param {any[]} args - Arguments passed to the method
+ * @param {Record<string, any>} overrides - Tx overrides (gas, etc.)
+ * @return {Promise<TransactionResponse>} the mined tx response, or `null` on failure/rejection
+ */
 export async function sendPreparedTx(
   functionToSend: BaseContractMethod,
   args: any[],
@@ -262,6 +275,20 @@ export async function sendPreparedTx(
   }
 }
 
+/**
+ * Signs and sends a pre-built (unsigned) transaction and waits for it to be mined.
+ *
+ * IMPORTANT: on any failure — including the user rejecting the wallet prompt or a
+ * revert during `sendTransaction`/`wait` — this does NOT throw. It logs via
+ * `LoggerInstance` and resolves to `null`. Every wrapper that returns a
+ * `ReceiptOrEstimate` through this helper can therefore resolve to `null`; callers
+ * must treat a `null` result as "the transaction did not go through" (e.g. a
+ * rejected swap) and must not surface success from a resolved promise alone.
+ *
+ * @param {Signer} signer - The signer used to send the transaction
+ * @param {TransactionRequest} tx - The unsigned transaction to sign and send
+ * @return {Promise<TransactionResponse>} the mined tx response, or `null` on failure/rejection
+ */
 export async function sendPreparedTransaction(
   signer: Signer,
   tx: TransactionRequest
