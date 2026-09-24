@@ -92,7 +92,7 @@ export async function unitsToAmount(
   amount: string,
   tokenDecimals?: number
 ): Promise<string> {
-  let decimals = tokenDecimals || (await getTokenDecimals(signer, token))
+  let decimals = tokenDecimals ?? (await getTokenDecimals(signer, token))
   if (decimals === '0') {
     decimals = 18
   }
@@ -115,7 +115,7 @@ export async function amountToUnits(
   amount: string,
   tokenDecimals?: number
 ): Promise<string> {
-  let decimals = tokenDecimals || (await getTokenDecimals(signer, token))
+  let decimals = tokenDecimals ?? (await getTokenDecimals(signer, token))
   if (decimals === '0') {
     decimals = 18
   }
