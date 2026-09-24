@@ -1,7 +1,8 @@
-import { Signer } from 'ethers'
+import { MaxUint256, Signer } from 'ethers'
 import ContractABI from '@oceanprotocol/contracts/artifacts/contracts/subsidy/OPFSubsidyProvider.sol/OPFSubsidyProvider.json'
 import { AbiItem, TokenLimits } from '../@types/index.js'
 import { Config, ConfigHelper } from '../config/index.js'
+import { getTokenDecimals } from '../utils/ContractUtils.js'
 import { SmartContractWithAddress } from './SmartContractWithAddress.js'
 
 /**
@@ -60,12 +61,15 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
     token: string,
     tokenDecimals?: number
   ): Promise<TokenLimits> {
+    // Resolve decimals once to avoid three identical decimals() RPC calls below when
+    // tokenDecimals is not supplied.
+    const decimals = tokenDecimals ?? Number(await getTokenDecimals(this.signer, token))
     const limits = await this.contract.getTokenLimits(token)
     return {
       pctBps: limits.pctBps.toString(),
-      daily: await this.unitsToAmount(token, limits.daily.toString(), tokenDecimals),
-      weekly: await this.unitsToAmount(token, limits.weekly.toString(), tokenDecimals),
-      monthly: await this.unitsToAmount(token, limits.monthly.toString(), tokenDecimals),
+      daily: await this.unitsToAmount(token, limits.daily.toString(), decimals),
+      weekly: await this.unitsToAmount(token, limits.weekly.toString(), decimals),
+      monthly: await this.unitsToAmount(token, limits.monthly.toString(), decimals),
       enabled: limits.enabled
     }
   }
@@ -90,12 +94,11 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
     subsidyNeeded: string,
     tokenDecimals?: number
   ): Promise<string> {
-    const amountUnits = await this.amountToUnits(token, amount, tokenDecimals)
-    const subsidyNeededUnits = await this.amountToUnits(
-      token,
-      subsidyNeeded,
-      tokenDecimals
-    )
+    // Resolve decimals once to avoid repeated decimals() RPC calls across the three
+    // conversions below when tokenDecimals is not supplied.
+    const decimals = tokenDecimals ?? Number(await getTokenDecimals(this.signer, token))
+    const amountUnits = await this.amountToUnits(token, amount, decimals)
+    const subsidyNeededUnits = await this.amountToUnits(token, subsidyNeeded, decimals)
     const quote = await this.contract.quoteSubsidy(
       node,
       payer,
@@ -104,7 +107,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
       amountUnits,
       subsidyNeededUnits
     )
-    return this.unitsToAmount(token, quote.toString(), tokenDecimals)
+    return await this.unitsToAmount(token, quote.toString(), decimals)
   }
 
   /**
@@ -120,7 +123,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
     tokenDecimals?: number
   ): Promise<string> {
     const remaining = await this.contract.remainingSubsidy(payer, token)
-    return this.unitsToAmount(token, remaining.toString(), tokenDecimals)
+    return await this.unitsToAmount(token, remaining.toString(), tokenDecimals)
   }
 
   /**
@@ -128,7 +131,8 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
    * @param {string} payer Payer address
    * @param {string} token Token address
    * @param {number} [tokenDecimals] optional number of decimals of the token
-   * @return {Promise<string>} remaining daily budget, in human-readable token units
+   * @return {Promise<string>} remaining daily budget in human-readable token units, or
+   * `MaxUint256` (as a string) when the daily cap is disabled (unlimited)
    */
   public async remainingDaily(
     payer: string,
@@ -136,7 +140,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
     tokenDecimals?: number
   ): Promise<string> {
     const remaining = await this.contract.remainingDaily(payer, token)
-    return this.unitsToAmount(token, remaining.toString(), tokenDecimals)
+    return await this.formatRemaining(remaining, token, tokenDecimals)
   }
 
   /**
@@ -144,7 +148,8 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
    * @param {string} payer Payer address
    * @param {string} token Token address
    * @param {number} [tokenDecimals] optional number of decimals of the token
-   * @return {Promise<string>} remaining weekly budget, in human-readable token units
+   * @return {Promise<string>} remaining weekly budget in human-readable token units, or
+   * `MaxUint256` (as a string) when the weekly cap is disabled (unlimited)
    */
   public async remainingWeekly(
     payer: string,
@@ -152,7 +157,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
     tokenDecimals?: number
   ): Promise<string> {
     const remaining = await this.contract.remainingWeekly(payer, token)
-    return this.unitsToAmount(token, remaining.toString(), tokenDecimals)
+    return await this.formatRemaining(remaining, token, tokenDecimals)
   }
 
   /**
@@ -160,7 +165,8 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
    * @param {string} payer Payer address
    * @param {string} token Token address
    * @param {number} [tokenDecimals] optional number of decimals of the token
-   * @return {Promise<string>} remaining monthly budget, in human-readable token units
+   * @return {Promise<string>} remaining monthly budget in human-readable token units, or
+   * `MaxUint256` (as a string) when the monthly cap is disabled (unlimited)
    */
   public async remainingMonthly(
     payer: string,
@@ -168,7 +174,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
     tokenDecimals?: number
   ): Promise<string> {
     const remaining = await this.contract.remainingMonthly(payer, token)
-    return this.unitsToAmount(token, remaining.toString(), tokenDecimals)
+    return await this.formatRemaining(remaining, token, tokenDecimals)
   }
 
   /**
@@ -184,7 +190,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
     tokenDecimals?: number
   ): Promise<string> {
     const used = await this.contract.dailyUsedBy(payer, token)
-    return this.unitsToAmount(token, used.toString(), tokenDecimals)
+    return await this.unitsToAmount(token, used.toString(), tokenDecimals)
   }
 
   /**
@@ -200,7 +206,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
     tokenDecimals?: number
   ): Promise<string> {
     const used = await this.contract.weeklyUsedBy(payer, token)
-    return this.unitsToAmount(token, used.toString(), tokenDecimals)
+    return await this.unitsToAmount(token, used.toString(), tokenDecimals)
   }
 
   /**
@@ -216,7 +222,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
     tokenDecimals?: number
   ): Promise<string> {
     const used = await this.contract.monthlyUsedBy(payer, token)
-    return this.unitsToAmount(token, used.toString(), tokenDecimals)
+    return await this.unitsToAmount(token, used.toString(), tokenDecimals)
   }
 
   /**
@@ -234,7 +240,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
     tokenDecimals?: number
   ): Promise<string> {
     const used = await this.contract.dailyUsedByAt(payer, token, timestamp)
-    return this.unitsToAmount(token, used.toString(), tokenDecimals)
+    return await this.unitsToAmount(token, used.toString(), tokenDecimals)
   }
 
   /**
@@ -252,7 +258,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
     tokenDecimals?: number
   ): Promise<string> {
     const used = await this.contract.weeklyUsedByAt(payer, token, timestamp)
-    return this.unitsToAmount(token, used.toString(), tokenDecimals)
+    return await this.unitsToAmount(token, used.toString(), tokenDecimals)
   }
 
   /**
@@ -270,7 +276,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
     tokenDecimals?: number
   ): Promise<string> {
     const used = await this.contract.monthlyUsedByAt(payer, token, timestamp)
-    return this.unitsToAmount(token, used.toString(), tokenDecimals)
+    return await this.unitsToAmount(token, used.toString(), tokenDecimals)
   }
 
   /**
@@ -281,7 +287,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
    */
   public async availableBalance(token: string, tokenDecimals?: number): Promise<string> {
     const balance = await this.contract.availableBalance(token)
-    return this.unitsToAmount(token, balance.toString(), tokenDecimals)
+    return await this.unitsToAmount(token, balance.toString(), tokenDecimals)
   }
 
   /**
@@ -290,7 +296,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
    * @return {Promise<boolean>} true if the payer is allowed
    */
   public async isUserAllowed(payer: string): Promise<boolean> {
-    return this.contract.isUserAllowed(payer)
+    return await this.contract.isUserAllowed(payer)
   }
 
   /**
@@ -299,7 +305,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
    * @return {Promise<boolean>} true if the node is allowed
    */
   public async isNodeAllowed(node: string): Promise<boolean> {
-    return this.contract.isNodeAllowed(node)
+    return await this.contract.isNodeAllowed(node)
   }
 
   /**
@@ -317,7 +323,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
    * @return {Promise<boolean>} true if the job type is subsidised
    */
   public async isJobTypeSubsidized(jobType: number | string): Promise<boolean> {
-    return this.contract.isJobTypeSubsidized(jobType)
+    return await this.contract.isJobTypeSubsidized(jobType)
   }
 
   /**
@@ -326,7 +332,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
    * @return {Promise<string>} the user access list address
    */
   public async getUserAccessList(): Promise<string> {
-    return this.contract.userAccessList()
+    return await this.contract.userAccessList()
   }
 
   /**
@@ -335,7 +341,7 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
    * @return {Promise<string>} the node access list address
    */
   public async getNodeAccessList(): Promise<string> {
-    return this.contract.nodeAccessList()
+    return await this.contract.nodeAccessList()
   }
 
   /**
@@ -411,5 +417,25 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
    */
   public async secondsUntilMonthReset(): Promise<string> {
     return (await this.contract.secondsUntilMonthReset()).toString()
+  }
+
+  /**
+   * Formats a `remaining*` period budget. The contract returns `type(uint256).max` when
+   * the period cap is disabled (unlimited); that sentinel is returned as-is (never run
+   * through the token-decimals conversion, which would yield a meaningless huge number).
+   * Finite values are converted to human-readable token units.
+   * @param {bigint} remaining Raw remaining value from the contract
+   * @param {string} token Token address
+   * @param {number} [tokenDecimals] optional number of decimals of the token
+   * @return {Promise<string>} `MaxUint256` (as a string) when unlimited, otherwise the
+   * remaining budget in human-readable token units
+   */
+  private async formatRemaining(
+    remaining: bigint,
+    token: string,
+    tokenDecimals?: number
+  ): Promise<string> {
+    if (remaining === MaxUint256) return MaxUint256.toString()
+    return await this.unitsToAmount(token, remaining.toString(), tokenDecimals)
   }
 }

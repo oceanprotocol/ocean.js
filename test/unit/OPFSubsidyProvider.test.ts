@@ -19,9 +19,15 @@ describe('OPFSubsidyProvider read/quote flow', () => {
   })
 
   // The subsidy contract is not part of every stack; skip cleanly when it is not
-  // deployed in the barge address file.
-  beforeEach(function () {
-    if (!subsidyAddress) this.skip()
+  // deployed in the barge address file. Otherwise (re)build a fresh instance so each
+  // read test is independent of test ordering.
+  beforeEach(async function () {
+    if (!subsidyAddress) {
+      this.skip()
+      return
+    }
+    const { chainId } = await user1.provider.getNetwork()
+    subsidyProvider = new OPFSubsidyProvider(user1, subsidyAddress, Number(chainId))
   })
 
   it('should initialize with an explicit address', async () => {
