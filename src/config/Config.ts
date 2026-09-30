@@ -179,8 +179,9 @@ export class Config {
   escrow?: string
 
   /**
-   * OPFSubsidyProvider address
-   * @type {string}
+   * Addresses of all deployed subsidy providers (OPF, one-time, ...). Discover each one's
+   * kind/interface at runtime via a `SubsidyView` (`subsidyKind()` / `supportsInterface`).
+   * @type {string[]}
    */
-  public OPFSubsidyProvider?: string
+  public SubsidyProviders?: string[]
 }
