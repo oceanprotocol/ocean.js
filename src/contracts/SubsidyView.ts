@@ -15,6 +15,22 @@ import { getTokenDecimals } from '../utils/ContractUtils.js'
 import { SmartContractWithAddress } from './SmartContractWithAddress.js'
 
 /**
+ * ERC-165 `supportsInterface(bytes4)` fragment. The compiled `ISubsidyView` artifact does
+ * not emit the inherited `IERC165` function, so without this the ethers contract instance
+ * has no `supportsInterface` method — `this.contract.supportsInterface(...)` throws a
+ * `TypeError` that {@link SubsidyView.supportsInterface} would swallow, turning every
+ * feature-detection check into a false negative. Merge it into the ABI so the call reaches
+ * the chain and returns the real value.
+ */
+const SUPPORTS_INTERFACE_ABI: AbiItem = {
+  type: 'function',
+  name: 'supportsInterface',
+  stateMutability: 'view',
+  inputs: [{ name: 'interfaceId', type: 'bytes4' }],
+  outputs: [{ name: '', type: 'bool' }]
+}
+
+/**
  * Read-only wrapper for any contract implementing the `ISubsidyView` interface — the
  * standardized view that every Ocean subsidy provider exposes (OPF rolling-window,
  * one-time onboarding credits, and future providers). It lets a dashboard query subsidy
@@ -31,7 +47,12 @@ import { SmartContractWithAddress } from './SmartContractWithAddress.js'
  */
 export class SubsidyView extends SmartContractWithAddress {
   getDefaultAbi() {
-    return ContractABI.abi as AbiItem[]
+    const abi = ContractABI.abi as AbiItem[]
+    // The ISubsidyView artifact omits the inherited ERC-165 supportsInterface fragment;
+    // add it so the contract instance can actually make the call (feature detection).
+    return abi.some((item) => item.name === 'supportsInterface')
+      ? abi
+      : [...abi, SUPPORTS_INTERFACE_ABI]
   }
 
   /**
