@@ -45,6 +45,7 @@ import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
 import { responseBodyToAsyncIterable } from '../../utils/bytes.js'
+import { assertServiceResultTarget } from './serviceResult.js'
 import {
   getConsumerAddress,
   getSignature,
@@ -2216,5 +2217,50 @@ export class HttpProvider {
       response.statusText
     )
     return null
+  }
+
+  /**
+   * Downloads a service's /data/outputs as a zip over HTTP — for a service started without an
+   * output bucket. Owner-only.
+   * @param {string} nodeUri The provider URI.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken Signer, JWT auth token, or precomputed signature used to authenticate the request.
+   * @param {string} serviceId The service.
+   * @param {number | 'live'} index An `index` from the service's `outputArchives` (see getServiceStatus), or `'live'` for a zip of the running container's /data/outputs, built as it is read.
+   * @param {number} [offset=0] Byte offset to resume an archive download from, sent as the `offset` query parameter (the node answers 200 with the bytes from there on). Must be a non-negative safe integer; not supported with `'live'`.
+   * @param {AbortSignal} [signal] Abort signal that cancels the in-flight request.
+   * @return {Promise<ComputeResultStream>} An async-iterable stream of the zip, starting at `offset`.
+   */
+  public async serviceGetResult(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    index: number | 'live',
+    offset: number = 0,
+    signal?: AbortSignal
+  ): Promise<ComputeResultStream> {
+    assertServiceResultTarget(index, offset)
+    const route = this.baseUrl(nodeUri) + '/api/services/serviceResult'
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_GET_RESULT,
+      signal
+    )
+    const query = this.buildQuery({
+      ...authPayload,
+      serviceId,
+      ...(index === 'live'
+        ? { live: 'true' }
+        : { index: String(index), ...(offset > 0 ? { offset: String(offset) } : {}) })
+    })
+    const headers: Record<string, string> = {}
+    if (typeof signerOrAuthToken === 'string') headers.Authorization = signerOrAuthToken
+    const response = await fetch(`${route}?${query.toString()}`, {
+      method: 'GET',
+      headers,
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    return responseBodyToAsyncIterable(response.body)
   }
 }

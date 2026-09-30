@@ -1326,6 +1326,43 @@ export class BaseProvider {
     )
   }
 
+  /**
+   * Downloads a service's /data/outputs as a zip, dispatching to the HTTP or P2P transport based
+   * on `nodeUri`. Only for a service started without an output bucket (its results are in the
+   * bucket otherwise); owner-only.
+   *
+   * - `index`: one of the zips the node took whenever a container of the service was removed
+   *   (stop, expiry, restart, recovery), listed as `outputArchives` by getServiceStatus. Works in
+   *   any status until the node's storage expiry deletes it; resumable with `offset`.
+   * - `'live'`: a zip of the running container's /data/outputs, built as it is read — while the
+   *   service is Running (or Error before teardown). Not resumable; files being written at that
+   *   moment may come out partial.
+   * @param {OceanNode} nodeUri The provider target (HTTP URL, or peerId / multiaddr for P2P).
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken Signer, JWT auth token, or precomputed signature used to authenticate the request.
+   * @param {string} serviceId The service.
+   * @param {number | 'live'} index An archive index, or `'live'`.
+   * @param {number} [offset=0] Byte offset to resume an archive download from.
+   * @param {AbortSignal} [signal] Abort signal that cancels the download.
+   * @return {Promise<ComputeResultStream>} An async-iterable stream of the zip, starting at `offset`.
+   */
+  public async serviceGetResult(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    index: number | 'live',
+    offset: number = 0,
+    signal?: AbortSignal
+  ): Promise<ComputeResultStream> {
+    return this.getImpl(nodeUri).serviceGetResult(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      index,
+      offset,
+      signal
+    )
+  }
+
   public async fetchConfig(
     nodeUri: OceanNode,
     payload: Record<string, any>
