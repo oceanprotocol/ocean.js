@@ -177,4 +177,10 @@ export class Config {
   sdk?: SDK
   accessListFactory?: string
   escrow?: string
+
+  /**
+   * OPFSubsidyProvider address
+   * @type {string}
+   */
+  public OPFSubsidyProvider?: string
 }
