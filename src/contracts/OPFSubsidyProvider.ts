@@ -1,24 +1,27 @@
 import { MaxUint256, Signer } from 'ethers'
 import ContractABI from '@oceanprotocol/contracts/artifacts/contracts/subsidy/OPFSubsidyProvider.sol/OPFSubsidyProvider.json'
 import { AbiItem, TokenLimits } from '../@types/index.js'
-import { Config, ConfigHelper } from '../config/index.js'
+import { Config } from '../config/index.js'
 import { getTokenDecimals } from '../utils/ContractUtils.js'
-import { SmartContractWithAddress } from './SmartContractWithAddress.js'
+import { SubsidyView } from './SubsidyView.js'
 
 /**
  * Read-only wrapper for the `OPFSubsidyProvider` contract (Ocean Protocol Foundation
- * job-cost sponsorship). It exposes the contract's view / quote surface — eligibility,
- * per-user rolling budgets (daily / weekly / monthly), token limits and subsidy quotes.
+ * job-cost sponsorship). It extends {@link SubsidyView} — inheriting the standardized
+ * `ISubsidyView` read surface (`subsidyBuckets`, `remainingSubsidy`, `quoteSubsidy`,
+ * eligibility gates, `subsidyKind`/`version`, ERC-165 `supportsInterface`) — and adds the
+ * OPF-specific getters: per-user rolling budgets (daily / weekly / monthly), token limits,
+ * period indexes and reset timers.
  *
  * Owner/admin operations (`setTokenLimits`, `setAuthorizedEscrow`, `pause`,
  * `withdrawTokens`, ...) and the escrow-only `onSubsidyClaim` callback are intentionally
  * **not** wrapped.
  *
- * The contract address is a constructor parameter and defaults to the configured
- * `OPFSubsidyProvider` address, so the same wrapper can query any contract that shares
- * this read interface simply by passing a different address.
+ * There is no single configured default address (a deployment can host several providers):
+ * read addresses from `config.SubsidyProviders` and identify the OPF one via
+ * `subsidyKind()`, then pass its address here.
  */
-export class OPFSubsidyProvider extends SmartContractWithAddress {
+export class OPFSubsidyProvider extends SubsidyView {
   getDefaultAbi() {
     return ContractABI.abi as AbiItem[]
   }
@@ -26,29 +29,23 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
   /**
    * Instantiate OPFSubsidyProvider class
    * @param {Signer} signer The signer object.
-   * @param {string} [address] The contract address. Defaults to the configured
-   * `OPFSubsidyProvider` address when omitted, so callers can point the wrapper at any
-   * contract exposing the same read interface by passing an address.
+   * @param {string} address The contract address (required; discover it via
+   * `config.SubsidyProviders` + `subsidyKind()`).
    * @param {string | number} [network] Network id or name
    * @param {Config} [config] The configuration object.
    * @param {AbiItem[]} [abi] ABI array of the smart contract
    */
   constructor(
     signer: Signer,
-    address?: string,
+    address: string,
     network?: string | number,
     config?: Config,
     abi?: AbiItem[]
   ) {
-    const resolvedConfig = config || new ConfigHelper().getConfig(network)
-    const resolvedAddress = address || resolvedConfig?.OPFSubsidyProvider
-    if (!resolvedAddress) {
-      throw new Error(
-        'OPFSubsidyProvider address is required: pass one explicitly or use a network with a configured OPFSubsidyProvider address'
-      )
+    if (!address) {
+      throw new Error('OPFSubsidyProvider requires a contract address')
     }
-    super(resolvedAddress, signer, network, resolvedConfig, abi)
-    this.abi = abi || this.getDefaultAbi()
+    super(signer, address, network, config, abi)
   }
 
   /**
@@ -72,58 +69,6 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
       monthly: await this.unitsToAmount(token, limits.monthly.toString(), decimals),
       enabled: limits.enabled
     }
-  }
-
-  /**
-   * Quote the subsidy a job would receive, without changing state.
-   * @param {string} node Node address
-   * @param {string} payer Payer address
-   * @param {number | string} jobType Job type identifier
-   * @param {string} token Token address
-   * @param {string} amount Job cost, in human-readable token units
-   * @param {string} subsidyNeeded Subsidy requested, in human-readable token units
-   * @param {number} [tokenDecimals] optional number of decimals of the token
-   * @return {Promise<string>} the granted subsidy, in human-readable token units
-   */
-  public async quoteSubsidy(
-    node: string,
-    payer: string,
-    jobType: number | string,
-    token: string,
-    amount: string,
-    subsidyNeeded: string,
-    tokenDecimals?: number
-  ): Promise<string> {
-    // Resolve decimals once to avoid repeated decimals() RPC calls across the three
-    // conversions below when tokenDecimals is not supplied.
-    const decimals = tokenDecimals ?? Number(await getTokenDecimals(this.signer, token))
-    const amountUnits = await this.amountToUnits(token, amount, decimals)
-    const subsidyNeededUnits = await this.amountToUnits(token, subsidyNeeded, decimals)
-    const quote = await this.contract.quoteSubsidy(
-      node,
-      payer,
-      jobType,
-      token,
-      amountUnits,
-      subsidyNeededUnits
-    )
-    return await this.unitsToAmount(token, quote.toString(), decimals)
-  }
-
-  /**
-   * Get the remaining total subsidy budget for a payer/token.
-   * @param {string} payer Payer address
-   * @param {string} token Token address
-   * @param {number} [tokenDecimals] optional number of decimals of the token
-   * @return {Promise<string>} remaining subsidy, in human-readable token units
-   */
-  public async remainingSubsidy(
-    payer: string,
-    token: string,
-    tokenDecimals?: number
-  ): Promise<string> {
-    const remaining = await this.contract.remainingSubsidy(payer, token)
-    return await this.unitsToAmount(token, remaining.toString(), tokenDecimals)
   }
 
   /**
@@ -277,53 +222,6 @@ export class OPFSubsidyProvider extends SmartContractWithAddress {
   ): Promise<string> {
     const used = await this.contract.monthlyUsedByAt(payer, token, timestamp)
     return await this.unitsToAmount(token, used.toString(), tokenDecimals)
-  }
-
-  /**
-   * Get the token balance available for subsidies held by the contract.
-   * @param {string} token Token address
-   * @param {number} [tokenDecimals] optional number of decimals of the token
-   * @return {Promise<string>} available balance, in human-readable token units
-   */
-  public async availableBalance(token: string, tokenDecimals?: number): Promise<string> {
-    const balance = await this.contract.availableBalance(token)
-    return await this.unitsToAmount(token, balance.toString(), tokenDecimals)
-  }
-
-  /**
-   * Check whether a payer is allowed to receive subsidies.
-   * @param {string} payer Payer address
-   * @return {Promise<boolean>} true if the payer is allowed
-   */
-  public async isUserAllowed(payer: string): Promise<boolean> {
-    return await this.contract.isUserAllowed(payer)
-  }
-
-  /**
-   * Check whether a node is allowed to receive subsidies.
-   * @param {string} node Node address
-   * @return {Promise<boolean>} true if the node is allowed
-   */
-  public async isNodeAllowed(node: string): Promise<boolean> {
-    return await this.contract.isNodeAllowed(node)
-  }
-
-  /**
-   * Get the list of allowed job types.
-   * @return {Promise<string[]>} allowed job type identifiers
-   */
-  public async getAllowedJobTypes(): Promise<string[]> {
-    const jobTypes = await this.contract.getAllowedJobTypes()
-    return jobTypes.map((jobType: bigint) => jobType.toString())
-  }
-
-  /**
-   * Check whether a job type is subsidised.
-   * @param {number | string} jobType Job type identifier
-   * @return {Promise<boolean>} true if the job type is subsidised
-   */
-  public async isJobTypeSubsidized(jobType: number | string): Promise<boolean> {
-    return await this.contract.isJobTypeSubsidized(jobType)
   }
 
   /**

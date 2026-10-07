@@ -1,8 +1,10 @@
 import { assert } from 'chai'
-import { provider, getAddresses, getTestConfig } from '../config'
+import { provider, getAddresses } from '../config'
 import { Signer, isAddress } from 'ethers'
 
 import { OPFSubsidyProvider } from '../../src/contracts/OPFSubsidyProvider'
+import { SubsidyView } from '../../src/contracts/SubsidyView'
+import { SubsidyKind } from '../../src/@types/SubsidyView'
 
 describe('OPFSubsidyProvider read/quote flow', () => {
   let user1: Signer
@@ -14,8 +16,18 @@ describe('OPFSubsidyProvider read/quote flow', () => {
   before(async () => {
     user1 = (await provider.getSigner(3)) as Signer
     addresses = await getAddresses()
-    subsidyAddress = addresses.OPFSubsidyProvider
     OCEAN = addresses.Ocean
+    // Discover the OPF (rolling-window) provider among the SubsidyProviders registry.
+    const registry: string[] = addresses.SubsidyProviders || []
+    const { chainId } = await user1.provider.getNetwork()
+    for (const addr of registry) {
+      const view = new SubsidyView(user1, addr, Number(chainId))
+      if (!(await view.isSubsidyView())) continue
+      if ((await view.subsidyKind()) === SubsidyKind.ROLLING_WINDOW) {
+        subsidyAddress = addr
+        break
+      }
+    }
   })
 
   // The subsidy contract is not part of every stack; skip cleanly when it is not
@@ -30,18 +42,15 @@ describe('OPFSubsidyProvider read/quote flow', () => {
     subsidyProvider = new OPFSubsidyProvider(user1, subsidyAddress, Number(chainId))
   })
 
+  it('should require an address', async () => {
+    assert.throws(() => new OPFSubsidyProvider(user1, undefined))
+  })
+
   it('should initialize with an explicit address', async () => {
     const { chainId } = await user1.provider.getNetwork()
     subsidyProvider = new OPFSubsidyProvider(user1, subsidyAddress, Number(chainId))
     assert(subsidyProvider !== null)
     assert(subsidyProvider.address === subsidyAddress)
-  })
-
-  it('should default the address to the configured OPFSubsidyProvider', async () => {
-    const config = await getTestConfig(user1)
-    config.OPFSubsidyProvider = subsidyAddress
-    const defaulted = new OPFSubsidyProvider(user1, undefined, undefined, config)
-    assert(defaulted.address === subsidyAddress)
   })
 
   it('should read the allowed job types', async () => {
