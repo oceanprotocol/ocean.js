@@ -509,7 +509,8 @@ export class BaseProvider {
     signal?: AbortSignal,
     queueMaxWaitTime?: number,
     dockerRegistryAuth?: dockerRegistryAuth,
-    outputBucketId?: string
+    outputBucketId?: string,
+    subsidyProviders?: string[]
   ): Promise<ComputeJob | ComputeJob[]> {
     const jobs = await this.getImpl(nodeUri).computeStart(
       nodeUri,
@@ -528,7 +529,8 @@ export class BaseProvider {
       signal,
       queueMaxWaitTime,
       dockerRegistryAuth,
-      outputBucketId
+      outputBucketId,
+      subsidyProviders
     )
     const job = Array.isArray(jobs) ? jobs[0] : jobs
     this.notifyIncentiveBackendJobStarted(nodeUri, computeEnv, job).catch(() => {})
@@ -1241,7 +1243,8 @@ export class BaseProvider {
     serviceId: string,
     additionalDuration: number,
     payment: ServicePayment,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    subsidyProviders?: string[]
   ): Promise<ServiceJob[]> {
     return this.getImpl(nodeUri).serviceExtend(
       nodeUri,
@@ -1249,7 +1252,8 @@ export class BaseProvider {
       serviceId,
       additionalDuration,
       payment,
-      signal
+      signal,
+      subsidyProviders
     )
   }
 

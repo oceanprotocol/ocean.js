@@ -2881,7 +2881,8 @@ export class P2pProvider {
     signal?: AbortSignal,
     queueMaxWaitTime?: number,
     dockerRegistryAuth?: dockerRegistryAuth,
-    outputBucketId?: string
+    outputBucketId?: string,
+    subsidyProviders?: string[]
   ): Promise<ComputeJob | ComputeJob[]> {
     const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
       nodeUri,
@@ -2906,6 +2907,7 @@ export class P2pProvider {
     }
     if (metadata) body.metadata = metadata
     if (additionalViewers) body.additionalViewers = additionalViewers
+    if (subsidyProviders) body.subsidyProviders = subsidyProviders
     if (policyServer) body.policyServer = policyServer
     if (queueMaxWaitTime) body.queueMaxWaitTime = queueMaxWaitTime
     if (dockerRegistryAuth) {
@@ -3890,7 +3892,8 @@ export class P2pProvider {
     serviceId: string,
     additionalDuration: number,
     payment: ServicePayment,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    subsidyProviders?: string[]
   ): Promise<ServiceJob[]> {
     const authPayload = await this.getSignedCommandParams(
       nodeUri,
@@ -3901,7 +3904,13 @@ export class P2pProvider {
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.SERVICE_EXTEND,
-      { ...authPayload, serviceId, additionalDuration, payment },
+      {
+        ...authPayload,
+        serviceId,
+        additionalDuration,
+        payment,
+        ...(subsidyProviders ? { subsidyProviders } : {})
+      },
       signerOrAuthToken,
       signal
     )
