@@ -643,6 +643,7 @@ export class HttpProvider {
    * @param {number} queueMaxWaitTime Maximum time in seconds to wait in the compute queue if resources are not available
    * @param {dockerRegistryAuth} dockerRegistryAuth Docker registry authentication data.
    * @param {string} outputBucketId Persistent-storage bucket id to store job results in, mounted at /data/outputs. Mutually exclusive with output.
+   * @param {string[]} subsidyProviders Optional consumer-selected subsidy provider addresses; resolved tri-state by the node (omit = node default, [] = none, populated = only these). See ocean-node #1485.
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
   public async computeStart(
@@ -662,7 +663,8 @@ export class HttpProvider {
     signal?: AbortSignal,
     queueMaxWaitTime?: number,
     dockerRegistryAuth?: dockerRegistryAuth,
-    outputBucketId?: string
+    outputBucketId?: string,
+    subsidyProviders?: string[]
   ): Promise<ComputeJob | ComputeJob[]> {
     const computeStartUrl = this.baseUrl(nodeUri) + '/api/services/compute'
 
@@ -710,6 +712,7 @@ export class HttpProvider {
       }
     }
     if (outputBucketId) payload.outputBucketId = outputBucketId
+    if (subsidyProviders) payload.subsidyProviders = subsidyProviders
     if (policyServer) payload.policyServer = policyServer
     if (queueMaxWaitTime) payload.queueMaxWaitTime = queueMaxWaitTime
     let response
@@ -1999,6 +2002,7 @@ export class HttpProvider {
 
   /**
    * Extends a running service's expiry by paying for additional duration.
+   * @param {string[]} subsidyProviders Optional consumer-selected subsidy provider addresses; resolved tri-state by the node (omit = node default, [] = none, populated = only these). See ocean-node #1485.
    * @return {Promise<ServiceJob[]>} The updated service job (single-element array).
    */
   public async serviceExtend(
@@ -2007,7 +2011,8 @@ export class HttpProvider {
     serviceId: string,
     additionalDuration: number,
     payment: ServicePayment,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    subsidyProviders?: string[]
   ): Promise<ServiceJob[]> {
     const route = this.baseUrl(nodeUri) + '/api/services/serviceExtend'
     const authPayload = await this.getSignedCommandParams(
@@ -2023,7 +2028,13 @@ export class HttpProvider {
         'Content-Type': 'application/json',
         ...(authHeader ? { Authorization: authHeader } : {})
       },
-      body: JSON.stringify({ ...authPayload, serviceId, additionalDuration, payment }),
+      body: JSON.stringify({
+        ...authPayload,
+        serviceId,
+        additionalDuration,
+        payment,
+        ...(subsidyProviders ? { subsidyProviders } : {})
+      }),
       signal
     })
     if (!response.ok) throw new Error(await response.text())

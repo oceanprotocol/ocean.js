@@ -1,7 +1,7 @@
 {
   "name": "@oceanprotocol/lib",
   "source": "./src/index.ts",
-  "version": "9.2.1",
+  "version": "9.3.0-next.3",
   "description": "JavaScript client library for Ocean Protocol",
   "module": "./dist/lib.module.mjs",
   "type": "module",
@@ -98,7 +98,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
-    "@oceanprotocol/contracts": "^2.9.0",
+    "@oceanprotocol/contracts": "^3.2.0-rc.0",
     "@types/chai": "^5.2.3",
     "@types/crypto-js": "^4.2.2",
     "@types/jsonwebtoken": "^9.0.10",

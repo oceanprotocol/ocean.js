@@ -208,7 +208,9 @@ export class ConfigHelper {
         Router,
         AccessListFactory,
         Escrow,
-        EnterpriseFeeCollector
+        EnterpriseFeeCollector,
+        SubsidyProviders,
+        SponsorshipLib
       } = customAddresses[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
@@ -222,6 +224,8 @@ export class ConfigHelper {
         accessListFactory: AccessListFactory,
         escrow: Escrow,
         EnterpriseFeeCollector,
+        SubsidyProviders,
+        SponsorshipLib,
         ...getNodeEndpointConfig()
       }
     } else if ((DefaultContractsAddresses as { [key: string]: any })[network]) {
@@ -236,7 +240,9 @@ export class ConfigHelper {
         Router,
         AccessListFactory,
         Escrow,
-        EnterpriseFeeCollector
+        EnterpriseFeeCollector,
+        SubsidyProviders,
+        SponsorshipLib
       } = (DefaultContractsAddresses as { [key: string]: any })[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
@@ -250,6 +256,8 @@ export class ConfigHelper {
         accessListFactory: AccessListFactory,
         escrow: Escrow,
         EnterpriseFeeCollector,
+        SubsidyProviders,
+        SponsorshipLib,
         ...getNodeEndpointConfig()
       }
     }
