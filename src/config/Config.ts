@@ -184,4 +184,13 @@ export class Config {
    * @type {string[]}
    */
   public SubsidyProviders?: string[]
+
+  /**
+   * Address of the external `SponsorshipLib` the Escrow v2 contracts delegatecall into (deployed
+   * once per network, shared by the community and enterprise escrows). Not needed to *call* a
+   * deployed escrow (the ABI is unaffected by library linking); kept here only for tooling that
+   * deploys/verifies escrows.
+   * @type {string}
+   */
+  public SponsorshipLib?: string
 }

@@ -26,6 +26,34 @@ export enum SubsidyKind {
 }
 
 /**
+ * The two ways a subsidy can be delivered, from `ISubsidyViewV2` (contracts v2). Both legs
+ * draw from the **same** per-provider budget (they are alternatives, never additive).
+ * - `REIMBURSEMENT` (0): the legacy claim-time path — `onSubsidyClaim` runs at claim and the
+ *   subsidy is released to the payer *after* the job. The payer must still have fronted the
+ *   funds (deposit + lock the full amount).
+ * - `PREFUNDED` (1): the new lock-time path — `onSubsidyLock` runs when the lock is created and
+ *   the provider's tokens are pulled into a non-withdrawable sponsored bucket that backs the
+ *   lock. A fully-sponsored lock needs **no payer deposit** (zero-deposit onboarding).
+ */
+export enum SubsidyMode {
+  REIMBURSEMENT = 0,
+  PREFUNDED = 1
+}
+
+/**
+ * Which subsidy mode(s) a provider currently honours, from `ISubsidyModeConfig.subsidyModeConfig()`
+ * (owner-settable). Default is `BOTH`. When a mode is disabled its callback returns 0 **and** the
+ * matching `quoteSubsidyModes` leg (and, for the refund leg, the v1 `quoteSubsidy`) reports 0.
+ * `pause()` disables *all* subsidy; this only selects between the two modes. A dashboard reads this
+ * to know whether to offer a prepaid vs refund flow.
+ */
+export enum SubsidyModeConfig {
+  BOTH = 0,
+  REFUND_ONLY = 1,
+  PREPAID_ONLY = 2
+}
+
+/**
  * One budget window as reported by `subsidyBuckets`. Amount fields (`limit`, `used`,
  * `remaining`) are in human-readable token units. Always check `unlimited` first: when
  * `true`, `limit` and `remaining` are `'0'` and meaningless (`used` stays valid).
@@ -74,9 +102,35 @@ export interface SubsidyQuote {
   bonus: string
 }
 
+/**
+ * Result of one leg of `quoteSubsidyModes` (or of `quoteSubsidyByMode`), in human-readable
+ * token units. `subsidy` is released to the payer (cost reduction); `bonus` rewards the node.
+ */
+export interface ModeQuote {
+  /** Which delivery mode this quote is for. */
+  mode: SubsidyMode
+  /** Subsidy released to the payer under this mode, in human-readable token units. */
+  subsidy: string
+  /** Bonus paid to the node under this mode, in human-readable token units. */
+  bonus: string
+}
+
 /** ERC-165 base interface id (`IERC165.supportsInterface`). */
 export const ERC165_INTERFACE_ID = '0x01ffc9a7'
-/** ERC-165 interface id of `ISubsidyView` (the read/quote surface dashboards consume). */
+/** ERC-165 interface id of `ISubsidyView` (the v1 read/quote surface dashboards consume). */
 export const ISUBSIDY_VIEW_INTERFACE_ID = '0xcf08f23a'
-/** ERC-165 interface id of `ISubsidyProvider` (the escrow-facing claim surface). */
+/** ERC-165 interface id of `ISubsidyProvider` (the escrow-facing claim-time subsidy surface). */
 export const ISUBSIDY_PROVIDER_INTERFACE_ID = '0x659fa925'
+/**
+ * ERC-165 interface id of `ISubsidyViewV2` (dual-mode quoting: `quoteSubsidyModes` /
+ * `quoteSubsidyByMode`). Feature-detect it before calling the v2 quote methods.
+ */
+export const ISUBSIDY_VIEW_V2_INTERFACE_ID = '0x8cd610bb'
+/** ERC-165 interface id of `ISubsidyModeConfig` (the owner-settable `subsidyModeConfig` switch). */
+export const ISUBSIDY_MODE_CONFIG_INTERFACE_ID = '0x63edab4f'
+/**
+ * ERC-165 interface id of `ISubsidyLockProvider` (the escrow-facing lock-time / prefunded
+ * sponsorship surface: `onSubsidyLock` / `onSubsidyRefund`). A provider advertising this can be
+ * passed as a `subsidyProvider` to `createLock`/`reLock`.
+ */
+export const ISUBSIDY_LOCK_PROVIDER_INTERFACE_ID = '0xefed9e7b'

@@ -79,6 +79,20 @@ export async function getTokenDecimals(signer: Signer, token: string) {
 }
 
 /**
+ * Whether an error from an ERC-165 `supportsInterface` (or similar view) call means "the contract
+ * does not implement this" rather than a transient infrastructure failure. Used so feature
+ * detection returns `false` for an unsupported/legacy contract but RE-THROWS genuine network/RPC
+ * errors (which should not be silently reported as "not supported"). Recognizes an on-chain revert
+ * (`CALL_EXCEPTION`), empty/garbage return data (`BAD_DATA`), and a missing ABI method (`TypeError`).
+ * @param {any} error The caught error
+ * @returns {boolean} true if the error indicates the feature is unsupported
+ */
+export function isUnsupportedInterfaceError(error: any): boolean {
+  const code = error?.code
+  return code === 'CALL_EXCEPTION' || code === 'BAD_DATA' || error instanceof TypeError
+}
+
+/**
  * Converts an amount of units to tokens
  * @param {Signer} signer -  The signer object to use.
  * @param {string} token - The token to convert
