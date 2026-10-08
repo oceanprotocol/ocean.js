@@ -97,7 +97,10 @@ describe('Escrow v2 read surface, auth expiry and sponsorship', () => {
 
   it('sponsorship reads are zero/empty for a plain (unsponsored) lock', async () => {
     const jobId = nextJobId()
-    await escrow.authorize(OCEAN, payee, '20', '100', '5')
+    // The barge chain is shared with Escrow.test.ts, which may already hold locks on this
+    // payer/payee pair up to their authorization cap. Authorize a generous maxLockedAmount so a
+    // small new lock here isn't rejected by leftover currentLockedAmount from earlier suites.
+    await escrow.authorize(OCEAN, payee, '1000', '200', '50')
     // Plain payer-funded lock: no subsidy providers.
     await escrowPayee.contract.createLock(
       jobId,
