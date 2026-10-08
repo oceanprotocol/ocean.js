@@ -49,24 +49,24 @@ export interface LockData {
 export interface EscrowAuthorization {
   /** The authorized payee (node). */
   payee: string
-  /** Max the payee may have locked from the payer's own funds at once. */
-  maxLockedAmount: string
+  /** Max the payee may have locked from the payer's own funds at once (raw units). */
+  maxLockedAmount: bigint
   /**
    * Currently locked from the payer's **own** funds (Escrow v2: the payer-funded portion `P`
-   * only — sponsored tokens are not counted here).
+   * only — sponsored tokens are not counted here; raw units).
    */
-  currentLockedAmount: string
+  currentLockedAmount: bigint
   /** Max lock duration the payee may set, in seconds. */
-  maxLockSeconds: string
+  maxLockSeconds: bigint
   /** Max number of concurrent locks the payee may hold. */
-  maxLockCounts: string
+  maxLockCounts: bigint
   /** Number of locks the payee currently holds. */
-  currentLocks: string
+  currentLocks: bigint
   /**
-   * Unix timestamp (seconds) after which the payee can no longer create or extend locks; `'0'`
+   * Unix timestamp (seconds) after which the payee can no longer create or extend locks; `0`
    * = indefinite (Escrow v2).
    */
-  expiryTimestamp: string
+  expiryTimestamp: bigint
 }
 
 /**

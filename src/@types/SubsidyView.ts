@@ -104,12 +104,14 @@ export interface SubsidyQuote {
 
 /**
  * Result of one leg of `quoteSubsidyModes` (or of `quoteSubsidyByMode`), in human-readable
- * token units. `subsidy` is released to the payer (cost reduction); `bonus` rewards the node.
+ * token units. `subsidy` is how much of the job cost the provider covers under this mode (for
+ * `PREFUNDED` it is pre-funded into the lock, not paid to the payer; for `REIMBURSEMENT` it is
+ * released to the payer at claim). `bonus` rewards the node.
  */
 export interface ModeQuote {
   /** Which delivery mode this quote is for. */
   mode: SubsidyMode
-  /** Subsidy released to the payer under this mode, in human-readable token units. */
+  /** Job cost covered by the provider under this mode, in human-readable token units. */
   subsidy: string
   /** Bonus paid to the node under this mode, in human-readable token units. */
   bonus: string

@@ -29,15 +29,24 @@ describe('SubsidyView ERC-165 detection against local providers', () => {
     if (providerAddrs.length === 0) this.skip()
   })
 
-  it('detects ISubsidyView on every deployed provider', async function () {
+  it('detects ISubsidyView on every deployed subsidy provider', async function () {
     let checked = 0
     for (const address of providerAddrs) {
       const view = new SubsidyView(signer, address, chainId)
-      // Only assert against providers that actually implement the interface; a registry entry
-      // that predates ISubsidyView is not a regression.
-      if (!(await view.isSubsidyView())) continue
+      // Decide whether this is a real subsidy provider using subsidyKind() — a native ISubsidyView
+      // method that does NOT depend on the supportsInterface merge this test guards. Crucially we
+      // must NOT gate on isSubsidyView()/supportsInterface() here: if those regressed to a false
+      // negative, gating on them would skip every candidate and hide the very bug under test.
+      let kind: SubsidyKind
+      try {
+        kind = await view.subsidyKind()
+      } catch {
+        continue // not a subsidy provider (or not deployed) — not a regression candidate
+      }
       checked++
 
+      assert(kind in SubsidyKind, `${address} subsidyKind() not a known SubsidyKind`)
+      // A real subsidy provider MUST advertise ERC-165 + ISubsidyView; a false here is the bug.
       assert.strictEqual(
         await view.supportsInterface(ERC165_INTERFACE_ID),
         true,
@@ -53,13 +62,10 @@ describe('SubsidyView ERC-165 detection against local providers', () => {
         true,
         `${address} isSubsidyView() must be true`
       )
-      const kind = await view.subsidyKind()
-      assert(kind in SubsidyKind, `${address} subsidyKind() not a known SubsidyKind`)
       // Revert-tolerance is preserved: an unsupported id still yields false, not a throw.
       assert.strictEqual(await view.supportsInterface('0xffffffff'), false)
     }
-    // If the registry held only ISubsidyView providers and none matched, there is nothing to
-    // regression-test on this deployment.
+    // Skip only when the fixture has no subsidy provider at all — never because detection failed.
     if (checked === 0) this.skip()
   })
 })

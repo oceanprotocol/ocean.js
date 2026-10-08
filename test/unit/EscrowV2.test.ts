@@ -43,15 +43,15 @@ describe('Escrow v2 read surface, auth expiry and sponsorship', () => {
     payer = await payerSigner.getAddress()
     payee = await payeeSigner.getAddress()
 
-    // Fund the payer's escrow balance so lock-based cases can run. Best-effort: if the payer has
-    // no OCEAN to deposit on this chain, skip rather than fail the suite.
-    try {
-      const datatoken = new Datatoken(payerSigner, chainId)
-      await datatoken.approve(OCEAN, addresses.Escrow, '1000')
-      await escrow.deposit(OCEAN, '100')
-    } catch {
-      this.skip()
-    }
+    // Fund the payer's escrow balance so lock-based cases can run. Skip ONLY when the payer lacks
+    // the tokens to fund (an environment limitation, not a defect); let approve/deposit failures
+    // propagate so a broken wrapper or contract fails the suite rather than silently skipping.
+    const datatoken = new Datatoken(payerSigner, chainId)
+    const DEPOSIT = 100
+    const balance = Number(await datatoken.balance(OCEAN, payer))
+    if (!(balance >= DEPOSIT)) this.skip()
+    await datatoken.approve(OCEAN, addresses.Escrow, String(DEPOSIT * 10))
+    await escrow.deposit(OCEAN, String(DEPOSIT))
   })
 
   it('advertises v2 (IEscrowCore + IEscrowLockSubsidy) and version 2', async () => {

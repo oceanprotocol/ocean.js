@@ -200,12 +200,15 @@ export class EscrowContract extends SmartContractWithAddress {
       await this.signer.getAddress(),
       consumerAddress
     )
-    // An authorization with a past expiryTimestamp (Escrow v2) can no longer create locks, so it
-    // must not count as "already authorized" — otherwise we'd skip re-authorizing and the later
-    // createLock would revert. Treat expiry 0 as indefinite.
+    // An authorization is only usable here if its expiry (Escrow v2) covers the lock we are about
+    // to enable: a lock may not outlive its auth, so an auth expiring before now + maxLockSeconds
+    // would let createLock revert. Treat expiry 0 as indefinite; otherwise require it to reach the
+    // full lock horizon. If it doesn't, we drop it and re-authorize below.
+    const nowSeconds = Math.floor(Date.now() / 1000)
+    const requiredExpiry = nowSeconds + (Number(maxLockSeconds) || 0)
     const activeAuths = auths.filter((auth: any) => {
       const expiry = Number(auth?.expiryTimestamp ?? auth?.[6] ?? 0)
-      return expiry === 0 || expiry * 1000 > Date.now()
+      return expiry === 0 || expiry >= requiredExpiry
     })
     const funds = await this.getUserFunds(await this.signer.getAddress(), token)
     if (new BigNumber(funds[0]).isZero()) {
