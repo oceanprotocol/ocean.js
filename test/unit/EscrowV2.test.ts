@@ -110,7 +110,12 @@ describe('Escrow v2 read surface, auth expiry and sponsorship', () => {
     )
 
     const sponsorship = await escrow.getSponsorship(payee, payer, jobId, OCEAN)
-    assert.strictEqual(sponsorship.total, '0', 'plain lock should have 0 sponsored total')
+    // Amounts are human-readable (unitsToAmount → e.g. '0.0' for zero), so compare numerically.
+    assert.strictEqual(
+      Number(sponsorship.total),
+      0,
+      'plain lock should have 0 sponsored total'
+    )
     assert.strictEqual(
       sponsorship.providers.length,
       0,
@@ -120,7 +125,11 @@ describe('Escrow v2 read surface, auth expiry and sponsorship', () => {
 
     assert(typeof (await escrow.getSponsoredTotal(OCEAN)) === 'string')
     // A provider with nothing parked has nothing to reclaim.
-    assert.strictEqual(await escrow.getReclaimable(payee, OCEAN), '0')
+    assert.strictEqual(
+      Number(await escrow.getReclaimable(payee, OCEAN)),
+      0,
+      'nothing should be reclaimable'
+    )
   })
 
   it('authorize stores a future expiryTimestamp (7th auth field)', async () => {
