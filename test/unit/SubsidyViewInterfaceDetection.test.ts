@@ -3,6 +3,7 @@ import { Signer } from 'ethers'
 import { provider, getAddresses } from '../config'
 
 import { SubsidyView } from '../../src/contracts/SubsidyView'
+import { isUnsupportedInterfaceError } from '../../src/utils/ContractUtils'
 import {
   ERC165_INTERFACE_ID,
   ISUBSIDY_VIEW_INTERFACE_ID,
@@ -40,8 +41,12 @@ describe('SubsidyView ERC-165 detection against local providers', () => {
       let kind: SubsidyKind
       try {
         kind = await view.subsidyKind()
-      } catch {
-        continue // not a subsidy provider (or not deployed) — not a regression candidate
+      } catch (error) {
+        // A revert / empty data / missing method means this address is not a subsidy provider —
+        // skip it. But re-throw genuine RPC/network errors so a transient failure can't silently
+        // drop every candidate and let the suite skip instead of surfacing the problem.
+        if (isUnsupportedInterfaceError(error)) continue
+        throw error
       }
       checked++
 
