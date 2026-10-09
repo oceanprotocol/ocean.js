@@ -3,25 +3,45 @@ name: 'Publish'
 on:
   push:
     tags:
-      - '**'
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write # required for npm provenance
 
 jobs:
   npm:
     runs-on: ubuntu-latest
-    env:
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           registry-url: https://registry.npmjs.org/
+
+      # Only publish a tag whose version matches package.json, so a stray or
+      # mistyped tag can never publish a mismatched release.
+      - name: Verify tag matches package.json version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME (version $TAG_VERSION) does not match package.json version $PKG_VERSION"
+            exit 1
+          fi
+
       - run: npm ci
 
-      # pre-releases, triggered by `next` as part of git tag
-      - run: npm publish --tag next
+      # pre-releases, triggered by `next` as part of git tag.
+      # NODE_AUTH_TOKEN is scoped to the publish step only, so it is never
+      # present during `npm ci` where a dependency install script could read it.
+      - run: npm publish --provenance --access public --tag next
         if: ${{ contains(github.ref, 'next') }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # production releases
-      - run: npm publish
+      - run: npm publish --provenance --access public
         if: ${{ !contains(github.ref, 'next') }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

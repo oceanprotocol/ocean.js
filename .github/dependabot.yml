@@ -1,8 +1,19 @@
 version: 2
+# Dependabot keeps dependencies and GitHub Actions current.
+# cooldown.default-days: 7 => only propose versions that have been public
+# for at least 7 days, mitigating malicious just-published releases.
 updates:
   - package-ecosystem: npm
-    directory: '/'
+    directory: "/"
     schedule:
-      interval: monthly
-      time: '03:00'
+      interval: weekly
       timezone: Europe/Berlin
+    cooldown:
+      default-days: 7
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      timezone: Europe/Berlin
+    cooldown:
+      default-days: 7
