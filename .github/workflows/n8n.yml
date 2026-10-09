@@ -1,57 +1,102 @@
 name: Trigger N8N Security Scan
 
+# Triggered by a PR comment containing "/run-security-scan" (NOT by pull_request
+# events). Hardened: untrusted context values are passed via env and assembled
+# with jq (no shell/JSON injection), the trigger is gated to trusted commenters,
+# the job runs with no GITHUB_TOKEN scope, and the webhook call is authenticated
+# with a bearer token.
 on:
   issue_comment:
     types: [created]
 
+permissions: {}
+
 jobs:
   trigger-n8n:
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '/run-security-scan')
+    # Only react to comments on PRs, only when they contain the command, and only
+    # from trusted members/collaborators/owners — never arbitrary commenters.
+    if: >
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/run-security-scan') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     steps:
-      - name: Prepare hybrid payload
+      - name: Prepare payload
         id: payload
+        # Every value below is untrusted context: it is injected into the
+        # environment (never inlined into the script with ${{ }}) and then
+        # JSON-encoded by jq, so it cannot break out of the shell or the JSON.
+        env:
+          HTML_URL: ${{ github.event.issue.html_url }}
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+          BRANCH: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
+          ACTOR: ${{ github.actor }}
+          BEFORE: ${{ github.event.before || '' }}
+          AFTER: ${{ github.event.after || '' }}
+          PR: ${{ github.event.pull_request.number || 'null' }}
+          PR_ISSUE: ${{ github.event.issue.pull_request.number || 'null' }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref || '' }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          BASE_REF: ${{ github.event.pull_request.base.ref || '' }}
+          CLONE_URL: ${{ github.event.repository.clone_url || '' }}
+          OVERRIDES: ${{ github.event.inputs.overrides || '' }}
         run: |
-          echo "Building payload.json"
-          # Ensure overrides is always valid JSON
-          OVERRIDES='${{ github.event.inputs.overrides }}'
-          if [ -z "$OVERRIDES" ]; then
-            OVERRIDES="{}"
+          set -euo pipefail
+          # Ensure overrides is always valid JSON (empty => {}).
+          OVERRIDES_JSON='{}'
+          if [ -n "${OVERRIDES}" ]; then
+            OVERRIDES_JSON="${OVERRIDES}"
           fi
 
-          cat <<EOF > payload.json
-          {
-            "htmlUrl": "${{ github.event.issue.html_url }}",
-            "repo": "${{ github.repository }}",
-            "owner": "${{ github.repository_owner }}",
-            "branch": "${{ github.ref_name }}",
-            "commit": "${{ github.sha }}",
-            "actor": "${{ github.actor }}",
+          jq -n \
+            --arg    htmlUrl  "${HTML_URL}" \
+            --arg    repo     "${REPO}" \
+            --arg    owner    "${OWNER}" \
+            --arg    branch   "${BRANCH}" \
+            --arg    commit   "${COMMIT}" \
+            --arg    actor    "${ACTOR}" \
+            --arg    before   "${BEFORE}" \
+            --arg    after    "${AFTER}" \
+            --argjson pr       "${PR:-null}" \
+            --argjson prIssue  "${PR_ISSUE:-null}" \
+            --arg    headSha  "${HEAD_SHA}" \
+            --arg    headRef  "${HEAD_REF}" \
+            --arg    baseSha  "${BASE_SHA}" \
+            --arg    baseRef  "${BASE_REF}" \
+            --arg    cloneUrl "${CLONE_URL}" \
+            --argjson overrides "${OVERRIDES_JSON}" \
+            '{
+              htmlUrl: $htmlUrl,
+              repo: $repo,
+              owner: $owner,
+              branch: $branch,
+              commit: $commit,
+              actor: $actor,
+              before: $before,
+              after: $after,
+              pr: $pr,
+              prIssue: $prIssue,
+              headSha: $headSha,
+              headRef: $headRef,
+              baseSha: $baseSha,
+              baseRef: $baseRef,
+              cloneUrl: $cloneUrl,
+              overrides: $overrides
+            }' > payload.json
 
-            "before": "${{ github.event.before || '' }}",
-            "after": "${{ github.event.after || '' }}",
-
-            "pr": ${{ github.event.pull_request.number || 'null' }},
-            "prIssue": ${{ github.event.issue.pull_request.number || 'null' }},
-            
-            "headSha": "${{ github.event.pull_request.head.sha || '' }}",
-            "headRef": "${{ github.event.pull_request.head.ref || '' }}",
-            "baseSha": "${{ github.event.pull_request.base.sha || '' }}",
-            "baseRef": "${{ github.event.pull_request.base.ref || '' }}",
-
-            "cloneUrl": "${{ github.event.repository.clone_url || '' }}",
-
-            "overrides": $OVERRIDES
-
-          }
-          EOF
-
-          echo "Payload built:"
+          echo "Payload built (values shown are JSON-escaped):"
           cat payload.json
 
       - name: Send payload to n8n webhook
+        env:
+          N8N_BEARER_TOKEN: ${{ secrets.N8N_BEARER_TOKEN }}
         run: |
-          curl -X POST \
+          set -euo pipefail
+          curl -fsS -X POST \
             -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${N8N_BEARER_TOKEN}" \
             -d @payload.json \
             https://pandoras-box.oceanprotocol.io/webhook/66d5c38a-7df7-4106-a8e3-f3070fcb6858
