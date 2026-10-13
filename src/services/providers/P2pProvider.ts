@@ -77,6 +77,7 @@ import {
   isAgentSignature
 } from './BaseProvider.js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
+import { assertServiceResultTarget } from './serviceResult.js'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import * as multiFormatRaw from 'multiformats/codecs/raw'
@@ -4064,5 +4065,99 @@ export class P2pProvider {
       signerOrAuthToken,
       signal
     )
+  }
+
+  /**
+   * Downloads a service's /data/outputs as a zip over libp2p — for a service started without an
+   * output bucket. Owner-only.
+   *
+   * The transfer mirrors `downloadPersistentStorageFile`: `dialAndStream` takes a concurrency
+   * slot, the first frame is a status JSON (an `httpStatus >= 400` throws and releases the
+   * slot), and the returned generator streams the zip with flow control, resetting the stream
+   * and releasing the slot however iteration ends.
+   * @param {OceanNode} nodeUri The provider node (peerId / multiaddr).
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken Signer, JWT auth token, or precomputed signature used to authenticate the request.
+   * @param {string} serviceId The service.
+   * @param {number | 'live'} index An `index` from the service's `outputArchives` (see getServiceStatus), or `'live'` for a zip of the running container's /data/outputs, built as it is read.
+   * @param {number} [offset=0] Byte offset to resume an archive download from. Must be a non-negative safe integer; not supported with `'live'`.
+   * @param {AbortSignal} [signal] Abort signal that cancels the download mid-flight and tears down the stream.
+   * @return {Promise<ComputeResultStream>} An async-iterable stream of the zip, starting at `offset`.
+   */
+  public async serviceGetResult(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    index: number | 'live',
+    offset: number = 0,
+    signal?: AbortSignal
+  ): Promise<ComputeResultStream> {
+    assertServiceResultTarget(index, offset)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_GET_RESULT,
+      signal
+    )
+    const payload: Record<string, any> = {
+      command: PROTOCOL_COMMANDS.SERVICE_GET_RESULT,
+      serviceId,
+      ...(index === 'live' ? { live: true } : { index, offset }),
+      consumerAddress
+    }
+
+    if (typeof signerOrAuthToken === 'string') {
+      payload.authorization = signerOrAuthToken
+    } else {
+      payload.nonce = nonce
+      payload.signature = signature
+    }
+
+    const { firstBytes, frames, stream, release } = await this.dialAndStream(
+      nodeUri,
+      payload,
+      signal
+    )
+
+    let status: Record<string, any>
+    try {
+      // First frame is always a status JSON
+      status = JSON.parse(new TextDecoder().decode(firstBytes))
+      if (typeof status?.httpStatus === 'number' && status.httpStatus >= 400) {
+        throw new Error(status.error ?? `P2P service result error: ${status.httpStatus}`)
+      }
+    } catch (e) {
+      abortResponseStream(stream, e)
+      release()
+      throw e
+    }
+
+    const idleTimeout = this.streamIdleTimeoutMs()
+    return (async function* () {
+      let completed = false
+      try {
+        while (true) {
+          // Flow control — see `LP_RESUME_BELOW_BYTES` and downloadPersistentStorageFile.
+          if (frames.pendingBytes <= LP_RESUME_BELOW_BYTES) {
+            resumeReads(stream)
+          }
+          const chunk = await readFrame(frames, signal, idleTimeout)
+          pauseReads(stream)
+          yield chunk
+        }
+      } catch (e) {
+        // Only a clean end may finish the stream, or the consumer writes a short zip.
+        if (!frames.isCleanEnd(e)) throw e
+        completed = true
+      } finally {
+        resumeReads(stream)
+        if (!completed) {
+          abortResponseStream(
+            stream,
+            new Error('P2P service result download is no longer being read')
+          )
+        }
+        release()
+      }
+    })()
   }
 }
