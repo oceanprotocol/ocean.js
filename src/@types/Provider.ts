@@ -261,7 +261,8 @@ export const PROTOCOL_COMMANDS = {
   SERVICE_GET_STATUS: 'serviceGetStatus',
   SERVICE_LIST: 'serviceList',
   SERVICE_EXTEND: 'serviceExtend',
-  SERVICE_GET_STREAMABLE_LOGS: 'serviceGetStreamableLogs'
+  SERVICE_GET_STREAMABLE_LOGS: 'serviceGetStreamableLogs',
+  GET_ESCROW_EVENTS: 'getEscrowEvents'
 }
 
 export interface NodeLogsParams {

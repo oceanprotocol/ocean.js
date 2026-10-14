@@ -66,7 +66,9 @@ import {
   OceanNode,
   NodeP2P,
   SignerOrAuthTokenOrSignature,
-  CompleteSignature
+  CompleteSignature,
+  EscrowEventRecord,
+  EscrowEventsFilter
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS, NodeLogEntry } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -2478,6 +2480,37 @@ export class P2pProvider {
   }
 
   /**
+   * Queries indexed escrow events via the P2P GET_ESCROW_EVENTS command. The `ranges` object
+   * (including exclusive `gt`/`lt` bounds) is passed through verbatim; the node compares uint256
+   * bounds with BigInt. A public read: no signer / auth token is sent.
+   * @param {OceanNode} nodeUri - peerId/multiaddr of the node
+   * @param {EscrowEventsFilter} [filter] - optional equality / range filters and pagination
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<EscrowEventRecord[]>} the matching event rows, or [] on failure
+   */
+  public async getEscrowEvents(
+    nodeUri: OceanNode,
+    filter: EscrowEventsFilter = {},
+    signal?: AbortSignal
+  ): Promise<EscrowEventRecord[]> {
+    try {
+      const result = await this.sendP2pCommand(
+        nodeUri,
+        PROTOCOL_COMMANDS.GET_ESCROW_EVENTS,
+        { ...filter },
+        null,
+        signal
+      )
+      return Array.isArray(result) ? result : []
+    } catch (e) {
+      // A caller-driven cancellation is not a compatibility failure: surface it.
+      if (signal?.aborted) throw e
+      LoggerInstance.error('P2P getEscrowEvents failed:', e)
+      return []
+    }
+  }
+
+  /**
    * Returns the live per-node resource metrics snapshot via the P2P GET_NODE_METRICS command.
    * @param {OceanNode} nodeUri - peerId/multiaddr of the node
    * @param {AbortSignal} [signal] - optional abort signal to cancel the request
@@ -2881,7 +2914,8 @@ export class P2pProvider {
     signal?: AbortSignal,
     queueMaxWaitTime?: number,
     dockerRegistryAuth?: dockerRegistryAuth,
-    outputBucketId?: string
+    outputBucketId?: string,
+    subsidyProviders?: string[]
   ): Promise<ComputeJob | ComputeJob[]> {
     const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
       nodeUri,
@@ -2906,6 +2940,7 @@ export class P2pProvider {
     }
     if (metadata) body.metadata = metadata
     if (additionalViewers) body.additionalViewers = additionalViewers
+    if (subsidyProviders) body.subsidyProviders = subsidyProviders
     if (policyServer) body.policyServer = policyServer
     if (queueMaxWaitTime) body.queueMaxWaitTime = queueMaxWaitTime
     if (dockerRegistryAuth) {
@@ -3890,7 +3925,8 @@ export class P2pProvider {
     serviceId: string,
     additionalDuration: number,
     payment: ServicePayment,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    subsidyProviders?: string[]
   ): Promise<ServiceJob[]> {
     const authPayload = await this.getSignedCommandParams(
       nodeUri,
@@ -3901,7 +3937,13 @@ export class P2pProvider {
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.SERVICE_EXTEND,
-      { ...authPayload, serviceId, additionalDuration, payment },
+      {
+        ...authPayload,
+        serviceId,
+        additionalDuration,
+        payment,
+        ...(subsidyProviders ? { subsidyProviders } : {})
+      },
       signerOrAuthToken,
       signal
     )

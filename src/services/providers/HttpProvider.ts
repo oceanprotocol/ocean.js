@@ -39,7 +39,9 @@ import {
   ServiceUserData,
   ServicePayment,
   SignerOrAuthTokenOrSignature,
-  CompleteSignature
+  CompleteSignature,
+  EscrowEventRecord,
+  EscrowEventsFilter
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -206,6 +208,59 @@ export class HttpProvider {
       if (signal?.aborted) throw e
       LoggerInstance.error('getNodeMetricsHistory failed:', e)
       return null
+    }
+  }
+
+  /**
+   * Queries indexed escrow events via the REST route `GET /api/services/escrow/events`.
+   * Equality filters go on the query string; `ranges` are flattened to `<field>Min`/`<field>Max`.
+   * The REST route reads only `min`/`max`, so any `gt`/`lt` bound is dropped (with a warning) —
+   * use the P2P transport for exclusive bounds. A public read: no auth is sent.
+   * @param {string} nodeUri - node HTTP endpoint
+   * @param {EscrowEventsFilter} [filter] - optional equality / range filters and pagination
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<EscrowEventRecord[]>} the matching event rows, or [] on failure
+   */
+  public async getEscrowEvents(
+    nodeUri: string,
+    filter: EscrowEventsFilter = {},
+    signal?: AbortSignal
+  ): Promise<EscrowEventRecord[]> {
+    const params = new URLSearchParams()
+    for (const [key, value] of Object.entries(filter)) {
+      if (value === undefined || value === null || key === 'ranges') continue
+      params.set(key, String(value))
+    }
+    let droppedExclusiveBound = false
+    for (const [field, range] of Object.entries(filter.ranges ?? {})) {
+      if (range.min !== undefined) params.set(`${field}Min`, String(range.min))
+      if (range.max !== undefined) params.set(`${field}Max`, String(range.max))
+      if (range.gt !== undefined || range.lt !== undefined) droppedExclusiveBound = true
+    }
+    if (droppedExclusiveBound) {
+      LoggerInstance.warn(
+        'getEscrowEvents: gt/lt range bounds are not supported over HTTP (REST reads only min/max) and were ignored. Use the P2P transport for exclusive bounds.'
+      )
+    }
+    let url = this.baseUrl(nodeUri) + '/api/services/escrow/events'
+    const query = params.toString()
+    if (query) url += `?${query}`
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+      if (response?.ok) {
+        const data = await response.json()
+        return Array.isArray(data) ? data : []
+      }
+      return []
+    } catch (e) {
+      // A caller-driven cancellation is not a compatibility failure: surface it.
+      if (signal?.aborted) throw e
+      LoggerInstance.error('getEscrowEvents failed:', e)
+      return []
     }
   }
 
@@ -643,6 +698,7 @@ export class HttpProvider {
    * @param {number} queueMaxWaitTime Maximum time in seconds to wait in the compute queue if resources are not available
    * @param {dockerRegistryAuth} dockerRegistryAuth Docker registry authentication data.
    * @param {string} outputBucketId Persistent-storage bucket id to store job results in, mounted at /data/outputs. Mutually exclusive with output.
+   * @param {string[]} subsidyProviders Optional consumer-selected subsidy provider addresses; resolved tri-state by the node (omit = node default, [] = none, populated = only these). See ocean-node #1485.
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
   public async computeStart(
@@ -662,7 +718,8 @@ export class HttpProvider {
     signal?: AbortSignal,
     queueMaxWaitTime?: number,
     dockerRegistryAuth?: dockerRegistryAuth,
-    outputBucketId?: string
+    outputBucketId?: string,
+    subsidyProviders?: string[]
   ): Promise<ComputeJob | ComputeJob[]> {
     const computeStartUrl = this.baseUrl(nodeUri) + '/api/services/compute'
 
@@ -710,6 +767,7 @@ export class HttpProvider {
       }
     }
     if (outputBucketId) payload.outputBucketId = outputBucketId
+    if (subsidyProviders) payload.subsidyProviders = subsidyProviders
     if (policyServer) payload.policyServer = policyServer
     if (queueMaxWaitTime) payload.queueMaxWaitTime = queueMaxWaitTime
     let response
@@ -1999,6 +2057,7 @@ export class HttpProvider {
 
   /**
    * Extends a running service's expiry by paying for additional duration.
+   * @param {string[]} subsidyProviders Optional consumer-selected subsidy provider addresses; resolved tri-state by the node (omit = node default, [] = none, populated = only these). See ocean-node #1485.
    * @return {Promise<ServiceJob[]>} The updated service job (single-element array).
    */
   public async serviceExtend(
@@ -2007,7 +2066,8 @@ export class HttpProvider {
     serviceId: string,
     additionalDuration: number,
     payment: ServicePayment,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    subsidyProviders?: string[]
   ): Promise<ServiceJob[]> {
     const route = this.baseUrl(nodeUri) + '/api/services/serviceExtend'
     const authPayload = await this.getSignedCommandParams(
@@ -2023,7 +2083,13 @@ export class HttpProvider {
         'Content-Type': 'application/json',
         ...(authHeader ? { Authorization: authHeader } : {})
       },
-      body: JSON.stringify({ ...authPayload, serviceId, additionalDuration, payment }),
+      body: JSON.stringify({
+        ...authPayload,
+        serviceId,
+        additionalDuration,
+        payment,
+        ...(subsidyProviders ? { subsidyProviders } : {})
+      }),
       signal
     })
     if (!response.ok) throw new Error(await response.text())

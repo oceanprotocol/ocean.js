@@ -154,6 +154,48 @@ describe('Provider tests', async () => {
     assert(Array.isArray(history.buckets), 'history.buckets should be an array')
   })
 
+  it('Alice tests getEscrowEvents with no filter', async () => {
+    const events = await ProviderInstance.getEscrowEvents(config.oceanNodeUri)
+    assert(Array.isArray(events), 'escrow events should be an array')
+  })
+
+  it('Alice tests getEscrowEvents eventType filter', async () => {
+    const events = await ProviderInstance.getEscrowEvents(config.oceanNodeUri, {
+      eventType: 'Deposit'
+    })
+    assert(Array.isArray(events), 'escrow events should be an array')
+    for (const e of events) {
+      assert(e.eventType === 'Deposit', `expected only Deposit rows, got ${e.eventType}`)
+    }
+  })
+
+  it('Alice tests getEscrowEvents block range (store-side)', async () => {
+    const events = await ProviderInstance.getEscrowEvents(config.oceanNodeUri, {
+      ranges: { block: { min: 0, max: 1 } }
+    })
+    assert(Array.isArray(events), 'escrow events should be an array')
+    for (const e of events) {
+      assert(e.block >= 0 && e.block <= 1, `block ${e.block} outside [0,1]`)
+    }
+  })
+
+  it('Alice tests getEscrowEvents rejects an unsupported range field', async () => {
+    // A range on a non-range-filterable field makes the node answer 400, which the SDK
+    // swallows to []. (gt/lt are dropped before the request on HTTP, so use `min` here.)
+    const events = await ProviderInstance.getEscrowEvents(config.oceanNodeUri, {
+      ranges: { payer: { min: 1 } }
+    })
+    assert(Array.isArray(events), 'should surface the node 400 as an empty array')
+    assert(events.length === 0, 'an unsupported range field should yield no rows')
+  })
+
+  it('Alice tests getAllEscrowEvents returns an array', async () => {
+    const events = await ProviderInstance.getAllEscrowEvents(config.oceanNodeUri, {
+      eventType: 'Deposit'
+    })
+    assert(Array.isArray(events), 'all escrow events should be an array')
+  })
+
   it('Alice tests getNonce', async () => {
     const nonce = await ProviderInstance.getNonce(
       config.oceanNodeUri,

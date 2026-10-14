@@ -213,4 +213,9 @@ export interface ServiceStartParams extends ServiceContainerSpec {
   duration: number // seconds; must fall within the env's minServiceDuration..maxServiceDuration (node enforces)
   payment: ServicePayment
   outputBucketId?: string // persistent-storage bucket bind-mounted at /data/outputs
+  // Optional consumer-selected subsidy provider contract addresses (EIP-55). Forwarded to
+  // the node, which resolves them tri-state (see ocean-node #1485): omitting the field uses
+  // the node's configured providers, an empty array means no subsidy provider, and a
+  // populated array uses only these — subject to the node's SUBSIDY_PROVIDER_FILTER policy.
+  subsidyProviders?: string[]
 }
