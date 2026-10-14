@@ -973,7 +973,10 @@ export class BaseProvider {
     filter: EscrowEventsFilter = {},
     signal?: AbortSignal
   ): Promise<EscrowEventRecord[]> {
-    const pageSize = Math.min(filter.size && filter.size > 0 ? filter.size : 250, 250)
+    const pageSize = Math.min(
+      filter.size && filter.size >= 1 ? Math.floor(filter.size) : 250,
+      250
+    )
     const out: EscrowEventRecord[] = []
     let offset = filter.offset && filter.offset > 0 ? filter.offset : 0
     for (;;) {
