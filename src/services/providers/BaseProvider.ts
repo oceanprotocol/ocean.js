@@ -46,7 +46,9 @@ import {
   OceanNode,
   NodeP2P,
   CompleteSignature,
-  SignerOrAuthTokenOrSignature
+  SignerOrAuthTokenOrSignature,
+  EscrowEventRecord,
+  EscrowEventsFilter
 } from '../../@types/index.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import fetch from 'cross-fetch'
@@ -937,6 +939,54 @@ export class BaseProvider {
     signal?: AbortSignal
   ): Promise<NodeComputeJob[]> {
     return this.getImpl(nodeUri).getNodeJobs(nodeUri, fromTimestamp, signal)
+  }
+
+  /**
+   * Queries indexed escrow events from a node. A public read — no auth is sent. Routes to HTTP
+   * (`GET /api/services/escrow/events`) or P2P (GET_ESCROW_EVENTS) depending on the node target.
+   * Returns a single page (default size 100, max 250 server-side); use `getAllEscrowEvents` to
+   * walk every page.
+   * @param {OceanNode} nodeUri - node HTTP endpoint, peerId or multiaddr
+   * @param {EscrowEventsFilter} [filter] - optional equality / range filters and pagination
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<EscrowEventRecord[]>} the matching event rows, or [] on failure
+   */
+  public async getEscrowEvents(
+    nodeUri: OceanNode,
+    filter: EscrowEventsFilter = {},
+    signal?: AbortSignal
+  ): Promise<EscrowEventRecord[]> {
+    return this.getImpl(nodeUri).getEscrowEvents(nodeUri, filter, signal)
+  }
+
+  /**
+   * Like `getEscrowEvents` but transparently walks every page until a short page is returned.
+   * Exact for `block`/`chainId` ranges (store-side); a very selective uint256 amount range can
+   * still be incomplete, since the node applies a bounded scan per page.
+   * @param {OceanNode} nodeUri - node HTTP endpoint, peerId or multiaddr
+   * @param {EscrowEventsFilter} [filter] - optional equality / range filters and starting offset
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<EscrowEventRecord[]>} all matching event rows, or [] on failure
+   */
+  public async getAllEscrowEvents(
+    nodeUri: OceanNode,
+    filter: EscrowEventsFilter = {},
+    signal?: AbortSignal
+  ): Promise<EscrowEventRecord[]> {
+    const pageSize = Math.min(filter.size && filter.size > 0 ? filter.size : 250, 250)
+    const out: EscrowEventRecord[] = []
+    let offset = filter.offset && filter.offset > 0 ? filter.offset : 0
+    for (;;) {
+      const page = await this.getEscrowEvents(
+        nodeUri,
+        { ...filter, offset, size: pageSize },
+        signal
+      )
+      out.push(...page)
+      if (page.length < pageSize) break
+      offset += pageSize
+    }
+    return out
   }
 
   /**

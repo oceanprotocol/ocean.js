@@ -39,7 +39,9 @@ import {
   ServiceUserData,
   ServicePayment,
   SignerOrAuthTokenOrSignature,
-  CompleteSignature
+  CompleteSignature,
+  EscrowEventRecord,
+  EscrowEventsFilter
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -206,6 +208,59 @@ export class HttpProvider {
       if (signal?.aborted) throw e
       LoggerInstance.error('getNodeMetricsHistory failed:', e)
       return null
+    }
+  }
+
+  /**
+   * Queries indexed escrow events via the REST route `GET /api/services/escrow/events`.
+   * Equality filters go on the query string; `ranges` are flattened to `<field>Min`/`<field>Max`.
+   * The REST route reads only `min`/`max`, so any `gt`/`lt` bound is dropped (with a warning) —
+   * use the P2P transport for exclusive bounds. A public read: no auth is sent.
+   * @param {string} nodeUri - node HTTP endpoint
+   * @param {EscrowEventsFilter} [filter] - optional equality / range filters and pagination
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<EscrowEventRecord[]>} the matching event rows, or [] on failure
+   */
+  public async getEscrowEvents(
+    nodeUri: string,
+    filter: EscrowEventsFilter = {},
+    signal?: AbortSignal
+  ): Promise<EscrowEventRecord[]> {
+    const params = new URLSearchParams()
+    for (const [key, value] of Object.entries(filter)) {
+      if (value === undefined || value === null || key === 'ranges') continue
+      params.set(key, String(value))
+    }
+    let droppedExclusiveBound = false
+    for (const [field, range] of Object.entries(filter.ranges ?? {})) {
+      if (range.min !== undefined) params.set(`${field}Min`, String(range.min))
+      if (range.max !== undefined) params.set(`${field}Max`, String(range.max))
+      if (range.gt !== undefined || range.lt !== undefined) droppedExclusiveBound = true
+    }
+    if (droppedExclusiveBound) {
+      LoggerInstance.warn(
+        'getEscrowEvents: gt/lt range bounds are not supported over HTTP (REST reads only min/max) and were ignored. Use the P2P transport for exclusive bounds.'
+      )
+    }
+    let url = this.baseUrl(nodeUri) + '/api/services/escrow/events'
+    const query = params.toString()
+    if (query) url += `?${query}`
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+      if (response?.ok) {
+        const data = await response.json()
+        return Array.isArray(data) ? data : []
+      }
+      return []
+    } catch (e) {
+      // A caller-driven cancellation is not a compatibility failure: surface it.
+      if (signal?.aborted) throw e
+      LoggerInstance.error('getEscrowEvents failed:', e)
+      return []
     }
   }
 
