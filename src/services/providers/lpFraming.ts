@@ -195,6 +195,8 @@ export class LpFrameReader {
   private discarded: number | undefined
   /** Set when the stream ends in an error, whether raised locally or by the peer. */
   private closeError: Error | undefined
+  /** Set when the peer closed its writable end, i.e. finished sending the response. */
+  private remoteEnded = false
 
   constructor(
     private readonly lp: ReturnType<typeof lpStream>,
@@ -209,6 +211,17 @@ export class LpFrameReader {
       if (evt.error != null) {
         this.closeError = evt.error
       }
+    })
+    // The stream-level error above is not enough: when the *connection* goes away — aborted
+    // with an error (e.g. a read-buffer overflow on the raw socket) or closed gracefully by the
+    // connection manager — the muxer ends every stream on it through `onTransportClosed`, which
+    // closes them with no error, between frames as often as not. Only the peer's own close of
+    // its writable end raises 'remoteCloseWrite'; a transport closure marks the remote end
+    // closed without dispatching it. So that event is what tells a finished response from one
+    // cut short. Measured against a node: a connection aborted mid-download left every stream
+    // on it closing with `error=none`, and the truncated body came back as success.
+    stream.addEventListener('remoteCloseWrite', () => {
+      this.remoteEnded = true
     })
     stream.addEventListener('message', (evt) => {
       this.received += evt.data.byteLength
@@ -245,12 +258,14 @@ export class LpFrameReader {
   }
 
   /**
-   * True when `err` is the graceful end of the stream: an end-of-file thrown with
-   * every delivered byte already accounted for by a complete frame. A truncated
-   * frame throws the same error type but leaves bytes pending, and returns false.
+   * True when `err` is the graceful end of the stream: an end-of-file thrown after the
+   * peer closed its writable end, with every delivered byte already accounted for by a
+   * complete frame. A truncated frame throws the same error type but leaves bytes
+   * pending, and a stream ended by its connection closing never saw the peer's close;
+   * both return false.
    */
   isCleanEnd(err: unknown): boolean {
-    if (this.closeError != null) {
+    if (this.closeError != null || !this.remoteEnded) {
       return false
     }
     const isEof =

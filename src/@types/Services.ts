@@ -93,6 +93,18 @@ export interface ServiceJobPayment {
   [key: string]: any
 }
 
+// One zip of a service's /data/outputs, taken right before a container of the service was
+// removed (stop, expiry, restart, or crash recovery). Only services started without an
+// outputBucketId get these. Download one with serviceGetResult(..., index), until the node
+// deletes it once the environment's storageExpiry has elapsed after expiresAt.
+export interface ServiceOutputArchive {
+  index: number
+  filename: string // e.g. outputs-0.zip
+  filesize: number // bytes
+  createdAt: number // Unix ms timestamp
+  containerId: string // the container it was taken from
+}
+
 // As returned by the node (userData is always stripped from responses).
 export interface ServiceJob {
   serviceId: string // unique id for a running service — distinct from a compute jobId
@@ -129,6 +141,11 @@ export interface ServiceJob {
   // SERVICE_LIST (see ocean-node #1464 — previously stripped from the listing, now kept so
   // any consumer can read a service's labels).
   metadata?: ComputeJobMetadata
+  // Persistent-storage bucket bind-mounted at /data/outputs, when the service was started with one.
+  outputBucketId?: string
+  // Archives of /data/outputs, one per removed container — only for services without an
+  // outputBucketId (their results are in the bucket). Owner-scoped: SERVICE_LIST strips them.
+  outputArchives?: ServiceOutputArchive[]
 }
 
 // Returned by SERVICE_LIST, which is authenticated but NOT owner-scoped (any consumer
@@ -144,6 +161,7 @@ export type ServiceJobListed = Omit<
   | 'dockerfile'
   | 'additionalDockerFiles'
   | 'runtimeMetrics'
+  | 'outputArchives'
 >
 
 // Filters for SERVICE_LIST (getServices). With no filters the node returns only the
