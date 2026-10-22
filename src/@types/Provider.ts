@@ -89,6 +89,10 @@ export interface NodeStatus {
   uptime: number
   persistentStorage?: {
     accessLists?: AccessList[]
+    // Whether the node honours bucket access lists. When false (the node default), only a
+    // bucket's owner can use it and creating a bucket with accessLists is rejected. Absent on
+    // nodes that predate the setting, which always honour access lists.
+    allowBucketSharing?: boolean
   }
 }
 
@@ -262,7 +266,8 @@ export const PROTOCOL_COMMANDS = {
   SERVICE_LIST: 'serviceList',
   SERVICE_EXTEND: 'serviceExtend',
   SERVICE_GET_STREAMABLE_LOGS: 'serviceGetStreamableLogs',
-  GET_ESCROW_EVENTS: 'getEscrowEvents'
+  GET_ESCROW_EVENTS: 'getEscrowEvents',
+  SERVICE_GET_RESULT: 'serviceGetResult'
 }
 
 export interface NodeLogsParams {
