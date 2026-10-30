@@ -1,0 +1,286 @@
+{
+  "$comment": "Shared test vectors for GpuSizingProfile -> GPU requirement. Owned by ocean.js (test/unit/fixtures/gpu-sizing-vectors.json, implementation deriveGpuLayouts/gpuFloorGb in src/utils/ServiceResources.ts); ocean-node-templates copies this file verbatim. Every implementation must produce `expected` exactly (deep equal) and `floors` per width for each entry of `vectors`, and must throw for every entry of `invalid`.",
+  "formula": [
+    "for width n, u = memUtil (number) or memUtil[String(n)] (map):",
+    "needGiB = shardableGiB / n + replicatedGiB",
+    "cardGiB = max(needGiB / u, outsideGiB > 0 ? outsideGiB / (1 - u) : 0) + driverReserveGiB",
+    "floorGb(n) = overrides[String(n)].vramPerGpu if present, else ceil(cardGiB * 1.073741824)",
+    "defaults: outsideGiB 0, driverReserveGiB 0.5",
+    "layouts: n === 1 -> { gpuCount: 1 }; n > 1 -> { gpuCount: n, vramPerGpu: floorGb(n) }",
+    "recommended: widths include 1 -> floorGb(1), and throw if any n > 1 has n * floorGb(n) < floorGb(1); otherwise min over n of n * floorGb(n)",
+    "result: { kind: 'discrete', type: 'gpu', unit: 'GB', recommended, layouts } (no gpuCountEnv)",
+    "throw on: version !== 1, empty engine, confidence not measured|estimated, widths not strictly ascending integers 1..64 or count not 1..8, negative/non-finite sizes, shardable + replicated + outside === 0, memUtil outside (0,1), memUtil map keys not exactly the declared widths, override for an undeclared width or without positive vramPerGpu / source measured|policy|estimate / non-empty note, evidence not an array of strings"
+  ],
+  "vectors": [
+    {
+      "name": "130 GB model, TP 1/2/4, single util",
+      "profile": {
+        "version": 1,
+        "engine": "vllm",
+        "confidence": "estimated",
+        "widths": [1, 2, 4],
+        "shardableGiB": 104,
+        "replicatedGiB": 4.2,
+        "memUtil": 0.9
+      },
+      "floors": { "1": 130, "2": 68, "4": 37 },
+      "expected": {
+        "kind": "discrete",
+        "type": "gpu",
+        "unit": "GB",
+        "recommended": 130,
+        "layouts": [
+          { "gpuCount": 1 },
+          { "gpuCount": 2, "vramPerGpu": 68 },
+          { "gpuCount": 4, "vramPerGpu": 37 }
+        ]
+      }
+    },
+    {
+      "name": "per-width util map (TEP8 at 0.85), no width 1",
+      "profile": {
+        "version": 1,
+        "engine": "vllm",
+        "confidence": "estimated",
+        "widths": [2, 4, 8],
+        "shardableGiB": 190,
+        "replicatedGiB": 12.5,
+        "memUtil": { "2": 0.9, "4": 0.9, "8": 0.85 }
+      },
+      "floors": { "2": 129, "4": 73, "8": 47 },
+      "expected": {
+        "kind": "discrete",
+        "type": "gpu",
+        "unit": "GB",
+        "recommended": 258,
+        "layouts": [
+          { "gpuCount": 2, "vramPerGpu": 129 },
+          { "gpuCount": 4, "vramPerGpu": 73 },
+          { "gpuCount": 8, "vramPerGpu": 47 }
+        ]
+      }
+    },
+    {
+      "name": "policy override at width 8",
+      "profile": {
+        "version": 1,
+        "engine": "vllm",
+        "confidence": "measured",
+        "widths": [2, 4, 8],
+        "shardableGiB": 150,
+        "replicatedGiB": 30,
+        "memUtil": 0.9,
+        "overrides": {
+          "8": { "vramPerGpu": 80, "source": "policy", "note": "keep the 8-wide floor at the 80 GB class until measured" }
+        },
+        "evidence": ["vector: override replaces the formula (would be 59)"]
+      },
+      "floors": { "2": 126, "4": 82, "8": 80 },
+      "expected": {
+        "kind": "discrete",
+        "type": "gpu",
+        "unit": "GB",
+        "recommended": 252,
+        "layouts": [
+          { "gpuCount": 2, "vramPerGpu": 126 },
+          { "gpuCount": 4, "vramPerGpu": 82 },
+          { "gpuCount": 8, "vramPerGpu": 80 }
+        ]
+      }
+    },
+    {
+      "name": "outsideGiB dominates the engine budget, width 1 only",
+      "profile": {
+        "version": 1,
+        "engine": "comfyui",
+        "confidence": "measured",
+        "widths": [1],
+        "shardableGiB": 0,
+        "replicatedGiB": 14,
+        "memUtil": 0.6,
+        "outsideGiB": 20
+      },
+      "floors": { "1": 55 },
+      "expected": {
+        "kind": "discrete",
+        "type": "gpu",
+        "unit": "GB",
+        "recommended": 55,
+        "layouts": [{ "gpuCount": 1 }]
+      }
+    },
+    {
+      "name": "outsideGiB dominates only at width 2, custom driver reserve",
+      "profile": {
+        "version": 1,
+        "engine": "placement",
+        "confidence": "estimated",
+        "widths": [1, 2],
+        "shardableGiB": 60,
+        "replicatedGiB": 8,
+        "memUtil": 0.85,
+        "outsideGiB": 7,
+        "driverReserveGiB": 1
+      },
+      "floors": { "1": 87, "2": 52 },
+      "expected": {
+        "kind": "discrete",
+        "type": "gpu",
+        "unit": "GB",
+        "recommended": 87,
+        "layouts": [
+          { "gpuCount": 1 },
+          { "gpuCount": 2, "vramPerGpu": 52 }
+        ]
+      }
+    },
+    {
+      "name": "width 1 absent, zero driver reserve",
+      "profile": {
+        "version": 1,
+        "engine": "vllm",
+        "confidence": "estimated",
+        "widths": [4, 8],
+        "shardableGiB": 400,
+        "replicatedGiB": 9,
+        "memUtil": 0.92,
+        "driverReserveGiB": 0
+      },
+      "floors": { "4": 128, "8": 69 },
+      "expected": {
+        "kind": "discrete",
+        "type": "gpu",
+        "unit": "GB",
+        "recommended": 512,
+        "layouts": [
+          { "gpuCount": 4, "vramPerGpu": 128 },
+          { "gpuCount": 8, "vramPerGpu": 69 }
+        ]
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "a wider layout totals less than the 1-GPU floor",
+      "profile": {
+        "version": 1,
+        "engine": "vllm",
+        "confidence": "estimated",
+        "widths": [1, 2],
+        "shardableGiB": 100,
+        "replicatedGiB": 0,
+        "memUtil": { "1": 0.5, "2": 0.95 }
+      }
+    },
+    {
+      "name": "override for an undeclared width",
+      "profile": {
+        "version": 1,
+        "engine": "vllm",
+        "confidence": "measured",
+        "widths": [2, 4],
+        "shardableGiB": 100,
+        "replicatedGiB": 5,
+        "memUtil": 0.9,
+        "overrides": { "8": { "vramPerGpu": 80, "source": "measured", "note": "n/a" } }
+      }
+    },
+    {
+      "name": "widths not ascending",
+      "profile": {
+        "version": 1,
+        "engine": "vllm",
+        "confidence": "estimated",
+        "widths": [2, 1],
+        "shardableGiB": 100,
+        "replicatedGiB": 5,
+        "memUtil": 0.9
+      }
+    },
+    {
+      "name": "duplicate width",
+      "profile": {
+        "version": 1,
+        "engine": "vllm",
+        "confidence": "estimated",
+        "widths": [2, 2],
+        "shardableGiB": 100,
+        "replicatedGiB": 5,
+        "memUtil": 0.9
+      }
+    },
+    {
+      "name": "more than 8 widths",
+      "profile": {
+        "version": 1,
+        "engine": "vllm",
+        "confidence": "estimated",
+        "widths": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        "shardableGiB": 100,
+        "replicatedGiB": 5,
+        "memUtil": 0.9
+      }
+    },
+    {
+      "name": "width above 64",
+      "profile": {
+        "version": 1,
+        "engine": "vllm",
+        "confidence": "estimated",
+        "widths": [128],
+        "shardableGiB": 100,
+        "replicatedGiB": 5,
+        "memUtil": 0.9
+      }
+    },
+    {
+      "name": "memUtil of 1",
+      "profile": {
+        "version": 1,
+        "engine": "vllm",
+        "confidence": "estimated",
+        "widths": [1],
+        "shardableGiB": 100,
+        "replicatedGiB": 5,
+        "memUtil": 1
+      }
+    },
+    {
+      "name": "memUtil map missing a declared width",
+      "profile": {
+        "version": 1,
+        "engine": "vllm",
+        "confidence": "estimated",
+        "widths": [2, 4],
+        "shardableGiB": 100,
+        "replicatedGiB": 5,
+        "memUtil": { "2": 0.9 }
+      }
+    },
+    {
+      "name": "negative replicated size",
+      "profile": {
+        "version": 1,
+        "engine": "vllm",
+        "confidence": "estimated",
+        "widths": [1],
+        "shardableGiB": 100,
+        "replicatedGiB": -1,
+        "memUtil": 0.9
+      }
+    },
+    {
+      "name": "override without a note",
+      "profile": {
+        "version": 1,
+        "engine": "vllm",
+        "confidence": "measured",
+        "widths": [2],
+        "shardableGiB": 100,
+        "replicatedGiB": 5,
+        "memUtil": 0.9,
+        "overrides": { "2": { "vramPerGpu": 80, "source": "measured", "note": "" } }
+      }
+    }
+  ]
+}
