@@ -80,13 +80,14 @@ export interface PlanGpuLayoutsParams {
 /** Result of sizeSharedResources(). */
 export interface SharedResourceSizing {
   /**
-   * Amount per shared id, for the ids the template declares. An id left undefined is not
-   * declared: the caller keeps its own default (existing slice or the env minimum).
+   * Amount per shared id
    */
   amounts: Partial<Record<SharedResourceId, number>>
-  /** The declared amounts as requests, zero amounts omitted (the node rejects amount 0). */
+  /** The declared amounts as requests (same grant units), zero amounts omitted (the node rejects amount 0). */
   requests: ComputeResourceRequest[]
-  /** Declared ids that got less than recommended. */
+  /**
+   * Declared ids that got less than recommended
+   */
   shortfalls: Array<{ id: SharedResourceId; recommended: number; allocated: number }>
 }
 
@@ -138,6 +139,13 @@ export function grantableAmount(resource: ComputeResource): number {
 }
 
 const gbToBytes = (gb: number): number => Math.ceil(gb * 1e9)
+
+const GIB_BYTES = 1024 ** 3
+
+// Convert a GB recommendation up to the whole GiB that covers it
+const isMemoryShared = (id: string): boolean => id === 'ram' || id === 'disk'
+const gbToGrantUnits = (gb: number): number => Math.ceil(gbToBytes(gb) / GIB_BYTES)
+const grantUnitsToGb = (units: number): number => (units * GIB_BYTES) / 1e9
 
 const compareStrings = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0)
 
@@ -492,10 +500,7 @@ export function validateGpuPlan(params: ValidateGpuPlanParams): GpuPlanCheck {
 }
 
 /**
- * Best-effort CPU/RAM/disk sizing for the template's declared recommendations. Each declared
- * id gets clamp(recommended, env min, grantable); anything below recommended is reported as a
- * shortfall. Undeclared ids stay undefined in `amounts` (caller default). GPU entries in
- * `requirements` are ignored.
+ * Best-effort CPU/RAM/disk sizing for the template's declared recommendations
  * @param {ComputeResource[]} resources the environment's resources (cpu/ram/disk looked up by id)
  * @param {TemplateResourceRequirement[]} requirements the template's recommendedResources
  * @returns {SharedResourceSizing | null} null when a declared id with recommended > 0 is absent
@@ -509,7 +514,11 @@ export function sizeSharedResources(
   for (const req of requirements ?? []) {
     if (!('id' in req)) continue
     const { id, recommended } = req
-    const wanted = Number.isFinite(recommended) && recommended > 0 ? recommended : 0
+    const mem = isMemoryShared(id)
+    // recommended is decimal GB for ram/disk, cores for cpu; `wanted` is in grant units
+    // (GiB for ram/disk, cores for cpu) so it compares and clamps against the env amounts.
+    const wantedGb = Number.isFinite(recommended) && recommended > 0 ? recommended : 0
+    const wanted = mem ? gbToGrantUnits(wantedGb) : wantedGb
     const resource = resources.find((r) => r.id === id)
     if (!resource) {
       if (wanted > 0) return null
@@ -522,7 +531,11 @@ export function sizeSharedResources(
     const allocated = Math.max(min, Math.min(wanted, grantable))
     sizing.amounts[id] = allocated
     if (allocated > 0) sizing.requests.push({ id, amount: allocated })
-    if (allocated < wanted) sizing.shortfalls.push({ id, recommended: wanted, allocated })
+    // Compare and report the shortfall in the recommendation's own units (GB for ram/disk)
+    // so a 64 GB recommendation met by 60 GiB (= 64.4 GB) is not reported as a shortfall.
+    const allocatedRec = mem ? grantUnitsToGb(allocated) : allocated
+    if (allocatedRec < wantedGb)
+      sizing.shortfalls.push({ id, recommended: wantedGb, allocated: allocatedRec })
   }
   return sizing
 }

@@ -569,14 +569,39 @@ describe('ServiceResources', () => {
 
     it('clamps to grantable, reports shortfalls and leaves undeclared ids to the caller', () => {
       const sized = sizeSharedResources(env, recs)
-      expect(sized.amounts).to.deep.equal({ cpu: 12, ram: 128 })
+      // ram 128 GB -> ceil(128e9 / 1024**3) = 120 GiB grant units; 120 GiB = 128.85 GB >= 128 GB
+      expect(sized.amounts).to.deep.equal({ cpu: 12, ram: 120 })
       expect(sized.amounts.disk).to.equal(undefined)
       expect(sized.requests).to.deep.equal([
         { id: 'cpu', amount: 12 },
-        { id: 'ram', amount: 128 }
+        { id: 'ram', amount: 120 }
       ])
       expect(sized.shortfalls).to.deep.equal([
         { id: 'cpu', recommended: 16, allocated: 12 }
+      ])
+    })
+
+    it('treats ram/disk recommendations as decimal GB against GiB env amounts', () => {
+      // 64 GB recommendation. 60 GiB = 64.4 GB already covers it -> no shortfall, and the
+      // booking is 60 GiB (64.4 GB), not 64 GiB (68.7 GB): no GB/GiB over-allocation.
+      const env60: ComputeResource[] = [
+        { id: 'ram', total: 60, max: 60, min: 0, inUse: 0 }
+      ]
+      const sized = sizeSharedResources(env60, [{ id: 'ram', recommended: 64, unit: 'GB' }])
+      expect(sized.amounts).to.deep.equal({ ram: 60 })
+      expect(sized.requests).to.deep.equal([{ id: 'ram', amount: 60 }])
+      expect(sized.shortfalls).to.deep.equal([])
+    })
+
+    it('reports a ram shortfall in GB when the env cannot cover the recommendation', () => {
+      // 64 GB needs ceil(64e9 / 1024**3) = 60 GiB; only 50 GiB grantable -> 50 GiB = 53.69 GB.
+      const env50: ComputeResource[] = [
+        { id: 'ram', total: 50, max: 50, min: 0, inUse: 0 }
+      ]
+      const sized = sizeSharedResources(env50, [{ id: 'ram', recommended: 64, unit: 'GB' }])
+      expect(sized.amounts).to.deep.equal({ ram: 50 })
+      expect(sized.shortfalls).to.deep.equal([
+        { id: 'ram', recommended: 64, allocated: (50 * 1024 ** 3) / 1e9 }
       ])
     })
 
