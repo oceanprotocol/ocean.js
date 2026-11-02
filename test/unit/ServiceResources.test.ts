@@ -855,7 +855,6 @@ describe('ServiceResources', () => {
         widths: [2, 4, 8]
       })
       const kvGiB = ((512 + 64) * 2 * 61 * 32768) / GIB
-      expect(est.confidence).to.equal('estimated')
       expect(est.unknown).to.deep.equal([])
       expect(est.profile.shardableGiB).to.be.closeTo(102.4e9 / GIB, 1e-9)
       expect(est.profile.replicatedGiB).to.be.closeTo(5.5 + kvGiB, 1e-9)

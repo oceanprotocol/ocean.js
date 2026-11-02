@@ -732,7 +732,6 @@ export interface HfSizingInput {
 /** Result of estimateHfSizingProfile(). */
 export interface HfSizingEstimate {
   profile: GpuSizingProfile
-  confidence: 'estimated'
   /** Inputs missing and counted as 0 or defaulted. */
   unknown: string[]
 }
@@ -857,5 +856,5 @@ export function estimateHfSizingProfile(input: HfSizingInput): HfSizingEstimate 
     memUtil
   }
   validateGpuSizingProfile(profile)
-  return { profile, confidence: 'estimated', unknown }
+  return { profile, unknown }
 }
