@@ -41,7 +41,6 @@ export type TemplateResourceRequirement =
 export interface GpuSizingProfile {
   version: 1
   engine: string // informational: 'vllm', 'comfyui', 'placement', …
-  confidence: 'measured' | 'estimated'
   widths: number[] // GPU counts the engine accepts: ascending ints 1..64, at most 8
   shardableGiB: number // splits 1/n across GPUs (weights, sharded state); >= 0
   replicatedGiB: number // on every GPU whatever n (runtime, graphs, replicated KV); >= 0
@@ -53,7 +52,6 @@ export interface GpuSizingProfile {
     string,
     { vramPerGpu: number; source: 'measured' | 'policy' | 'estimate'; note: string }
   >
-  evidence?: string[] // free-form provenance
 }
 
 export interface UserConfigurableEnvVar {
@@ -89,8 +87,6 @@ export interface ServiceTemplatePublic {
   userConfigurableEnvVars?: UserConfigurableEnvVar[]
   command?: string[] // Docker CMD override; ${KEY} expanded from userData
   entrypoint?: string[] // Docker ENTRYPOINT override
-  // The only resource declaration (the node rejects the old requiredResources/min shape).
-  // No GPU entry means no GPU demand.
   recommendedResources?: TemplateResourceRequirement[]
   workflows?: ServiceTemplateWorkflow[]
 }

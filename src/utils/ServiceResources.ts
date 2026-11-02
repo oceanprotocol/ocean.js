@@ -525,8 +525,6 @@ export function validateGpuSizingProfile(profile: GpuSizingProfile): void {
   if (profile.version !== 1) throw profileError(`unsupported version ${profile.version}`)
   if (typeof profile.engine !== 'string' || !profile.engine.trim())
     throw profileError('engine must be a non-empty string')
-  if (profile.confidence !== 'measured' && profile.confidence !== 'estimated')
-    throw profileError(`confidence must be 'measured' or 'estimated'`)
 
   const { widths } = profile
   if (!Array.isArray(widths) || widths.length === 0)
@@ -586,13 +584,6 @@ export function validateGpuSizingProfile(profile: GpuSizingProfile): void {
         throw profileError(`override "${key}" needs a note`)
     }
   }
-
-  if (
-    profile.evidence !== undefined &&
-    (!Array.isArray(profile.evidence) ||
-      profile.evidence.some((e) => typeof e !== 'string'))
-  )
-    throw profileError('evidence must be an array of strings')
 }
 
 // floorGb(n) of an already validated profile, n a declared width.
@@ -860,18 +851,10 @@ export function estimateHfSizingProfile(input: HfSizingInput): HfSizingEstimate 
   const profile: GpuSizingProfile = {
     version: 1,
     engine: input.engine ?? 'vllm',
-    confidence: 'estimated',
     widths: Array.isArray(widths) ? [...widths] : widths,
     shardableGiB: weightsGiB + (kvShardable ? kvGiB : 0),
     replicatedGiB: runtimeGiB + (kvShardable ? 0 : kvGiB),
-    memUtil,
-    evidence: [
-      `estimateHfSizingProfile: weights ${weightsGiB.toFixed(2)} GiB sharded; ` +
-        `KV ${kvGiB.toFixed(2)} GiB ${isMla ? 'MLA ' : ''}` +
-        `${kvShardable ? 'sharded' : 'replicated'} ` +
-        `(${contextTokens} tokens x ${concurrentSeqs} seqs); ` +
-        `runtime ${runtimeGiB} GiB replicated`
-    ]
+    memUtil
   }
   validateGpuSizingProfile(profile)
   return { profile, confidence: 'estimated', unknown }
