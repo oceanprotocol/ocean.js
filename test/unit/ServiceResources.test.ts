@@ -587,7 +587,9 @@ describe('ServiceResources', () => {
       const env60: ComputeResource[] = [
         { id: 'ram', total: 60, max: 60, min: 0, inUse: 0 }
       ]
-      const sized = sizeSharedResources(env60, [{ id: 'ram', recommended: 64, unit: 'GB' }])
+      const sized = sizeSharedResources(env60, [
+        { id: 'ram', recommended: 64, unit: 'GB' }
+      ])
       expect(sized.amounts).to.deep.equal({ ram: 60 })
       expect(sized.requests).to.deep.equal([{ id: 'ram', amount: 60 }])
       expect(sized.shortfalls).to.deep.equal([])
@@ -598,7 +600,9 @@ describe('ServiceResources', () => {
       const env50: ComputeResource[] = [
         { id: 'ram', total: 50, max: 50, min: 0, inUse: 0 }
       ]
-      const sized = sizeSharedResources(env50, [{ id: 'ram', recommended: 64, unit: 'GB' }])
+      const sized = sizeSharedResources(env50, [
+        { id: 'ram', recommended: 64, unit: 'GB' }
+      ])
       expect(sized.amounts).to.deep.equal({ ram: 50 })
       expect(sized.shortfalls).to.deep.equal([
         { id: 'ram', recommended: 64, allocated: (50 * 1024 ** 3) / 1e9 }
