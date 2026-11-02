@@ -9,64 +9,51 @@ import {
 
 // ── Resource requirements (templates) ─────────────────────────────────
 
-/**
- * One allowed way to spread the recommended VRAM over identical GPUs of ONE type on ONE host.
- * `gpuCount` is exactly what gets booked and used (TP width, TEP width, or one-model-per-card placement).
- */
+/** One way to book the recommended VRAM: `gpuCount` identical GPUs of one group, one host. */
 export interface GpuLayout {
-  gpuCount: number // integer >= 1; layouts strictly ascending by gpuCount
-  // VRAM each GPU must have for this layout, decimal GB, including headroom (compile peaks, replicated KV).
-  // REQUIRED when gpuCount > 1. FORBIDDEN when gpuCount === 1: that one GPU must hold `recommended`.
+  gpuCount: number // integer >= 1; layouts ascending by gpuCount
+  // Decimal GB each card needs, headroom included. Required when gpuCount > 1, forbidden for
+  // one GPU (that card must hold `recommended`).
   vramPerGpu?: number
 }
 
-// The only resource declaration a template carries (as `recommendedResources`). There is no
-// template `min`: CPU/RAM/disk are best-effort recommendations, and the GPU entry's layouts
-// say exactly how many cards of how much VRAM each may be booked. Clients plan with
-// planGpuLayouts() / sizeSharedResources() from utils/ServiceResources.
+// A template's `recommendedResources` entry. No `min`: CPU/RAM/disk are booked best effort,
+// the GPU as one of its layouts. Plan with utils/ServiceResources.
 export type TemplateResourceRequirement =
-  | { id: 'cpu'; recommended: number; unit: 'cores'; description?: string } // recommended >= 0
-  | { id: 'ram' | 'disk'; recommended: number; unit: 'GB'; description?: string } // decimal GB, >= 0
+  | { id: 'cpu'; recommended: number; unit: 'cores'; description?: string } // >= 0
+  | { id: 'ram' | 'disk'; recommended: number; unit: 'GB'; description?: string } // >= 0
   | {
       kind: 'discrete'
       type: 'gpu'
-      recommended: number // > 0. TOTAL VRAM, decimal GB: the headline. normally the smallest layout total (authoring convention).
+      recommended: number // > 0; total VRAM, decimal GB (normally the smallest layout total)
       unit: 'GB'
-      gpuCountEnv?: string // userConfigurableEnvVars key forcing exact GPU width; never an envVars key
-      layouts: GpuLayout[] // mandatory; runtime schema requires nonempty
-      description?: string // human prose, never parsed
+      gpuCountEnv?: string // userConfigurableEnvVars key that forces the GPU width
+      layouts: GpuLayout[] // non-empty
+      description?: string // prose, never parsed
     }
 
 /**
- * Authoring-time sizing rule for a template's GPU requirement (`<flow>/sizing.json` in the
- * templates repo). It never reaches the node: deriveGpuLayouts() in utils/ServiceResources
- * turns it into the explicit `recommended` + `layouts` that the template carries. The same
- * formula is implemented in the templates repo and both share
- * test/unit/fixtures/gpu-sizing-vectors.json, so the formula must not drift.
- *
- * For width n, u = util(n):
- *   needGiB    = shardableGiB / n + replicatedGiB
- *   cardGiB    = max(needGiB / u, outsideGiB > 0 ? outsideGiB / (1 - u) : 0) + driverReserveGiB
- *   floorGb(n) = overrides[n]?.vramPerGpu ?? ceil(cardGiB * 1.073741824)   (decimal GB, whole)
+ * Authoring-time GPU sizing rule (`<flow>/sizing.json` in the templates repo), never sent to
+ * the node. deriveGpuLayouts() turns it into a template's `recommended` + `layouts`; the
+ * formula is at gpuFloorGb(). The templates repo shares the formula's test vectors
+ * (test/unit/fixtures/gpu-sizing-vectors.json).
  */
 export interface GpuSizingProfile {
   version: 1
-  engine: string // 'vllm' | 'comfyui' | 'placement' | other; informational
+  engine: string // informational: 'vllm', 'comfyui', 'placement', …
   confidence: 'measured' | 'estimated'
-  widths: number[] // engine-legal exact GPU counts: strictly ascending ints 1..64, at most 8
-  shardableGiB: number // memory that splits 1/n across ranks (weights, sharded state), >= 0
-  replicatedGiB: number // per-GPU memory independent of n (runtime, activations, graphs, replicated KV), >= 0
-  // Engine memory budget fraction in (0,1) (e.g. vLLM --gpu-memory-utilization). A map
-  // keyed by the width as a string ("8") must cover every declared width and nothing else.
-  memUtil: number | Record<string, number>
-  outsideGiB?: number // must fit OUTSIDE the engine budget on each card; default 0
-  driverReserveGiB?: number // advertised (nvidia-smi) minus torch-visible memory; default 0.5
-  // Per-width floor replacing the formula, keyed by a declared width ("4"); provenance required.
+  widths: number[] // GPU counts the engine accepts: ascending ints 1..64, at most 8
+  shardableGiB: number // splits 1/n across GPUs (weights, sharded state); >= 0
+  replicatedGiB: number // on every GPU whatever n (runtime, graphs, replicated KV); >= 0
+  memUtil: number | Record<string, number> // engine budget in (0,1), or one per width ("8")
+  outsideGiB?: number // must fit outside the engine budget on each card; default 0
+  driverReserveGiB?: number // nvidia-smi total minus torch-visible memory; default 0.5
+  // Per-width floor replacing the formula, keyed by width ("4"), with its provenance.
   overrides?: Record<
     string,
     { vramPerGpu: number; source: 'measured' | 'policy' | 'estimate'; note: string }
   >
-  evidence?: string[] // free-form provenance (bench runs, bootstrap gates)
+  evidence?: string[] // free-form provenance
 }
 
 export interface UserConfigurableEnvVar {
@@ -102,8 +89,8 @@ export interface ServiceTemplatePublic {
   userConfigurableEnvVars?: UserConfigurableEnvVar[]
   command?: string[] // Docker CMD override; ${KEY} expanded from userData
   entrypoint?: string[] // Docker ENTRYPOINT override
-  // The ONLY resource declaration; an absent GPU entry means no template GPU demand.
-  // (`requiredResources` and template `min` were removed: the node rejects the old shape.)
+  // The only resource declaration (the node rejects the old requiredResources/min shape).
+  // No GPU entry means no GPU demand.
   recommendedResources?: TemplateResourceRequirement[]
   workflows?: ServiceTemplateWorkflow[]
 }

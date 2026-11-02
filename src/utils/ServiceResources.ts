@@ -1,28 +1,19 @@
 /**
- * Pure building blocks for matching a service template's `recommendedResources` against a
- * compute environment: a memory-size parser, a GPU-layout planner and best-effort CPU/RAM/disk
- * sizing.
+ * Matches a service template's `recommendedResources` against a compute environment (from
+ * getComputeEnvironments()): GPU layout planning, plan re-validation and best-effort
+ * CPU/RAM/disk sizing. Also the authoring-side sizing rule (GpuSizingProfile -> layouts) and
+ * advisory helpers for custom Hugging Face models.
  *
- * Intentionally pure: no network, no React, no node-config. Inputs are the environment's
- * resources as returned by getComputeEnvironments() plus the template requirement; outputs are
- * exact per-ID resource requests. Callers still own the rest of the plan: access/payment/
- * duration gates, cross-resource constraints, refresh-and-revalidate before payment and start,
- * and operational defaults when a target declares no GPU.
+ * Pure: no network, no node config. Callers own access, payment and duration checks, and
+ * re-validate a plan (validateGpuPlan) before payment and start.
  *
- * Rules (shared with the node and every client):
- * - Memory is compared in integer bytes against ceil(GB * 1e9). GB = 1e9, GiB = 2^30,
- *   MiB = 2^20. No admission slack, no GPU marketing names.
- * - Unknown, non-finite or non-positive memory never satisfies a GPU recommendation.
- * - A layout books exactly `gpuCount` whole GPUs of ONE group (same description), on one host.
- *   Cards are never pooled across groups, and a one-GPU layout needs one card that holds the
- *   whole recommendation.
- * - A GPU resource standing for more than one card ((total ?? max) > 1) is a POOL. The node
- *   hands a container ALL DeviceIDs of a resource whatever amount was requested, so a pool is
- *   only ever booked whole (amount === its total), never partially.
- *
- * Also here: the authoring-side sizing rule (GpuSizingProfile -> explicit layouts) and the
- * advisory helpers for custom Hugging Face models (legal tensor-parallel widths, a memory
- * estimate).
+ * Rules shared with ocean-node and every client:
+ * - Memory is compared in integer bytes against ceil(GB * 1e9); unknown memory never fits.
+ * - A layout books exactly `gpuCount` whole GPUs of ONE group (same description) on one host.
+ * - A GPU resource with (total ?? max) > 1 is a pool. The node hands the container all of its
+ *   devices whatever amount was requested, so a pool is booked whole or not at all.
+ * - The node adds any GPU resource with min > 0 that a request leaves out, so every booking
+ *   must include it.
  */
 import type { ComputeResource, ComputeResourceRequest } from '../@types/Compute.js'
 import type {
@@ -45,49 +36,37 @@ export type SharedResourceId = SharedResourceRequirement['id']
 
 /** One feasible way to book a GPU layout on an environment. */
 export interface GpuLayoutCandidate {
-  /** The declared layout this candidate books, or null when the target declares no GPU. */
+  /** The declared layout booked; null when the target declares no GPU. */
   layout: GpuLayout | null
-  /** The GPU group (description, or `id:<id>` when a resource has none); null without a layout. */
+  /** The GPU group (description, or `id:<id>` without one); null without a layout. */
   groupKey: string | null
-  /** Exact whole-unit GPU requests; their amounts sum to layout.gpuCount. */
+  /** Exact whole-unit requests, summing to layout.gpuCount. */
   gpuRequests: ComputeResourceRequest[]
-  /** Sum of fees[id] * amount over gpuRequests: price per minute of the GPUs alone. */
+  /** GPU price per minute: sum of fees[id] * amount. */
   gpuPrice: number
-  /** Bytes per card used for the checks (the group minimum); null without a layout. */
+  /** Per-card bytes checked (the group's smallest card); null without a layout. */
   perCardBytes: number | null
 }
 
 /** Inputs of planGpuLayouts(). */
 export interface PlanGpuLayoutsParams {
-  /**
-   * The environment's GPU resources only (the caller picks them, e.g. `type === 'gpu'`).
-   * Each may be one card (`max`/`total` 1) or a pool of identical cards; `memoryTotal` always
-   * describes ONE card. A pool is only ever booked whole (see isPooledGpuResource).
-   */
+  /** The environment's GPU resources only; `memoryTotal` is per card, also for a pool. */
   gpuResources: ComputeResource[]
-  /** The template's GPU requirement; undefined means the target declares no GPU demand. */
+  /** The template's GPU requirement; undefined means no GPU demand. */
   requirement?: GpuResourceRequirement
-  /** Per-resource-id fee per unit per minute, for the chosen chain/token. Missing id = 0. */
+  /** Fee per unit per minute by resource id, for the chosen chain/token; missing = 0. */
   fees?: Record<string, number>
-  /**
-   * Exact width the runtime will use: a package's effective tensor-parallel size, or the
-   * user's value for the template's `gpuCountEnv`. Only declared layouts with this gpuCount
-   * are considered; none matching means no candidates.
-   */
+  /** Exact width the runtime will use (package TP size or `gpuCountEnv` value). */
   forcedGpuCount?: number
 }
 
 /** Result of sizeSharedResources(). */
 export interface SharedResourceSizing {
-  /**
-   * Amount per shared id
-   */
+  /** Allocated amount per declared id, in grant units (cores, GiB). */
   amounts: Partial<Record<SharedResourceId, number>>
-  /** The declared amounts as requests (same grant units), zero amounts omitted (the node rejects amount 0). */
+  /** The amounts as requests; zero amounts omitted (the node rejects them). */
   requests: ComputeResourceRequest[]
-  /**
-   * Declared ids that got less than recommended
-   */
+  /** Declared ids allocated less than recommended, in the recommendation's units. */
   shortfalls: Array<{ id: SharedResourceId; recommended: number; allocated: number }>
 }
 
@@ -106,10 +85,9 @@ const MEMORY_UNIT_FACTORS: Record<string, number> = {
 }
 
 /**
- * Parses a ComputeResource.memoryTotal string ("143771 MiB", "16 GiB", "8GB", "1024") into
- * integer bytes, with the same grammar as ocean-node's parseMemoryTotalToBytes: a number, an
- * optional space and an optional unit (b/kb/mb/gb/tb decimal, kib/mib/gib/tib binary, any
- * case; no unit = bytes).
+ * Parses a `memoryTotal` string ("143771 MiB", "16 GiB", "8GB", "1024") into bytes, with
+ * ocean-node's grammar: b/kb/mb/gb/tb decimal, kib/mib/gib/tib binary, any case, no unit =
+ * bytes.
  * @param {string} memoryTotal the advertised memory of one unit
  * @returns {number | undefined} bytes, or undefined when absent, unparseable or <= 0
  */
@@ -125,9 +103,8 @@ export function parseMemoryTotalBytes(memoryTotal?: string): number | undefined 
 }
 
 /**
- * Whole units of a resource a new booking can still get:
- * max(0, min(max, total - inUse)). A missing `total` (legacy node) falls back to `max`;
- * an explicit total of 0 is kept.
+ * Whole units a new booking can still get: max(0, min(max, total - inUse)), with `max`
+ * standing in for a missing `total` (legacy node).
  * @param {ComputeResource} resource the environment resource
  * @returns {number} grantable amount
  */
@@ -142,7 +119,7 @@ const gbToBytes = (gb: number): number => Math.ceil(gb * 1e9)
 
 const GIB_BYTES = 1024 ** 3
 
-// Convert a GB recommendation up to the whole GiB that covers it
+// ram and disk are granted in whole GiB; a GB recommendation rounds up to cover it.
 const isMemoryShared = (id: string): boolean => id === 'ram' || id === 'disk'
 const gbToGrantUnits = (gb: number): number => Math.ceil(gbToBytes(gb) / GIB_BYTES)
 const grantUnitsToGb = (units: number): number => (units * GIB_BYTES) / 1e9
@@ -203,11 +180,8 @@ const resourceUnits = (resource: ComputeResource): number =>
   resource.total ?? resource.max ?? 0
 
 /**
- * Whether a GPU resource is a pool: it stands for more than one card ((total ?? max) > 1).
- * The node passes ALL DeviceIDs of a resource to the container whatever amount was requested,
- * so a partial booking of a pool would hand out cards that are not paid for. Pools are
- * therefore only ever booked whole: amount === (total ?? max), and only when every unit is
- * free.
+ * Whether a GPU resource is a pool ((total ?? max) > 1), bookable only whole and only when
+ * every unit is free.
  * @param {ComputeResource} resource a GPU resource of the environment
  * @returns {boolean} true when the resource may only be booked whole
  */
@@ -216,24 +190,15 @@ export function isPooledGpuResource(resource: ComputeResource): boolean {
 }
 
 /**
- * Enumerates every feasible way to book the template's GPU requirement on one environment.
+ * Every feasible way to book the GPU requirement on one environment, cheapest first.
  *
- * GPUs are grouped by description; a group with any member lacking a parseable memoryTotal is
- * ineligible, and the group's per-card bytes are its smallest member's. For every declared
- * layout (only gpuCount === forcedGpuCount when set) and every group it needs:
- * per-card bytes >= ceil((gpuCount === 1 ? recommended : vramPerGpu) * 1e9), enough free whole
- * units, and per-card bytes * gpuCount >= ceil(recommended * 1e9). Ids are chosen as the
- * cheapest exact combination of whole units (ties: lower per-unit fee, then id). A pooled
- * resource (isPooledGpuResource) is taken whole or not at all. A resource with `min` > 0 that the booking leaves out would be auto-added by the
- * node, so it must be part of the booking (at least its min, a pool whole) or the
- * group/layout is infeasible.
- *
- * Cross-resource constraints, alternate id subsets and payment-time revalidation (see
- * validateGpuPlan) stay with the caller.
+ * A group qualifies for a declared layout (only `forcedGpuCount` when set) when all its cards
+ * report memory, its smallest card holds the per-card VRAM (`recommended` for one GPU,
+ * `vramPerGpu` otherwise), `gpuCount` cards hold `recommended`, and enough whole units are
+ * free. Ids are the cheapest exact combination (ties: lower fee, then id).
  * @param {PlanGpuLayoutsParams} params GPU resources, requirement, fees and optional forced width
- * @returns {GpuLayoutCandidate[]} feasible candidates sorted by gpuPrice, then gpuCount, then
- * group key; an empty array when nothing fits; a single empty-request candidate (layout null)
- * when there is no requirement
+ * @returns {GpuLayoutCandidate[]} sorted by gpuPrice, gpuCount, group key; empty when nothing
+ * fits; one empty candidate (layout null) when there is no requirement
  */
 export function planGpuLayouts(params: PlanGpuLayoutsParams): GpuLayoutCandidate[] {
   const { gpuResources, requirement, fees = {}, forcedGpuCount } = params
@@ -299,12 +264,10 @@ function bookableAmount(resource: ComputeResource): number | undefined {
   return grantableAmount(resource) >= 1 ? 1 : undefined
 }
 
-// Picks exactly `count` whole units from members (already in preference order) at the lowest
-// total fee. Every member is either a single card or a pool booked whole, so each is a
-// take-it-or-leave-it item of fixed size: an exact-size, minimum-cost 0/1 choice, solved by
-// dynamic programming over the width (at most 64). Members with min > 0 are always taken, since
-// the node would add them anyway. On equal cost the earlier members in preference order win.
-// Returns undefined when the count cannot be met exactly.
+// Picks exactly `count` units from `ordered` at the lowest total fee, earlier members winning
+// ties. Each member is a fixed-size item (one card, or a whole pool), so this is an exact-size
+// 0/1 knapsack over the width. Members with min > 0 are always taken. Undefined when `count`
+// cannot be met exactly.
 function selectGpuUnits(
   ordered: ComputeResource[],
   count: number,
@@ -357,10 +320,8 @@ export type GpuGroupCheck =
   | { ok: false; reason: string }
 
 /**
- * Checks the single-group selection invariant: every request with amount > 0 whose id is one
- * of `gpuResources` belongs to the same GPU group (same description, or `id:<id>`). Request
- * ids that are not GPU resources (cpu, ram, disk) are ignored, so the full resource request
- * list may be passed.
+ * Checks that every requested GPU (amount > 0) is in one group. Non-GPU ids (cpu, ram, disk)
+ * are ignored, so the full request list may be passed.
  * @param {ComputeResource[]} gpuResources the environment's GPU resources
  * @param {ComputeResourceRequest[]} requests the selection to check
  * @returns {GpuGroupCheck} ok with the group key, or the reason the selection mixes groups
@@ -391,14 +352,11 @@ export function assertSingleGpuGroup(
 export interface ValidateGpuPlanParams {
   /** A FRESH snapshot of the environment's GPU resources. */
   gpuResources: ComputeResource[]
-  /** The template's GPU requirement; undefined means the target declares no GPU demand. */
+  /** The template's GPU requirement; undefined means no GPU demand. */
   requirement?: GpuResourceRequirement
-  /**
-   * The plan's GPU requests (e.g. a candidate's gpuRequests). Every id with amount > 0 must
-   * still be a GPU resource of the snapshot; pass GPU requests only.
-   */
+  /** The plan's GPU requests only (e.g. a candidate's gpuRequests). */
   requests: ComputeResourceRequest[]
-  /** Exact width the runtime will use (package TP size or the gpuCountEnv value). */
+  /** Exact width the runtime will use (package TP size or `gpuCountEnv` value). */
   forcedGpuCount?: number
 }
 
@@ -414,14 +372,11 @@ export type GpuPlanCheck =
   | { ok: false; reason: string }
 
 /**
- * Re-checks a previously chosen GPU plan against a fresh environment snapshot, with the same
- * rules as planGpuLayouts (call it at payment and again at start). The plan is valid when:
- * request amounts are whole, ids are unique and still GPU resources of the snapshot; all
- * requested ids are in ONE group; each id can still grant its amount (a pool only whole, a
- * resource with min > 0 at least its min). With a requirement additionally: no GPU resource
- * with min > 0 is left out (the node would add it); the booked count equals a declared layout
- * (and forcedGpuCount when set); the group's per-card bytes and the total fit as in
- * planGpuLayouts. Prices are not checked: re-quote from the returned plan.
+ * Re-checks a chosen plan against a fresh environment snapshot with planGpuLayouts' rules; call
+ * it at payment and again at start. Checks whole unique amounts, ids still GPUs of the
+ * snapshot, one group, and each amount still grantable (pools whole, mins met). With a
+ * requirement also: no min > 0 GPU left out, the count is a declared layout (and
+ * forcedGpuCount), and the cards still hold it. Prices are not checked: re-quote from the plan.
  * @param {ValidateGpuPlanParams} params fresh GPU resources, requirement, plan requests, forced width
  * @returns {GpuPlanCheck} ok with the matched layout and group, or the first reason it fails
  */
@@ -515,8 +470,7 @@ export function sizeSharedResources(
     if (!('id' in req)) continue
     const { id, recommended } = req
     const mem = isMemoryShared(id)
-    // recommended is decimal GB for ram/disk, cores for cpu; `wanted` is in grant units
-    // (GiB for ram/disk, cores for cpu) so it compares and clamps against the env amounts.
+    // `wanted` is in grant units (GiB for ram/disk, cores for cpu), like the env amounts.
     const wantedGb = Number.isFinite(recommended) && recommended > 0 ? recommended : 0
     const wanted = mem ? gbToGrantUnits(wantedGb) : wantedGb
     const resource = resources.find((r) => r.id === id)
@@ -531,8 +485,7 @@ export function sizeSharedResources(
     const allocated = Math.max(min, Math.min(wanted, grantable))
     sizing.amounts[id] = allocated
     if (allocated > 0) sizing.requests.push({ id, amount: allocated })
-    // Compare and report the shortfall in the recommendation's own units (GB for ram/disk)
-    // so a 64 GB recommendation met by 60 GiB (= 64.4 GB) is not reported as a shortfall.
+    // Shortfall in the recommendation's units: 64 GB met by 60 GiB (64.4 GB) is none.
     const allocatedRec = mem ? grantUnitsToGb(allocated) : allocated
     if (allocatedRec < wantedGb)
       sizing.shortfalls.push({ id, recommended: wantedGb, allocated: allocatedRec })
@@ -563,11 +516,8 @@ function profileError(message: string): Error {
 }
 
 /**
- * Validates a GpuSizingProfile and throws an Error naming the first problem: version not 1,
- * empty engine, unknown confidence, widths not strictly ascending integers 1..64 (1 to 8 of
- * them), negative or non-finite sizes, no memory at all, memUtil outside (0,1) or a per-width
- * map that does not cover exactly the declared widths, an override for an undeclared width
- * or without a positive vramPerGpu, a known source and a note, or non-string evidence.
+ * Validates a GpuSizingProfile against the constraints on its fields; throws an Error naming
+ * the first violation.
  * @param {GpuSizingProfile} profile the profile to check
  */
 export function validateGpuSizingProfile(profile: GpuSizingProfile): void {
@@ -660,13 +610,12 @@ function profileFloorGb(profile: GpuSizingProfile, n: number): number {
 }
 
 /**
- * The per-card floor of one declared width: the smallest advertised card memoryTotal, in
- * whole decimal GB, on which the profile's default configuration fits at that width.
- *
- * With u = util(n): needGiB = shardableGiB / n + replicatedGiB;
- * cardGiB = max(needGiB / u, outsideGiB > 0 ? outsideGiB / (1 - u) : 0) + driverReserveGiB;
- * floorGb(n) = overrides[n].vramPerGpu when set, else ceil(cardGiB * 1.073741824).
- * @param {GpuSizingProfile} profile the sizing profile (validated; throws when invalid)
+ * Per-card floor of a declared width: the smallest card memoryTotal (whole decimal GB) the
+ * profile fits on at that width. With u = memUtil at width n:
+ *   needGiB    = shardableGiB / n + replicatedGiB
+ *   cardGiB    = max(needGiB / u, outsideGiB > 0 ? outsideGiB / (1 - u) : 0) + driverReserveGiB
+ *   floorGb(n) = overrides[n]?.vramPerGpu ?? ceil(cardGiB * 1.073741824)
+ * @param {GpuSizingProfile} profile the sizing profile (throws when invalid)
  * @param {number} n a width declared in profile.widths (throws otherwise)
  * @returns {number} decimal GB per card
  */
@@ -680,15 +629,12 @@ export function gpuFloorGb(profile: GpuSizingProfile, n: number): number {
 }
 
 /**
- * Turns a GpuSizingProfile into the explicit GPU requirement a template carries.
- *
- * Layouts: width 1 -> { gpuCount: 1 }; width n > 1 -> { gpuCount: n, vramPerGpu: floorGb(n) }
- * (see gpuFloorGb). recommended: floorGb(1) when width 1 is declared, and then every n > 1
- * must satisfy n * floorGb(n) >= floorGb(1) (throws otherwise: the node rejects layouts whose
- * total is below the headline); without width 1, the minimum of n * floorGb(n).
- * The result has no gpuCountEnv or description: the caller adds them.
- * @param {GpuSizingProfile} profile the sizing profile (validated; throws when invalid)
- * @returns {GpuResourceRequirement} { kind: 'discrete', type: 'gpu', unit: 'GB', recommended, layouts }
+ * Turns a profile into the GPU requirement a template carries: width 1 -> { gpuCount: 1 },
+ * width n -> { gpuCount: n, vramPerGpu: floorGb(n) } (see gpuFloorGb). `recommended` is
+ * floorGb(1) when width 1 is declared (throws when some n * floorGb(n) is below it: the node
+ * rejects such layouts), else the smallest n * floorGb(n).
+ * @param {GpuSizingProfile} profile the sizing profile (throws when invalid)
+ * @returns {GpuResourceRequirement} the requirement; the caller adds gpuCountEnv and description
  */
 export function deriveGpuLayouts(profile: GpuSizingProfile): GpuResourceRequirement {
   validateGpuSizingProfile(profile)
@@ -732,17 +678,14 @@ export interface LegalTpWidthsOptions {
 }
 
 /**
- * Tensor-parallel widths the model's attention heads allow: n is kept when
- * num_attention_heads % n === 0 and (kv % n === 0 or n % kv === 0), kv being
- * num_key_value_heads (default: num_attention_heads). Reads text_config when it has
- * num_attention_heads (its own num_key_value_heads then applies), else the top level.
+ * Tensor-parallel widths the attention heads allow: n is kept when heads % n === 0 and
+ * (kv % n === 0 || n % kv === 0), kv = num_key_value_heads (default: heads). Reads text_config
+ * when it has num_attention_heads, else the top level.
  *
- * Necessary, not sufficient: quantization block sizes, MLA, MoE expert sharding and the
- * engine's own checks can rule out more widths. Use the result as a hard filter only.
- * @param {HfTpConfig} cfg the model's config.json (or the subset above)
- * @param {LegalTpWidthsOptions} opts optional candidate widths (throws when not integers 1..64)
+ * Necessary, not sufficient (quantization blocks, MLA, MoE sharding can rule out more widths).
+ * @param {HfTpConfig} cfg the model's config.json
+ * @param {LegalTpWidthsOptions} opts candidate widths (throws when not integers 1..64)
  * @returns {number[] | null} legal widths ascending; null when the head count is unknown
- * (unknown, not "all legal")
  */
 export function legalTpWidths(
   cfg: HfTpConfig | null | undefined,
@@ -799,7 +742,7 @@ export interface HfSizingInput {
 export interface HfSizingEstimate {
   profile: GpuSizingProfile
   confidence: 'estimated'
-  /** Inputs that were missing and are counted as 0 or defaulted (see the function doc). */
+  /** Inputs missing and counted as 0 or defaulted. */
   unknown: string[]
 }
 
@@ -826,23 +769,18 @@ const SAFETENSORS_DTYPE_BYTES: Record<string, number> = {
 const GIB = 1024 ** 3
 
 /**
- * Advisory GpuSizingProfile for a custom Hugging Face model. Pure and deliberately simple: use
- * it as a soft filter, never as a guarantee.
+ * Advisory GpuSizingProfile for a custom Hugging Face model: a soft filter, never a guarantee.
  *
- * - Weights (shardableGiB): sum of paramsByDtype counts times the dtype size (a dtype not in
- *   the safetensors table uses bytesPerParam and is listed as `dtype:<name>`), else
- *   totalParams * bytesPerParam (default 2, listed as `bytesPerParam`). Unknown weights
- *   (nothing usable) -> null.
- * - KV cache for contextTokens * concurrentSeqs: MLA (kvLoraRank set) caches
- *   (kvLoraRank + qkRopeHeadDim) * kvBytes per token and layer and is fully REPLICATED on every
- *   rank -> replicatedGiB. Otherwise 2 * numKvHeads * headDim * kvBytes per token and layer,
- *   sharded only while numKvHeads >= every width (-> shardableGiB), else counted whole on
- *   every rank (-> replicatedGiB, conservative). Missing shape fields count the KV (or the
- *   RoPE part) as 0 and are listed in `unknown`.
- * - runtimeGiB is replicated; memUtil is a single number; driver reserve keeps the default.
+ * - Weights (sharded): paramsByDtype × dtype size (unknown dtype: bytesPerParam), else
+ *   totalParams × bytesPerParam (default 2).
+ * - KV cache for contextTokens × concurrentSeqs, per token and layer: MLA caches
+ *   (kvLoraRank + qkRopeHeadDim) × kvBytes, replicated on every rank; otherwise
+ *   2 × numKvHeads × headDim × kvBytes, sharded while numKvHeads >= the widest width, else
+ *   replicated. Missing shape fields count as 0.
+ * - runtimeGiB is replicated.
+ * Missing or defaulted inputs are listed in `unknown`.
  * @param {HfSizingInput} input model shape, context and knobs
- * @returns {HfSizingEstimate | null} the estimated profile with the list of missing inputs, or
- * null when the weights are unknown; throws on invalid knobs or widths
+ * @returns {HfSizingEstimate | null} null when the weights are unknown; throws on invalid knobs
  */
 export function estimateHfSizingProfile(input: HfSizingInput): HfSizingEstimate | null {
   const fail = (message: string): Error =>

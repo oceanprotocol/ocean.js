@@ -39,9 +39,8 @@ export interface ComputeResource {
   description?: string
   init?: { [key: string]: any }
   inUse?: number // for display purposes
-  // Memory of ONE physical unit of this resource, e.g. "143771 MiB" (b/kb/mb/gb/tb decimal,
-  // kib/mib/gib/tib binary). Required by the node on GPU resources; parse it with
-  // parseMemoryTotalBytes(). Absent/unparseable means unknown VRAM, never "big enough".
+  // Memory of ONE unit, e.g. "143771 MiB"; the node requires it on GPUs. Parse with
+  // parseMemoryTotalBytes(); absent or unparseable means unknown, never big enough.
   memoryTotal?: string
 }
 
