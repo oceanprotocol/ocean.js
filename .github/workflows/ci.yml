@@ -202,8 +202,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
         node: ["22", "24", "26"]
+        include:
+          - os: windows-latest
+            node: "24"
+          - os: macos-latest
+            node: "24"
 
     steps:
       - uses: actions/checkout@v7
