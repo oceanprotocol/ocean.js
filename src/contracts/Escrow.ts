@@ -1,4 +1,4 @@
-import { Signer, TransactionRequest, getAddress, parseEther } from 'ethers'
+import { Signer, TransactionRequest, getAddress } from 'ethers'
 import Escrow from '@oceanprotocol/contracts/artifacts/contracts/escrow/Escrow.sol/Escrow.json'
 import EscrowEnterpriseABI from '@oceanprotocol/contracts/artifacts/contracts/interfaces/IEscrowEnterprise.sol/IEscrowEnterprise.json'
 import {
@@ -158,6 +158,27 @@ export class EscrowContract extends SmartContractWithAddress {
     maxLockCounts?: string,
     tokenDecimals?: number
   ): Promise<ValidationResponse> {
+    // Treat the escrow address as a configuration constant, never a node response.
+    // Fail closed: without a configured escrow address we cannot validate `this.address`,
+    // so refuse rather than trust a potentially node-supplied address.
+    if (!this.config?.escrow) {
+      return {
+        isValid: false,
+        message:
+          'Configured escrow address (config.escrow) is not set; cannot verify the escrow address. Instantiate EscrowContract with a config/network that provides config.escrow.'
+      }
+    }
+    if (getAddress(this.address) !== getAddress(this.config.escrow)) {
+      return {
+        isValid: false,
+        message:
+          'Escrow contract address does not match the configured escrow (config.escrow). Refusing to continue.'
+      }
+    }
+
+    // Resolve the token decimals exactly once.
+    const decimals = tokenDecimals ?? Number(await getTokenDecimals(this.signer, token))
+
     const balanceNativeToken = await this.signer.provider?.getBalance(
       getAddress(consumerAddress)
     )
@@ -167,84 +188,87 @@ export class EscrowContract extends SmartContractWithAddress {
         message: 'Native token balance is 0. Please add funds'
       }
     }
+
+    const owner = await this.signer.getAddress()
     const tokenContract = new Datatoken(this.signer)
+
+    // The amount the user is about to deposit (human units). Fall back to the
+    // required job amount when no explicit deposit amount is provided.
+    const depositAmount = amountToDeposit ?? maxLockedAmount
+    if (!depositAmount) {
+      return {
+        isValid: false,
+        message: 'No amountToDeposit or maxLockedAmount provided'
+      }
+    }
+
+    // Approve EXACTLY the deposit amount, using the token's real decimals.
     const allowance = await tokenContract.allowance(
       token,
-      await this.signer.getAddress(),
+      owner,
       this.contract.target.toString(),
-      tokenDecimals
+      decimals
     )
-    if (
-      new BigNumber(await this.amountToUnits(token, allowance, 18)).isLessThan(
-        new BigNumber(maxLockedAmount)
-      )
-    ) {
+    if (new BigNumber(allowance).isLessThan(new BigNumber(depositAmount))) {
       await tokenContract.approve(
         getAddress(token),
         getAddress(this.contract.target.toString()),
-        maxLockedAmount
+        depositAmount
       )
     }
-    const balancePaymentToken = await tokenContract.balance(
-      token,
-      await this.signer.getAddress()
-    )
+
+    const balancePaymentToken = await tokenContract.balance(token, owner)
     if (new BigNumber(balancePaymentToken).isZero()) {
       return {
         isValid: false,
         message: 'Payment token balance is 0. Please add funds'
       }
     }
-    const auths = await this.getAuthorizations(
-      token,
-      await this.signer.getAddress(),
-      consumerAddress
-    )
+
     // An authorization is only usable here if its expiry (Escrow v2) covers the lock we are about
     // to enable: a lock may not outlive its auth, so an auth expiring before now + maxLockSeconds
     // would let createLock revert. Treat expiry 0 as indefinite; otherwise require it to reach the
-    // full lock horizon. If it doesn't, we drop it and re-authorize below.
+    // full lock horizon. If it doesn't, we drop it and re-authorize below (Escrow v2 updates it).
     const nowSeconds = Math.floor(Date.now() / 1000)
     const requiredExpiry = nowSeconds + (Number(maxLockSeconds) || 0)
+    const auths = await this.getAuthorizations(token, owner, consumerAddress)
     const activeAuths = auths.filter((auth: any) => {
       const expiry = Number(auth?.expiryTimestamp ?? auth?.[6] ?? 0)
       return expiry === 0 || expiry >= requiredExpiry
     })
-    const funds = await this.getUserFunds(await this.signer.getAddress(), token)
-    if (new BigNumber(funds[0]).isZero()) {
-      if (
-        amountToDeposit &&
-        new BigNumber(parseEther(balancePaymentToken)).isLessThanOrEqualTo(
-          new BigNumber(parseEther(amountToDeposit))
-        ) &&
-        new BigNumber(parseEther(amountToDeposit)).isGreaterThan(
-          new BigNumber(maxLockedAmount)
-        )
-      ) {
-        await this.deposit(token, amountToDeposit, tokenDecimals)
-      } else if (
-        new BigNumber(parseEther(balancePaymentToken)).isLessThanOrEqualTo(
-          new BigNumber(parseEther(maxLockedAmount))
-        )
-      ) {
-        await this.deposit(
-          token,
-          await this.unitsToAmount(token, maxLockedAmount, tokenDecimals),
-          tokenDecimals
-        )
-      } else {
-        await this.deposit(token, balancePaymentToken, tokenDecimals)
+
+    // Top up escrow so the user has at least `depositAmount` of available funds. Depositing only
+    // when available funds are exactly zero would leave a user with partial leftover funds
+    // under-funded; instead deposit just the shortfall. funds[0] is `available` (Escrow v2).
+    const funds = await this.getUserFunds(owner, token)
+    const availableFunds = await this.unitsToAmount(token, funds[0].toString(), decimals)
+    if (new BigNumber(availableFunds).isLessThan(new BigNumber(depositAmount))) {
+      const topUp = new BigNumber(depositAmount)
+        .minus(new BigNumber(availableFunds))
+        .toString()
+      if (new BigNumber(balancePaymentToken).isLessThan(new BigNumber(topUp))) {
+        return {
+          isValid: false,
+          message: 'Payment token balance is lower than the required escrow top-up'
+        }
       }
+      await this.deposit(token, topUp, decimals)
     }
-    if (activeAuths.length === 0) {
+
+    // (Re-)authorize the payee up to the user-facing required amount (no halving) when no active
+    // authorization covers the lock horizon. On Escrow v2, authorize updates an existing auth.
+    if (activeAuths.length === 0 && maxLockedAmount) {
       await this.authorize(
         getAddress(token),
         getAddress(consumerAddress),
-        (Number(maxLockedAmount) / 2).toString(),
+        maxLockedAmount,
         maxLockSeconds,
-        maxLockCounts
+        maxLockCounts,
+        '0',
+        decimals
       )
     }
+
     return {
       isValid: true,
       message: ''

@@ -256,16 +256,32 @@ const providerInitializeComputeResults = await ProviderInstance.initializeComput
     Number(chainId)
 )
 // Initialize payment contract
+// chainId from provider.getNetwork() is a bigint, so convert it for ConfigHelper/EscrowContract.
+const config = new ConfigHelper().getConfig(Number(chainId))
+// On public networks ConfigHelper populates config.escrow. On a local/dev chain it is unset,
+// so load the trusted escrow from your deployment (e.g. ocean-contracts' address.json) first,
+// otherwise getAddress(config.escrow) below throws:
+//   config.escrow = getAddress('<your deployed Escrow address>')
+if (
+    getAddress(providerInitializeComputeResults.payment.escrowAddress) !==
+    getAddress(config.escrow)
+) {
+    throw new Error(
+        'Escrow address returned by the node does not match the configured escrow'
+    )
+}
 const escrow = new EscrowContract(
-    getAddress(providerInitializeComputeResults.payment.escrowAddress),
-    consumerAccount
+    getAddress(config.escrow),
+    consumerAccount,
+    Number(chainId),
+    config
 )
 const amountToDeposit = (providerInitializeComputeResults.payment.amount * 2).toString()
 await escrow.verifyFundsForEscrowPayment(
     paymentToken,
     computeEnv.consumerAddress,
     await unitsToAmount(consumerAccount, paymentToken, amountToDeposit),
-    providerInitializeComputeResults.payment.amount.toString(),
+    await unitsToAmount(consumerAccount, paymentToken, providerInitializeComputeResults.payment.amount.toString()),
     providerInitializeComputeResults.payment.minLockSeconds.toString(),
     '10'
 )
