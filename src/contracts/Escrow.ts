@@ -261,7 +261,10 @@ export class EscrowContract extends SmartContractWithAddress {
     const nowSeconds = Math.floor(Date.now() / 1000)
     const requiredExpiry = nowSeconds + (Number(maxLockSeconds) || 0)
     const depositAmountUnits = await this.amountToUnits(token, depositAmount, decimals)
-    const auths = await this.getAuthorizations(token, owner, consumerAddress)
+    // getAuthorizations returns an ethers Result (a Proxy): indexing an out-of-range element
+    // (e.g. auths[0] when empty) THROWS "out of result range" instead of yielding undefined.
+    // Materialize to a plain array so .find and auths[0] are safe when there is no authorization.
+    const auths = Array.from(await this.getAuthorizations(token, owner, consumerAddress))
     const usableAuth = auths.find((auth: any) => {
       const expiry = Number(auth?.expiryTimestamp ?? auth?.[6] ?? 0)
       const ceiling = new BigNumber((auth?.maxLockedAmount ?? auth?.[1] ?? 0).toString())
