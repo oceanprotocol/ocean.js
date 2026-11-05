@@ -17,7 +17,7 @@ describe('Escrow payments flow', () => {
   let addresses
   let OCEAN
 
-  before(async () => {
+  before(async function () {
     user1 = (await provider.getSigner(3)) as Signer
     user2 = (await provider.getSigner(4)) as Signer
     user3 = (await provider.getSigner(5)) as Signer
@@ -26,6 +26,15 @@ describe('Escrow payments flow', () => {
 
     addresses = await getAddresses()
     OCEAN = addresses.Ocean
+
+    // This suite exercises the Escrow v2 ABI (authorize/createLock/reLock carry the v2 params).
+    // Against a pre-v2 escrow those calls would revert and, with mocha `bail: true`, abort the
+    // whole unit run. Skip cleanly unless the deployed escrow advertises the v2 lock-subsidy
+    // surface — mirrors the skip-when-not-deployed pattern used by the subsidy test suites.
+    if (!addresses.Escrow) this.skip()
+    const { chainId } = await user2.provider.getNetwork()
+    const probe = new EscrowContract(addresses.Escrow, user2, Number(chainId))
+    if (!(await probe.isEscrowLockSubsidy())) this.skip()
   })
 
   it('should initialize Escrow class', async () => {
@@ -158,7 +167,15 @@ describe('Escrow payments flow', () => {
     )
 
     await Escrow.authorize(OCEAN, payee, '20', '100', '3')
-    await escrowPayee.contract.createLock(jobId, OCEAN, payer, amountUnits, '100')
+    await escrowPayee.contract.createLock(
+      jobId,
+      OCEAN,
+      payer,
+      amountUnits,
+      '100',
+      '0',
+      []
+    )
     const locksBefore = await escrowPayee.getLocks(OCEAN, payer, payee)
     const initialLock = locksBefore.find((lock) => lock.jobId.toString() === jobId)
     assert(initialLock, 'initial lock not found')
@@ -213,7 +230,9 @@ describe('Escrow payments flow', () => {
       [OCEAN, OCEAN],
       [payer, payer],
       amountUnits,
-      expiries
+      expiries,
+      ['0', '0'],
+      [[], []]
     )
 
     const locksBefore = await escrowPayee.getLocks(OCEAN, payer, payee)
