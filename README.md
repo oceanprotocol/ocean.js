@@ -11,7 +11,7 @@
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-7b1173.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![js oceanprotocol](https://img.shields.io/badge/js-oceanprotocol-7b1173.svg)](https://github.com/oceanprotocol/eslint-config-oceanprotocol)
 
-`@oceanprotocol/lib` v9 | ESM-only | Node.js >= 22 | ethers v6 | TypeScript 6
+`@oceanprotocol/lib` v9 | ESM-only | Node.js >= 22 | ethers v6
 
 ## What it is
 
@@ -44,18 +44,20 @@ ocean.js is part of the [Ocean Protocol](https://oceanprotocol.com) toolset. Que
 npm i @oceanprotocol/lib ethers
 ```
 
-`ethers` v6 is used for signers and providers. Developers using this library from TypeScript should ensure their `tsconfig.json` includes the necessary options:
+`ethers` v6 is used for signers and providers. `@oceanprotocol/ddo-js` ships as a runtime dependency of this library; if you import it directly (e.g. `DDOManager`) to build or validate DDOs, add it to your own `package.json` as well (`npm i @oceanprotocol/ddo-js`) so strict package managers such as pnpm resolve it. Developers using this library from TypeScript should ensure their `tsconfig.json` includes the necessary options:
 
 ```json
 {
-  "moduleResolution": "bundler",
-  "module": "esnext",
-  "esModuleInterop": true,
-  "allowSyntheticDefaultImports": true
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  }
 }
 ```
 
-`"moduleResolution": "nodenext"` works too. Avoid the older `"node"` (node10) mode — it cannot resolve this package's `exports` map.
+`nodenext` works too, but it requires both `"module": "nodenext"` and `"moduleResolution": "nodenext"`. Avoid the older `"node"` (node10) mode — it cannot resolve this package's `exports` map.
 
 ### ESM only
 
@@ -88,26 +90,48 @@ import {
 } from '@oceanprotocol/lib'
 
 const chainId = 11155111 // or a network name such as 'sepolia'
-const config = new ConfigHelper().getConfig(chainId)
-// config.oceanNodeUri defaults to http://127.0.0.1:8001; point it at your node (URL or peer ID)
-config.oceanNodeUri = process.env.NODE_ENDPOINT ?? config.oceanNodeUri
+// sepolia/mainnet/polygon need an Infura project id for config.nodeUri; or set config.nodeUri to your own RPC URL
+const config = new ConfigHelper().getConfig(chainId, process.env.INFURA_PROJECT_ID)
+// config.oceanNodeUri defaults to http://127.0.0.1:8001; getConfig applies NODE_ENDPOINT / NODE_URL (URL or peer ID) automatically
 
-const signer = new Wallet(process.env.PRIVATE_KEY, new JsonRpcProvider(config.nodeUri))
+const privateKey = process.env.PRIVATE_KEY
+if (!privateKey) throw new Error('PRIVATE_KEY environment variable is not set')
+const signer = new Wallet(privateKey, new JsonRpcProvider(config.nodeUri))
 
 // 1. Resolve the DDO from the node
 const did = 'did:op:...'
 const ddo = await ProviderInstance.resolveDdo(config.oceanNodeUri, did)
-const serviceId = ddo.services[0].id
 
-// 2. Order access (buys 1 datatoken if needed, then starts the order)
+// Select the access service and the datatoken that grants access to it
+const serviceIndex = ddo.services.findIndex((s) => s.type === 'access')
+if (serviceIndex === -1) throw new Error(`Asset ${did} has no access service`)
+const service = ddo.services[serviceIndex]
+const datatokenIndex = ddo.datatokens.findIndex(
+  (dt) => dt.address.toLowerCase() === service.datatokenAddress.toLowerCase()
+)
+if (datatokenIndex === -1) throw new Error('No datatoken matches the access service')
+
+// 2. Order access (always buys 1 datatoken, then starts the order)
 const datatoken = new Datatoken(signer, chainId, config)
-const tx = await orderAsset(ddo, signer, config, datatoken)
+const tx = await orderAsset(
+  ddo,
+  signer,
+  config,
+  datatoken,
+  undefined, // providerUrl (defaults to config.oceanNodeUri)
+  undefined, // consumerAddress (defaults to the signer)
+  undefined, // consumeMarketOrderFee
+  undefined, // providerFees (fetched from the node)
+  '0', // consumeMarketFixedSwapFee
+  datatokenIndex,
+  serviceIndex
+)
 const receipt = await tx.wait()
 
 // 3. Ask the node for the download, then fetch the file
 const download = await ProviderInstance.getDownloadUrl(
   did,
-  serviceId,
+  service.id, // getDownloadUrl takes the service id, not its index
   0, // file index
   receipt.hash, // transferTxId: the order transaction
   config.oceanNodeUri,
@@ -180,9 +204,9 @@ await escrow.deposit(tokenAddress, '10')
 const config = new ConfigHelper().getConfig(11155111) // chainId (number) or name (string)
 ```
 
-`getConfig(chainId | networkName, infuraProjectId?)` returns a `Config` with RPC `nodeUri`, `oceanNodeUri` (the Ocean Node, default `http://127.0.0.1:8001`) and the contract addresses (from `@oceanprotocol/contracts`). It returns `null` and logs an error for an unknown network.
+`getConfig(chainId | networkName, infuraProjectId?)` returns a `Config` with RPC `nodeUri`, `oceanNodeUri` (the Ocean Node, default `http://127.0.0.1:8001`) and the contract addresses (bundled from `@oceanprotocol/contracts`). Some networks (`mainnet`, `polygon`, `sepolia`) ship a keyless Infura `nodeUri` that will not connect on its own: pass your Infura project id as the second argument or set `config.nodeUri` to your own RPC URL. It returns `null` and logs an error for an unknown network.
 
-Supported networks include: `mainnet` (1), `polygon` (137), `base` (8453), `optimism` (10), `sepolia` (11155111), `bsc` (56), `energyweb` (246), `moonriver` (1285), `oasis_sapphire` (23294), `pontus-x-devnet` (32456), and `development` (8996, a local [barge](https://github.com/oceanprotocol/barge) stack). See `src/config/ConfigHelper.ts` for the full list, including testnets.
+Accepted network names: `mainnet` (1), `polygon` (137), `base` (8453), `optimism` (10), `sepolia` (11155111), `optimism_sepolia` (11155420), `bsc` (56), `energyweb` (246), `moonriver` (1285), `oasis_sapphire` (23294), `oasis_sapphire_testnet` (23295), `pontus-x-devnet` (32456), and `development` (8996, a local [barge](https://github.com/oceanprotocol/barge) stack). Legacy entries that remain in the table but are unmaintained: `mumbai` (80001), `gaiaxtestnet` (2021000) and `gen-x-testnet` (100). `src/config/ConfigHelper.ts` is the authoritative list.
 
 **Environment variables** (Node.js only):
 
@@ -195,7 +219,7 @@ Supported networks include: `mainnet` (1), `polygon` (137), `base` (8453), `opti
 
 - a **signer** (an ethers `Signer`): the library fetches a nonce and signs each request;
 - a **JWT auth token** (`string`): create one with `ProviderInstance.generateAuthToken(signer, nodeUri)` and reuse it, avoiding a signature per call; revoke with `invalidateAuthToken`;
-- a **precomputed signature** object (`{ consumerAddress, nonce, signature }`): for agents or wallets that sign out of process. `generateSignedAuthToken` mints a token from such a signature.
+- a **precomputed signature** object (`{ consumerAddress, nonce, signature }`): for agents or wallets that sign out of process. `generateSignedAuthToken` mints a token from such a signature (P2P only; on HTTP use `generateAuthToken(signer, nodeUri)`).
 
 **Sapphire / confidential EVM.** On `oasis_sapphire` and `oasis_sapphire_testnet` the config sets `sdk: 'oasis'`. Contract calls are wrapped with the Sapphire ethers shim and datatokens use the confidential **Template 4** (`Datatoken4`). Use `useOasisSDK(network)` to check programmatically.
 
@@ -229,14 +253,14 @@ Every state-changing contract method comes in two forms:
 | [CodeExamples.md](CodeExamples.md) | **Generated** from `test/integration/CodeExamples.test.ts` (`npm run create:guide`). Publish and consume walkthrough. Do not edit by hand. |
 | [ComputeExamples.md](ComputeExamples.md) | **Generated** from `test/integration/ComputeExamples.test.ts` (`npm run create:guidec2d`). Free and paid C2D walkthrough. Do not edit by hand. |
 | [Cheatsheet.md](Cheatsheet.md) | **Hand-written** quick reference. |
-| [`docs/`](docs/README.md) | **Generated** TypeDoc API reference (`npm run docs`). |
+| [`docs/`](docs/README.md) | **Generated** TypeDoc API reference (`npm run docs`). May lag `src/`; source and `dist/types` are authoritative. |
 | [CHANGELOG.md](CHANGELOG.md) | Auto-generated release notes. |
 | [Ocean docs](https://docs.oceanprotocol.com/) | Protocol guides and tutorials. |
 | [Ocean Protocol website](https://oceanprotocol.com) | General information. |
 
 **Upgrading from v8.** v9 is a major release: the library is ESM-only (no CJS/UMD bundle), requires Node >= 22 and ethers v6, talks to a single Ocean Node via `oceanNodeUri` (the separate `providerUri`/`metadataCacheUri`/subgraph configuration is gone) and adds P2P, auth tokens and escrow. See the [v9.0.0 entry in the CHANGELOG](CHANGELOG.md) and update imports and config accordingly.
 
-**Compatibility.** Contract ABIs and addresses come from `@oceanprotocol/contracts` (`^2.9.0`); DDO handling uses `@oceanprotocol/ddo-js` (`^1.0.0`). [ocean-cli](https://github.com/oceanprotocol/ocean-cli) consumes this library (`^9.0.0`).
+**Compatibility.** Contract ABIs and addresses are bundled into the build from `@oceanprotocol/contracts` (`^2.9.0`, a devDependency; consumers do not install it); DDO handling uses the runtime dependency `@oceanprotocol/ddo-js` (`^1.0.0`). [ocean-cli](https://github.com/oceanprotocol/ocean-cli) consumes this library (`^9.0.0`).
 
 ## Contributing
 
