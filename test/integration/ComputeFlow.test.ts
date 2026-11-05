@@ -642,12 +642,19 @@ describe('Compute flow tests', async () => {
     )
     assert(new BigNumber(funds[0]).isGreaterThan(0), 'Should have funds in escrow')
     assert(auth.length > 0, 'Should have authorization')
-    // The lock limit must equal the quoted payment amount in token units — not an
-    // inflated value from a double unit conversion (OJ-01).
+    // The authorization ceiling must cover the quoted payment amount but stay bounded — never an
+    // inflated value from a double unit conversion (OJ-01 produced ~1e18x the intended amount).
+    const authCeiling = new BigNumber(auth[0].maxLockedAmount.toString())
+    const quoted = new BigNumber(
+      providerInitializeComputeResults.payment.amount.toString()
+    )
     assert(
-      auth[0].maxLockedAmount.toString() ===
-        providerInitializeComputeResults.payment.amount.toString(),
-      'Authorization maxLockedAmount should equal the quoted payment amount (token units)'
+      authCeiling.isGreaterThanOrEqualTo(quoted),
+      'Authorization ceiling should cover the quoted payment amount'
+    )
+    assert(
+      authCeiling.isLessThan(quoted.multipliedBy(1000)),
+      'Authorization ceiling must not be an inflated (double-conversion) value'
     )
     assert(
       new BigNumber(auth[0].maxLockCounts.toString()).isGreaterThan(0),

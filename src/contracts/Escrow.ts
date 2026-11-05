@@ -255,13 +255,17 @@ export class EscrowContract extends SmartContractWithAddress {
       await this.deposit(token, topUp, decimals)
     }
 
-    // (Re-)authorize the payee up to the user-facing required amount (no halving) when no active
-    // authorization covers the lock horizon. On Escrow v2, authorize updates an existing auth.
-    if (activeAuths.length === 0 && maxLockedAmount) {
+    // (Re-)authorize the payee up to the amount the user deposited, when no active authorization
+    // covers the lock horizon. Escrow v2 locks the GROSS amount (>= the quoted payer portion), so
+    // the ceiling must cover the deposit, not just the quote — otherwise the node's createLock
+    // reverts with "will go over limit". It stays bounded (the deposited amount in correct units,
+    // never an inflated value) and targets the already-validated escrow. On v2 authorize updates
+    // an existing auth.
+    if (activeAuths.length === 0) {
       await this.authorize(
         getAddress(token),
         getAddress(consumerAddress),
-        maxLockedAmount,
+        depositAmount,
         maxLockSeconds,
         maxLockCounts,
         '0',
