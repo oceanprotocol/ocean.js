@@ -277,7 +277,7 @@ const escrow = new EscrowContract(
     config
 )
 const amountToDeposit = (providerInitializeComputeResults.payment.amount * 2).toString()
-await escrow.verifyFundsForEscrowPayment(
+const escrowValidation = await escrow.verifyFundsForEscrowPayment(
     paymentToken,
     computeEnv.consumerAddress,
     await unitsToAmount(consumerAccount, paymentToken, amountToDeposit),
@@ -285,6 +285,10 @@ await escrow.verifyFundsForEscrowPayment(
     providerInitializeComputeResults.payment.minLockSeconds.toString(),
     '10'
 )
+// Abort before ordering if the escrow could not be validated/funded.
+if (!escrowValidation.isValid) {
+    throw new Error(escrowValidation.message)
+}
 
 algo.transferTxId = await handleOrder(
     providerInitializeComputeResults.algorithm,

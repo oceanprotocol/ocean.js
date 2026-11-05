@@ -481,7 +481,7 @@ export class Datatoken extends SmartContract {
    * Transfer tokens(as number) from address to toAddress
    * @param {String} dtAddress Datatoken address
    * @param {String} toAddress Receiver address
-   * @param {String} amount Number of datatokens, as number. Will be converted to wei.
+   * @param {String} amount Number of datatokens, as number. Will be converted to units using the token's on-chain decimals.
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
@@ -494,7 +494,7 @@ export class Datatoken extends SmartContract {
     return this.transferWei(
       dtAddress,
       toAddress,
-      await amountToUnits(null, null, amount, 18),
+      await amountToUnits(this.signer, dtAddress, amount),
       estimateGas
     )
   }
@@ -931,18 +931,18 @@ export class Datatoken extends SmartContract {
    * @param {String} dtAddress Datatoken adress
    * @param {String} owner owner adress
    * @param {String} spender spender adress
-   * @param {Number} decimals numer of token decimals, default 18
-   * @return {Promise<String>} allowance  Number of datatokens. Will be converted from wei
+   * @param {Number} [decimals] number of token decimals; when omitted they are read on-chain from the token
+   * @return {Promise<String>} allowance  Number of datatokens. Will be converted from units
    */
   public async allowance(
     datatokenAddress: string,
     owner: string,
     spender: string,
-    decimals: number = 18
+    decimals?: number
   ): Promise<string> {
     const dtContract = this.getContract(datatokenAddress)
     const allowance = await dtContract.allowance(owner, spender)
-    return await this.unitsToAmount(null, allowance, decimals)
+    return await this.unitsToAmount(datatokenAddress, allowance, decimals)
   }
 
   /**

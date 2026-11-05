@@ -619,7 +619,7 @@ describe('Compute flow tests', async () => {
     const amountToDeposit = (
       providerInitializeComputeResults.payment.amount * 2
     ).toString()
-    await escrow.verifyFundsForEscrowPayment(
+    const escrowValidation = await escrow.verifyFundsForEscrowPayment(
       paymentToken,
       computeEnv.consumerAddress,
       await unitsToAmount(consumerAccount, paymentToken, amountToDeposit),
@@ -631,6 +631,7 @@ describe('Compute flow tests', async () => {
       providerInitializeComputeResults.payment.minLockSeconds.toString(),
       '10'
     )
+    assert(escrowValidation.isValid, escrowValidation.message)
     const auth = await escrow.getAuthorizations(
       paymentToken,
       await consumerAccount.getAddress(),

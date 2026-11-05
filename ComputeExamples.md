@@ -850,7 +850,7 @@ Let's check funds for escrow payment
     const amountToDeposit = (
       providerInitializeComputeResults.payment.amount * 2
     ).toString()
-    await escrow.verifyFundsForEscrowPayment(
+    const escrowValidation = await escrow.verifyFundsForEscrowPayment(
       paymentToken,
       computeEnv.consumerAddress,
       await unitsToAmount(consumerAccount, paymentToken, amountToDeposit),
@@ -862,6 +862,10 @@ Let's check funds for escrow payment
       providerInitializeComputeResults.payment.minLockSeconds.toString(),
       '10'
     )
+    // Abort before ordering if the escrow could not be validated/funded.
+    if (!escrowValidation.isValid) {
+      throw new Error(escrowValidation.message)
+    }
 ```
 
 Let's order assets
