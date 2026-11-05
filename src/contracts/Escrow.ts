@@ -251,24 +251,43 @@ export class EscrowContract extends SmartContractWithAddress {
       await this.deposit(token, topUp, decimals)
     }
 
-    // An authorization is only usable here if its expiry (Escrow v2) covers the lock we are about
-    // to enable: a lock may not outlive its auth, so an auth expiring before now + maxLockSeconds
-    // would let createLock revert. Treat expiry 0 as indefinite; otherwise require it to reach the
-    // full lock horizon. If it doesn't, we drop it and re-authorize below (Escrow v2 updates it).
+    // An existing authorization is reusable only if it covers everything the pending lock needs:
+    //  - expiry (Escrow v2): a lock may not outlive its auth. Treat expiry 0 as indefinite;
+    //    otherwise it must reach now + maxLockSeconds.
+    //  - ceiling: its maxLockedAmount (index 1, token units) must cover the funding target —
+    //    Escrow v2 locks the GROSS amount (>= the quoted payer portion), so a lower ceiling makes
+    //    createLock revert "will go over limit".
+    //  - capacity: it must have a free lock slot (currentLocks [5] < maxLockCounts [4]).
     const nowSeconds = Math.floor(Date.now() / 1000)
     const requiredExpiry = nowSeconds + (Number(maxLockSeconds) || 0)
+    const depositAmountUnits = await this.amountToUnits(token, depositAmount, decimals)
     const auths = await this.getAuthorizations(token, owner, consumerAddress)
-    const activeAuths = auths.filter((auth: any) => {
+    const usableAuth = auths.find((auth: any) => {
       const expiry = Number(auth?.expiryTimestamp ?? auth?.[6] ?? 0)
-      return expiry === 0 || expiry >= requiredExpiry
+      const ceiling = new BigNumber((auth?.maxLockedAmount ?? auth?.[1] ?? 0).toString())
+      const currentLocks = Number(auth?.currentLocks ?? auth?.[5] ?? 0)
+      const maxCounts = Number(auth?.maxLockCounts ?? auth?.[4] ?? 0)
+      return (
+        (expiry === 0 || expiry >= requiredExpiry) &&
+        ceiling.isGreaterThanOrEqualTo(new BigNumber(depositAmountUnits)) &&
+        currentLocks < maxCounts
+      )
     })
 
-    // (Re-)authorize the payee up to the funding target, when no active authorization covers the
-    // lock horizon. Escrow v2 locks the GROSS amount (>= the quoted payer portion), so the ceiling
-    // must cover the deposit, not just the quote — otherwise the node's createLock reverts with
-    // "will go over limit". It stays bounded (the deposited amount in correct units, never an
-    // inflated value) and targets the already-validated escrow. On v2 authorize updates an auth.
-    if (activeAuths.length === 0) {
+    // (Re-)authorize up to the funding target, in correct units, when no existing authorization is
+    // usable. Escrow v2's authorize UPDATES an existing record and does NOT reset currentLocks, so
+    // re-authorizing only frees a lock slot when the new maxLockCounts exceeds the existing
+    // currentLocks; if it can't, fail clearly rather than let createLock revert later. It stays
+    // bounded (the deposited amount, correct units) and targets the already-validated escrow.
+    if (!usableAuth) {
+      const existingCurrentLocks = Number(auths[0]?.currentLocks ?? auths[0]?.[5] ?? 0)
+      if (auths.length > 0 && Number(maxLockCounts) <= existingCurrentLocks) {
+        return {
+          isValid: false,
+          message:
+            'Existing escrow authorization is at its lock-count limit and re-authorizing would not add capacity. Wait for locks to clear or cancel them, or raise maxLockCounts.'
+        }
+      }
       await this.authorize(
         getAddress(token),
         getAddress(consumerAddress),
