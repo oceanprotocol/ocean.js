@@ -811,9 +811,21 @@ Triggering initialize compute to see payment options
 
 Let's check funds for escrow payment
 ```Typescript
+    const escrowConfig = new ConfigHelper().getConfig(Number(chainId))
+    // On a fresh barge/dev chain the escrow address isn't in the bundled address map,
+    // so take it from the local deployment the test already read. On public networks
+    // ConfigHelper populates config.escrow for you (no ADDRESS_FILE needed).
+    escrowConfig.escrow = getAddress(addresses.Escrow)
+    assert(
+      getAddress(providerInitializeComputeResults.payment.escrowAddress) ===
+        getAddress(escrowConfig.escrow),
+      'Escrow address returned by the node does not match the configured escrow'
+    )
     const escrow = new EscrowContract(
-      getAddress(providerInitializeComputeResults.payment.escrowAddress),
-      consumerAccount
+      getAddress(escrowConfig.escrow),
+      consumerAccount,
+      Number(chainId),
+      escrowConfig
     )
     const paymentTokenPublisher = new Datatoken(publisherAccount)
     const balancePublisherPaymentToken = await paymentTokenPublisher.balance(
@@ -838,14 +850,22 @@ Let's check funds for escrow payment
     const amountToDeposit = (
       providerInitializeComputeResults.payment.amount * 2
     ).toString()
-    await escrow.verifyFundsForEscrowPayment(
+    const escrowValidation = await escrow.verifyFundsForEscrowPayment(
       paymentToken,
       computeEnv.consumerAddress,
       await unitsToAmount(consumerAccount, paymentToken, amountToDeposit),
-      providerInitializeComputeResults.payment.amount.toString(),
+      await unitsToAmount(
+        consumerAccount,
+        paymentToken,
+        providerInitializeComputeResults.payment.amount.toString()
+      ),
       providerInitializeComputeResults.payment.minLockSeconds.toString(),
       '10'
     )
+    // Abort before ordering if the escrow could not be validated/funded.
+    if (!escrowValidation.isValid) {
+      throw new Error(escrowValidation.message)
+    }
 ```
 
 Let's order assets
