@@ -12,6 +12,11 @@ file="${1:-CHANGELOG.md}"
 version=$(node -p "require('./package.json').version")
 heading="#### [v${version}]"
 
+# a release tag missing locally would make the previous release the starting
+# point and repeat its changes; --tags fetches them even for --no-tags remotes
+remote=$(git config --get "branch.$(git branch --show-current).remote" || echo origin)
+git fetch --quiet --tags "$remote"
+
 # meant to run after release-it bumps the version; an already tagged version
 # means it was run by hand and would overwrite a released section
 if git rev-parse -q --verify "refs/tags/v${version}" > /dev/null; then
@@ -52,5 +57,6 @@ awk -v h="$heading" -v section="$tmp/section.md" '
   }
 ' "$file" > "$tmp/out.md"
 
-mv "$tmp/out.md" "$file"
+# write through the path (not mv) so a symlinked changelog keeps its link
+cat "$tmp/out.md" > "$file"
 echo "changelog: added v${version} to ${file}"
