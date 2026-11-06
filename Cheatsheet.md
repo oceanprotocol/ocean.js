@@ -386,8 +386,10 @@ Works over HTTP and P2P node URIs. `enabled` must be a real boolean.
 // start draining
 const { maintenance } = await ProviderInstance.setMaintenance(providerUrl, adminSigner, true)
 
-// observe: `maintenance.enabled` is always present; running counts and the drain ETA
-// (unix seconds) are only in the node's detailed status
+// observe: on a node that supports maintenance, `maintenance.enabled` is always present.
+// Older nodes predate the feature and omit `maintenance` entirely, so the value can be
+// absent — hence the optional chaining below. Running counts and the drain ETA (unix
+// seconds) appear only in the node's detailed status.
 const status = await ProviderInstance.getNodeStatus(providerUrl)
 console.log(status?.maintenance?.enabled)
 
