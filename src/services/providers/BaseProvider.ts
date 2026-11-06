@@ -922,6 +922,31 @@ export class BaseProvider {
     )
   }
 
+  /**
+   * Enables or disables the node's maintenance (drain) mode. Admin only.
+   * While enabled the node rejects new compute/service requests with
+   * `code: 'MAINTENANCE_MODE'` (detect with `isMaintenanceError`); running jobs continue.
+   * Works over HTTP (`POST /api/admin/maintenance`) and P2P.
+   * @param {OceanNode} nodeUri - The node URI / peerId / multiaddr.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken - Admin signer / auth token.
+   * @param {boolean} enabled - true to start draining, false to resume.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<{ maintenance: boolean }>} The node's resulting maintenance state.
+   */
+  public async setMaintenance(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    enabled: boolean,
+    signal?: AbortSignal
+  ): Promise<{ maintenance: boolean }> {
+    return this.getImpl(nodeUri).setMaintenance(
+      nodeUri,
+      signerOrAuthToken,
+      enabled,
+      signal
+    )
+  }
+
   public async getNodeStatus(
     nodeUri: OceanNode,
     signal?: AbortSignal

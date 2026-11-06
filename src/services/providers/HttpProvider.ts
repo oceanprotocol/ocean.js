@@ -1,5 +1,6 @@
 import { Signer, isAddress } from 'ethers'
 import { LoggerInstance } from '../../utils/Logger.js'
+import { OceanNodeProviderError } from '../../utils/ProviderErrors.js'
 import { redactSensitiveFields } from '../../utils/General.js'
 import {
   StorageObject,
@@ -572,7 +573,7 @@ export class HttpProvider {
       'Payload was:',
       JSON.stringify(redactSensitiveFields(providerData))
     )
-    throw new Error(JSON.stringify(resolvedResponse))
+    throw new OceanNodeProviderError(resolvedResponse, response.status)
   }
 
   /**
@@ -743,7 +744,7 @@ export class HttpProvider {
       resolvedResponse
     )
     LoggerInstance.error('Payload was:', redactSensitiveFields(payload))
-    throw new Error(JSON.stringify(resolvedResponse))
+    throw new OceanNodeProviderError(resolvedResponse, response.status)
   }
 
   /** Instruct the provider to start a FREE compute job
@@ -848,7 +849,7 @@ export class HttpProvider {
       resolvedResponse
     )
     LoggerInstance.error('Payload was:', redactSensitiveFields(payload))
-    throw new Error(JSON.stringify(resolvedResponse))
+    throw new OceanNodeProviderError(resolvedResponse, response.status)
   }
 
   /**
@@ -1441,6 +1442,91 @@ export class HttpProvider {
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
+  /**
+   * Builds the typed error for a non-ok response whose body is read as text. The message
+   * stays the raw text (as before); `code`/`body` are populated when the text is JSON.
+   */
+  private async toProviderError(response: {
+    status: number
+    text: () => Promise<string>
+  }): Promise<OceanNodeProviderError> {
+    const text = await response.text()
+    let body: any = text
+    try {
+      body = JSON.parse(text)
+    } catch {}
+    return new OceanNodeProviderError(body, response.status, text)
+  }
+
+  /**
+   * Enables or disables the node's maintenance (drain) mode. Admin only: the caller must
+   * be in the node's ALLOWED_ADMINS / admin access list.
+   *
+   * While enabled the node rejects new commitment (`computeStart`, `freeComputeStart`,
+   * `initializeCompute`, `serviceStart`, `serviceExtend`) with HTTP 503 and
+   * `code: 'MAINTENANCE_MODE'` (see `isMaintenanceError`); running jobs and services
+   * continue. Read progress via `getNodeStatus` (`maintenance`).
+   *
+   * Calls `POST /api/admin/maintenance`. The request is signed over
+   * `address + nonce + 'setMaintenance'`; `enabled` is sent as a real JSON boolean, which
+   * the node requires.
+   * @param {string} nodeUri - The node URI.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken - Admin signer / auth token.
+   * @param {boolean} enabled - true to start draining, false to resume.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<{ maintenance: boolean }>} The node's resulting maintenance state.
+   */
+  public async setMaintenance(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    enabled: boolean,
+    signal?: AbortSignal
+  ): Promise<{ maintenance: boolean }> {
+    const url = this.baseUrl(nodeUri) + '/api/admin/maintenance'
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SET_MAINTENANCE,
+      signal
+    )
+
+    let response
+    try {
+      const authHeader = this.getAuthorization(signerOrAuthToken)
+      response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          enabled,
+          signature,
+          nonce,
+          address: consumerAddress
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authHeader ? { Authorization: authHeader } : {})
+        },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Set maintenance failed:')
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+
+    if (response?.ok) {
+      return (await response.json()) as { maintenance: boolean }
+    }
+
+    const error = await this.toProviderError(response)
+    LoggerInstance.error(
+      'Set maintenance failed: ',
+      response.status,
+      response.statusText,
+      error.body
+    )
+    throw error
+  }
+
   private noZeroX(input: string): string {
     return this.zeroXTransformer(input, false)
   }
@@ -1961,7 +2047,7 @@ export class HttpProvider {
       body: JSON.stringify(body),
       signal
     })
-    if (!response.ok) throw new Error(await response.text())
+    if (!response.ok) throw await this.toProviderError(response)
     const data = await response.json()
     return Array.isArray(data) ? data : [data]
   }
@@ -2027,7 +2113,7 @@ export class HttpProvider {
       body: JSON.stringify({ ...authPayload, serviceId, additionalDuration, payment }),
       signal
     })
-    if (!response.ok) throw new Error(await response.text())
+    if (!response.ok) throw await this.toProviderError(response)
     const data = await response.json()
     return Array.isArray(data) ? data : [data]
   }

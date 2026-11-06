@@ -107,6 +107,7 @@ instead, or move the calling module to ESM.
   - Consuming data
   - Free and paid compute workflows
   - Getting compute job status
+  - Node maintenance (drain) mode: `setMaintenance`, `NodeStatus.maintenance`, and detecting rejections with `isMaintenanceError` / `OceanNodeProviderError` / `MAINTENANCE_MODE_CODE`
 
 
 ## 🦑 Development
