@@ -70,7 +70,7 @@ jobs:
         run: |
           bash -x start_ocean.sh 2>&1 > start_ocean.log &
         env:
-          NODE_VERSION: main
+          NODE_VERSION: pr-1588
 
       - name: Install deps & build
         run: npm ci && npm run build:metadata
@@ -165,7 +165,7 @@ jobs:
         run: |
           bash -x start_ocean.sh 2>&1 > start-node.log &
         env:
-          NODE_VERSION: main
+          NODE_VERSION: pr-1588
       - name: Install deps & build
         run: npm ci && npm run build:metadata
 

@@ -327,18 +327,47 @@ export class P2pError extends Error {
    * same object the untyped code returned, instead of raising where it used to return.
    */
   readonly peerResponse?: { value: unknown }
+  /** HTTP status the peer reported in its status frame, when it reported one. */
+  readonly httpStatus?: number
+  /** Machine-readable `code` from the peer's status frame (e.g. `MAINTENANCE_MODE`). */
+  readonly code?: string
+  /** The peer's status frame / reply body, when it reported the failure itself. */
+  readonly body?: unknown
 
   constructor(
     type: P2pErrorType,
     message: string,
-    options: { cause?: unknown; peerId?: string; peerResponse?: { value: unknown } } = {}
+    options: {
+      cause?: unknown
+      peerId?: string
+      peerResponse?: { value: unknown }
+      httpStatus?: number
+      code?: string
+      body?: unknown
+    } = {}
   ) {
     super(message, options.cause == null ? undefined : { cause: options.cause })
     this.name = 'P2pError'
     this.type = type
     this.peerId = options.peerId
     this.peerResponse = options.peerResponse
+    this.httpStatus = options.httpStatus
+    this.code = options.code
+    this.body = options.body
   }
+}
+
+/**
+ * Wraps a peer-reported failure (a status frame with `httpStatus >= 400`) so the
+ * node's `code`, status and body survive. The message is the same text the untyped
+ * code threw; `asP2pCommandError` adds the usual `P2P command error:` prefix later.
+ */
+export function peerReportedError(frame: Record<string, any>, message: string): P2pError {
+  return new P2pError('protocol_failed', message, {
+    httpStatus: frame.httpStatus,
+    code: typeof frame.code === 'string' ? frame.code : undefined,
+    body: frame
+  })
 }
 
 /**
@@ -421,11 +450,14 @@ export function isRetryableP2pError(type: P2pErrorType): boolean {
  * Final error for a failed command. Preserves the `P2P command error: <message>`
  * shaping the untyped code produced — consumers match on it — and adds the type.
  */
-function asP2pCommandError(err: unknown, type: P2pErrorType): P2pError {
+export function asP2pCommandError(err: unknown, type: P2pErrorType): P2pError {
   const message = (err as { message?: string } | null)?.message ?? ''
   return new P2pError(type, `P2P command error: ${message}`, {
     cause: err,
-    peerId: err instanceof P2pError ? err.peerId : undefined
+    peerId: err instanceof P2pError ? err.peerId : undefined,
+    httpStatus: err instanceof P2pError ? err.httpStatus : undefined,
+    code: err instanceof P2pError ? err.code : undefined,
+    body: err instanceof P2pError ? err.body : undefined
   })
 }
 
@@ -2268,7 +2300,8 @@ export class P2pProvider {
       if (typeof status?.httpStatus === 'number' && status.httpStatus >= 400) {
         // Same message shaping as the buffered check below, so error text does not
         // change for the paths that were already covered.
-        throw new Error(
+        throw peerReportedError(
+          status,
           typeof status.error === 'string'
             ? status.error
             : status.error != null
@@ -2390,7 +2423,8 @@ export class P2pProvider {
 
       const res = response as Record<string, any> | null
       if (typeof res?.httpStatus === 'number' && res.httpStatus >= 400) {
-        throw new Error(
+        throw peerReportedError(
+          res,
           typeof res.error === 'string' ? res.error : JSON.stringify(res.error)
         )
       }
@@ -3460,6 +3494,41 @@ export class P2pProvider {
       nodeUri,
       PROTOCOL_COMMANDS.POLICY_SERVER_INITIALIZE,
       { ...request, consumerAddress, nonce, signature },
+      signerOrAuthToken,
+      signal
+    )
+  }
+
+  /**
+   * Enables or disables the node's maintenance (drain) mode via P2P. Admin only.
+   *
+   * While enabled the node rejects new `computeStart`, `freeComputeStart`,
+   * `initializeCompute`, `serviceStart` and `serviceExtend` with `code: 'MAINTENANCE_MODE'`
+   * (see `isMaintenanceError`); running jobs continue. The request is signed over
+   * `address + nonce + 'setMaintenance'` and `enabled` is sent as a real boolean, which the
+   * node requires.
+   * @param {OceanNode} nodeUri - The node peerId / multiaddr.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken - Admin signer / auth token.
+   * @param {boolean} enabled - true to start draining, false to resume.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<{ maintenance: boolean }>} The node's resulting maintenance state.
+   */
+  public async setMaintenance(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    enabled: boolean,
+    signal?: AbortSignal
+  ): Promise<{ maintenance: boolean }> {
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SET_MAINTENANCE,
+      signal
+    )
+    return this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SET_MAINTENANCE,
+      { enabled, signature, nonce, address: consumerAddress },
       signerOrAuthToken,
       signal
     )

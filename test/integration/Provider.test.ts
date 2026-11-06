@@ -1,6 +1,11 @@
 import { assert } from 'chai'
 import { getTestConfig, provider } from '../config.js'
-import { Config, ProviderInstance, isP2pUri } from '../../src/index.js'
+import {
+  Config,
+  ProviderInstance,
+  isP2pUri,
+  isMaintenanceError
+} from '../../src/index.js'
 import { Signer } from 'ethers'
 import { FileInfo } from '../../src/@types/index.js'
 
@@ -310,5 +315,65 @@ describe('Provider persistent storage tests', function () {
       fileName
     )
     assert(deleted?.success === true, 'Delete did not return success=true')
+  })
+})
+
+// Requires the barge node image to include ocean-node maintenance mode, and the signer
+// (account 0) to be in the node's ALLOWED_ADMINS. Unit coverage lives in
+// test/unit/MaintenanceMode.test.ts.
+describe('Provider maintenance mode tests', function () {
+  this.timeout(60000)
+  let adminSigner: Signer
+  let providerUrl: string
+
+  before(async () => {
+    adminSigner = (await provider.getSigner(0)) as Signer
+    providerUrl = (await getTestConfig(adminSigner))?.oceanNodeUri
+  })
+
+  after(async () => {
+    // never leave the shared node draining
+    await ProviderInstance.setMaintenance(providerUrl, adminSigner, false)
+  })
+
+  it('enables maintenance and reports it in node status', async () => {
+    const res = await ProviderInstance.setMaintenance(providerUrl, adminSigner, true)
+    assert(
+      res.maintenance === true,
+      'setMaintenance(true) should return maintenance=true'
+    )
+    const status = await ProviderInstance.getNodeStatus(providerUrl)
+    assert(status.maintenance?.enabled === true, 'status should show maintenance.enabled')
+  })
+
+  it('rejects new compute with a maintenance error', async () => {
+    let thrown: any
+    try {
+      await ProviderInstance.freeComputeStart(
+        providerUrl,
+        adminSigner,
+        'unused-env',
+        [],
+        { meta: { container: { image: 'x', tag: 'y', entrypoint: 'z' } } } as any
+      )
+    } catch (e) {
+      thrown = e
+    }
+    // Assert OUTSIDE the catch so a thrown assertion is not swallowed by it.
+    assert(
+      thrown !== undefined,
+      'freeComputeStart should be rejected while in maintenance'
+    )
+    assert(
+      isMaintenanceError(thrown),
+      `expected a maintenance error, got: ${thrown?.message}`
+    )
+  })
+
+  it('disables maintenance again', async () => {
+    const res = await ProviderInstance.setMaintenance(providerUrl, adminSigner, false)
+    assert(res.maintenance === false)
+    const status = await ProviderInstance.getNodeStatus(providerUrl)
+    assert(status.maintenance?.enabled === false)
   })
 })

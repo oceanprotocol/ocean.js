@@ -374,3 +374,44 @@ if (history) {
 
 
 ```
+
+### Put a node in maintenance (admin)
+
+Maintenance (drain) mode makes a node refuse new commitment (`computeStart`,
+`freeComputeStart`, `initializeCompute`, `serviceStart`, `serviceExtend`) while jobs and
+services that are already running carry on. The signer must be one of the node's admins.
+Works over HTTP and P2P node URIs. `enabled` must be a real boolean.
+
+```javascript
+// start draining
+const { maintenance } = await ProviderInstance.setMaintenance(providerUrl, adminSigner, true)
+
+// observe: `maintenance.enabled` is always present; running counts and the drain ETA
+// (unix seconds) are only in the node's detailed status
+const status = await ProviderInstance.getNodeStatus(providerUrl)
+console.log(status?.maintenance?.enabled)
+
+// resume
+await ProviderInstance.setMaintenance(providerUrl, adminSigner, false)
+```
+
+### Detect a maintenance rejection
+
+A guarded call on a draining node fails with HTTP 503 and `code: 'MAINTENANCE_MODE'`. The
+error keeps its old JSON `message`, and now also exposes `httpStatus`, `code` and `body`.
+Use `isMaintenanceError` rather than matching text (a 503 without that code is a different
+problem, e.g. compute engines not configured).
+
+```javascript
+import { isMaintenanceError, MAINTENANCE_MODE_CODE } from '@oceanprotocol/lib'
+
+try {
+    await ProviderInstance.freeComputeStart(providerUrl, consumer, environmentId, datasets, algorithm)
+} catch (e) {
+    if (isMaintenanceError(e)) {
+        console.log('Node is draining, pick another node:', e.httpStatus, e.code === MAINTENANCE_MODE_CODE)
+    } else {
+        throw e
+    }
+}
+```
