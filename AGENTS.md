@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI coding agents (Claude Code, Codex, Copilot, etc.) when working with code in this repository.
 
 ## What this is
 
@@ -74,7 +74,7 @@ npm run test:integration      # or: npm test
 ### Release / publish
 
 Semi-automatic via `release-it`, always triggered manually from a clean `main`:
-- `npm run release` — bumps version, regenerates `CHANGELOG.md` (`auto-changelog`) + `dist/lib.json` (via the `after:bump` hook that runs `build` + `changelog` + `doc:json`), commits, tags `v${version}`, and creates a GitHub release. Needs `GITHUB_TOKEN`.
+- `npm run release` — bumps version, adds the new version's section to `CHANGELOG.md` (`scripts/changelog.sh`: only tags merged into HEAD, older sections left untouched) + `dist/lib.json` (via the `after:bump` hook that runs `build` + `changelog` + `doc:json`), commits, tags `v${version}`, and creates a GitHub release. Needs `GITHUB_TOKEN`.
 - `release-it` is configured with `npm.publish = false` — the actual npm publish is done by `.github/workflows/publish.yml`, triggered on the **git tag push**: `npm publish` for normal tags, `npm publish --tag next` when the tag contains `next`.
 - Pre-releases: first one `./node_modules/.bin/release-it minor --preRelease=next` (→ e.g. `v0.18.0-next.0`), then `npm run release` for subsequent `next.N`.
 

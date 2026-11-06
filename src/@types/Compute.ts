@@ -39,6 +39,9 @@ export interface ComputeResource {
   description?: string
   init?: { [key: string]: any }
   inUse?: number // for display purposes
+  // Memory of ONE unit, e.g. "143771 MiB"; the node requires it on GPUs. Parse with
+  // parseMemoryTotalBytes(); absent or unparseable means unknown, never big enough.
+  memoryTotal?: string
 }
 
 export interface ComputeEnvironmentAccessOptions {
