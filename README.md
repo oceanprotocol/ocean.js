@@ -126,6 +126,8 @@ const tx = await orderAsset(
   datatokenIndex,
   serviceIndex
 )
+// orderAsset returns null if the order fails (bad funds, approvals or provider fees)
+if (!tx) throw new Error('orderAsset failed')
 const receipt = await tx.wait()
 
 // 3. Ask the node for the download, then fetch the file
@@ -192,8 +194,10 @@ await ProviderInstance.computeStatus(/* ... */)
 **Escrow** (paid compute). Funds are deposited into the escrow contract and authorized for the node to lock and charge per job:
 
 ```ts
-import { EscrowContract } from '@oceanprotocol/lib'
+import { EscrowContract, Datatoken } from '@oceanprotocol/lib'
 const escrow = new EscrowContract(config.escrow, signer, chainId, config)
+// Approve the escrow contract to pull the deposit first (approve scales by the token's decimals)
+await new Datatoken(signer, chainId, config).approve(tokenAddress, config.escrow, '10')
 await escrow.deposit(tokenAddress, '10')
 // also: authorize(...), withdraw(...), getUserFunds(payer, token), getUserTokens(payer)
 ```
@@ -233,7 +237,7 @@ There is no single `Ocean` object. The library is a set of small, composable pie
 
 Every state-changing contract method comes in two forms:
 
-- `foo(..., estimateGas?)` signs and sends the transaction and returns the receipt; pass `estimateGas = true` to get the gas estimate instead of sending;
+- `foo(..., estimateGas?)` signs, sends and waits for the transaction, returning the ethers `TransactionResponse` (not the receipt — call `await tx.wait()` for that), or `null` if the send fails; pass `estimateGas = true` to get the gas estimate instead of sending;
 - `fooTx(...)` returns the **unsigned** `TransactionRequest`, for custom signing, batching, or smart-account/agent flows.
 
 ## Error handling and gotchas
@@ -271,7 +275,7 @@ nvm use                  # Node version from .nvmrc (22.x)
 npm ci
 npm run build:metadata   # required before type-check and tests (generates src/metadata.json)
 npm run lint             # eslint + tsc --noEmit
-npm run test:unit        # hermetic, no network
+npm run test:unit        # contract-wrapper + unit tests; needs a local Barge chain + ADDRESS_FILE (see "Testing against barge")
 npm run build            # tsup bundles + tsc declarations into dist/
 npm start                # tsc watch mode
 ```
@@ -280,7 +284,7 @@ Formatting: `npm run format` (prettier).
 
 ### Testing against barge
 
-Unit tests (`test/unit`) are hermetic. Integration tests (`test/integration`) need a local stack from [Barge](https://github.com/oceanprotocol/barge) (Docker on Linux/macOS) running a chain, an Ocean Node and the indexer:
+Both suites run against a local [Barge](https://github.com/oceanprotocol/barge) stack (Docker on Linux/macOS). `test/unit` deploys and calls the contracts on the local chain (chainId 8996) and reads the deployed addresses from `ADDRESS_FILE`; `test/integration` additionally needs the Ocean Node and indexer. Start Barge and export `ADDRESS_FILE`:
 
 ```bash
 git clone https://github.com/oceanprotocol/barge && cd barge && ./start_ocean.sh
