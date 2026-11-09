@@ -35,7 +35,7 @@
     "doc:json": "node ./scripts/typedoc.js",
     "docs": "typedoc --options typedoc.json --plugin typedoc-plugin-markdown",
     "release": "release-it",
-    "changelog": "auto-changelog -p",
+    "changelog": "bash scripts/changelog.sh",
     "prepublishOnly": "npm run build",
     "test": "npm run lint && npm run test:unit:cover && npm run test:integration:cover",
     "test:unit": "npx tsx ./node_modules/mocha/bin/mocha.js --config ./test/.mocharc.json 'test/unit/**/*.test.ts' --verbose",

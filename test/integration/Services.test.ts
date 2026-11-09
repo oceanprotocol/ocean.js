@@ -7,14 +7,17 @@ import {
   EscrowContract,
   Datatoken,
   amountToUnits,
-  sendTx
+  sendTx,
+  planGpuLayouts,
+  sizeSharedResources,
+  GpuResourceRequirement
 } from '../../src/index.js'
 import {
   ServiceStatusNumber,
   ServiceJob,
   ServiceTemplatePublic,
   ComputeEnvironment,
-  TemplateResourceRequirement
+  ComputeResourceRequest
 } from '../../src/@types/index.js'
 
 /**
@@ -24,7 +27,7 @@ import {
  * stays green against a plain barge node):
  *   - The node must run with `serviceOnDemand.enabled` on a Docker compute env, expose at
  *     least one template via SERVICE_TEMPLATES_PATH, and have a `features.services !== false`
- *     environment whose resources satisfy the template's requiredResources.
+ *     environment that can host the template's recommendedResources (see planFor).
  *   - Docker available on the node host; escrow funded for the dev payment token (Ocean).
  *
  * Mirrors ocean-node `src/test/integration/services.test.ts`, but exercises the client
@@ -41,6 +44,7 @@ describe('Service on Demand flow tests', () => {
 
   let template: ServiceTemplatePublic
   let servicesEnv: ComputeEnvironment
+  let plannedResources: ComputeResourceRequest[] = []
   let skipLifecycle = false
 
   // state threaded through the lifecycle tests
@@ -63,26 +67,24 @@ describe('Service on Demand flow tests', () => {
   // Background image pull (e.g. a multi-GB inference image) can take minutes on a cold node.
   const RUNNING_TIMEOUT_MS = 540000
 
-  // Returns the available (total - inUse) amount of an env resource matching a requirement.
-  function availableFor(
+  // Plans the template's recommendedResources on an env with the SDK planner: the best
+  // feasible GPU layout (exact ids) plus best-effort CPU/RAM/disk. null = env cannot host it.
+  function planFor(
     env: ComputeEnvironment,
-    req: TemplateResourceRequirement
-  ): number {
+    tmpl: ServiceTemplatePublic
+  ): ComputeResourceRequest[] | null {
     const resources = env.resources ?? []
-    if (req.id) {
-      const r = resources.find((x) => x.id === req.id)
-      return r ? (r.total ?? 0) - (r.inUse ?? 0) : 0
-    }
-    return resources
-      .filter((x) => x.kind === req.kind && (!req.type || x.type === req.type))
-      .reduce((sum, x) => sum + ((x.total ?? 0) - (x.inUse ?? 0)), 0)
-  }
-
-  function envSatisfies(
-    env: ComputeEnvironment,
-    reqs?: TemplateResourceRequirement[]
-  ): boolean {
-    return (reqs ?? []).every((req) => availableFor(env, req) >= req.min)
+    const recommended = tmpl.recommendedResources ?? []
+    const requirement = recommended.find(
+      (r): r is GpuResourceRequirement => 'type' in r && r.type === 'gpu'
+    )
+    const [gpuPlan] = planGpuLayouts({
+      gpuResources: resources.filter((r) => r.type === 'gpu'),
+      requirement
+    })
+    const shared = sizeSharedResources(resources, recommended)
+    if (!gpuPlan || !shared) return null
+    return [...shared.requests, ...gpuPlan.gpuRequests]
   }
 
   async function pollUntil(
@@ -147,9 +149,10 @@ describe('Service on Demand flow tests', () => {
     if (skipLifecycle) this.skip()
     const envs = await ProviderInstance.getComputeEnvironments(providerUrl)
     servicesEnv = (envs ?? []).find(
-      (e) => e.features?.services !== false && envSatisfies(e, template.requiredResources)
+      (e) => e.features?.services !== false && planFor(e, template) !== null
     )
-    if (!servicesEnv) {
+    if (servicesEnv) plannedResources = planFor(servicesEnv, template)
+    else {
       skipLifecycle = true
       this.skip()
     }
@@ -236,14 +239,10 @@ describe('Service on Demand flow tests', () => {
     // Supply a valid value for the first user-configurable var, if any.
     if (userConfigurable[0]) userData[userConfigurable[0].key] = 'hello123'
 
-    // Request exactly what the chosen template requires (by resource id, at its min) — the
-    // same requiredResources the env was selected against. Fall back to the env's cpu/ram
-    // only when the template declares no id-based requirements.
-    const requiredById = (template.requiredResources ?? []).filter(
-      (r): r is TemplateResourceRequirement & { id: string } => typeof r.id === 'string'
-    )
-    const requestedResources = requiredById.length
-      ? requiredById.map((r) => ({ id: r.id, amount: r.min }))
+    // Request exactly the plan the env was selected with (exact GPU ids + sized CPU/RAM/disk).
+    // Fall back to the env's cpu/ram only when the template declares no resources.
+    const requestedResources = plannedResources.length
+      ? plannedResources
       : (servicesEnv.resources ?? [])
           .filter((r) => r.id === 'cpu' || r.id === 'ram')
           .map((r) => ({ id: r.id, amount: 1 }))
