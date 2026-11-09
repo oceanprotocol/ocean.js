@@ -27,6 +27,15 @@ import { SmartContractWithAddress } from './SmartContractWithAddress.js'
 import { Datatoken } from './Datatoken.js'
 import BigNumber from 'bignumber.js'
 
+const EXPIRY_BUFFER_SECONDS = 120
+
+interface ReauthParams {
+  ceiling: string
+  newSeconds: string
+  newCounts: string
+  newExpiry?: string
+}
+
 export class EscrowContract extends SmartContractWithAddress {
   public abiEnterprise: AbiItem[]
 
@@ -151,6 +160,17 @@ export class EscrowContract extends SmartContractWithAddress {
    * @param {String} maxLockCounts max lock counts,
    * returned from initialize compute payment and used for authorize if needed.
    * @param {number} [tokenDecimals] optional number of decimals of the token
+   * @param {String} [expiryTimestamp] optional unix timestamp (seconds) at which a newly
+   * created/updated authorization expires (Escrow v2); '0' = no expiry. When omitted and a prior
+   * authorization has a nonzero expiry that still covers now + maxLockSeconds (+120s buffer), it is
+   * preserved. If that prior expiry is too early (or in the past), or an explicit nonzero value is
+   * too early, no transaction is sent and { isValid: false } is returned: pass a later
+   * expiryTimestamp (or '0') to renew.
+   * An existing authorization is reused only if it can satisfy createLock: its expiry covers
+   * now + maxLockSeconds (or is 0), its remaining ceiling (maxLocked - currentLocked) covers
+   * maxLockedAmount, its maxLockSeconds cap covers the requested duration, and it has a free
+   * lock slot. Otherwise it is re-authorized with a ceiling of max(currentLocked + maxLockedAmount,
+   * existing ceiling) and caps never lower than the existing record's (counts also leave a free slot).
    * @return {Promise<ValidationResponse>} validation response
    */
   public async verifyFundsForEscrowPayment(
@@ -160,7 +180,8 @@ export class EscrowContract extends SmartContractWithAddress {
     maxLockedAmount?: string,
     maxLockSeconds?: string,
     maxLockCounts?: string,
-    tokenDecimals?: number
+    tokenDecimals?: number,
+    expiryTimestamp?: string
   ): Promise<ValidationResponse> {
     // Treat the escrow address as a configuration constant, never a node response.
     // Fail closed: without a configured escrow address we cannot validate `this.address`,
@@ -251,53 +272,77 @@ export class EscrowContract extends SmartContractWithAddress {
       await this.deposit(token, topUp, decimals)
     }
 
-    // An existing authorization is reusable only if it covers everything the pending lock needs:
-    //  - expiry (Escrow v2): a lock may not outlive its auth. Treat expiry 0 as indefinite;
-    //    otherwise it must reach now + maxLockSeconds.
-    //  - ceiling: its maxLockedAmount (index 1, token units) must cover the funding target —
-    //    Escrow v2 locks the GROSS amount (>= the quoted payer portion), so a lower ceiling makes
-    //    createLock revert "will go over limit".
-    //  - capacity: it must have a free lock slot (currentLocks [5] < maxLockCounts [4]).
+    // An existing authorization is reusable only if it will let createLock succeed: its expiry
+    // (Escrow v2) covers the lock horizon (0 = indefinite), its remaining ceiling
+    // (maxLockedAmount [1] - currentLockedAmount [2], token units) covers the funding target, its
+    // duration cap (maxLockSeconds [3]) covers the requested seconds, and it has a free lock slot
+    // (currentLocks [5] < maxLockCounts [4]). The expiry horizon carries a clock-skew buffer because
+    // createLock runs later against block.timestamp.
     const nowSeconds = Math.floor(Date.now() / 1000)
-    const requiredExpiry = nowSeconds + (Number(maxLockSeconds) || 0)
+    const requiredSecondsNum = Math.trunc(Number(maxLockSeconds) || 0)
+    const requiredExpiry = nowSeconds + requiredSecondsNum + EXPIRY_BUFFER_SECONDS
     const depositAmountUnits = await this.amountToUnits(token, depositAmount, decimals)
+    const requiredAmount = BigInt(depositAmountUnits)
+    const requiredSeconds = BigInt(requiredSecondsNum)
     // getAuthorizations returns an ethers Result (a Proxy): indexing an out-of-range element
     // (e.g. auths[0] when empty) THROWS "out of result range" instead of yielding undefined.
-    // Materialize to a plain array so .find and auths[0] are safe when there is no authorization.
+    // Materialize to a plain array so .filter and auths[0] are safe when there is no authorization.
     const auths = Array.from(await this.getAuthorizations(token, owner, consumerAddress))
-    const usableAuth = auths.find((auth: any) => {
+    const activeAuths = auths.filter((auth: any) => {
       const expiry = Number(auth?.expiryTimestamp ?? auth?.[6] ?? 0)
-      const ceiling = new BigNumber((auth?.maxLockedAmount ?? auth?.[1] ?? 0).toString())
-      const currentLocks = Number(auth?.currentLocks ?? auth?.[5] ?? 0)
-      const maxCounts = Number(auth?.maxLockCounts ?? auth?.[4] ?? 0)
+      const maxLocked = BigInt(auth?.maxLockedAmount ?? auth?.[1] ?? 0)
+      const currentLocked = BigInt(auth?.currentLockedAmount ?? auth?.[2] ?? 0)
+      const maxSeconds = BigInt(auth?.maxLockSeconds ?? auth?.[3] ?? 0)
+      const maxCounts = BigInt(auth?.maxLockCounts ?? auth?.[4] ?? 0)
+      const currentLocks = BigInt(auth?.currentLocks ?? auth?.[5] ?? 0)
       return (
         (expiry === 0 || expiry >= requiredExpiry) &&
-        ceiling.isGreaterThanOrEqualTo(new BigNumber(depositAmountUnits)) &&
+        maxLocked - currentLocked >= requiredAmount &&
+        maxSeconds >= requiredSeconds &&
         currentLocks < maxCounts
       )
     })
 
-    // (Re-)authorize up to the funding target, in correct units, when no existing authorization is
-    // usable. Escrow v2's authorize UPDATES an existing record and does NOT reset currentLocks, so
-    // re-authorizing only frees a lock slot when the new maxLockCounts exceeds the existing
-    // currentLocks; if it can't, fail clearly rather than let createLock revert later. It stays
-    // bounded (the deposited amount, correct units) and targets the already-validated escrow.
-    if (!usableAuth) {
-      const existingCurrentLocks = Number(auths[0]?.currentLocks ?? auths[0]?.[5] ?? 0)
-      if (auths.length > 0 && Number(maxLockCounts) <= existingCurrentLocks) {
-        return {
-          isValid: false,
-          message:
-            'Existing escrow authorization is at its lock-count limit and re-authorizing would not add capacity. Wait for locks to clear or cancel them, or raise maxLockCounts.'
-        }
+    // When no authorization is usable, plan the (re-)authorization up front so we can fail fast
+    // before touching the chain. Escrow v2's authorize UPDATES an existing record (keeping
+    // currentLocked/currentLocks), so computeReauthParams never shrinks the prior ceiling/caps,
+    // leaves room for already-locked funds and one more lock slot, and refuses to silently renew an
+    // expiry that cannot cover the lock horizon. The ceiling targets the funding amount in human
+    // units; authorize re-derives units from `decimals`.
+    if (activeAuths.length === 0) {
+      const prior: any = auths[0]
+      const reauthResult = this.computeReauthParams(
+        prior,
+        depositAmount,
+        prior
+          ? await this.unitsToAmount(
+              token,
+              BigInt(prior?.currentLockedAmount ?? prior?.[2] ?? 0).toString(),
+              decimals
+            )
+          : '0',
+        prior
+          ? await this.unitsToAmount(
+              token,
+              BigInt(prior?.maxLockedAmount ?? prior?.[1] ?? 0).toString(),
+              decimals
+            )
+          : '0',
+        maxLockSeconds,
+        maxLockCounts,
+        requiredExpiry,
+        expiryTimestamp
+      )
+      if ('message' in reauthResult) {
+        return { isValid: false, message: reauthResult.message }
       }
       await this.authorize(
         getAddress(token),
         getAddress(consumerAddress),
-        depositAmount,
-        maxLockSeconds,
-        maxLockCounts,
-        '0',
+        reauthResult.ceiling,
+        reauthResult.newSeconds,
+        reauthResult.newCounts,
+        reauthResult.newExpiry,
         decimals
       )
     }
@@ -305,6 +350,74 @@ export class EscrowContract extends SmartContractWithAddress {
     return {
       isValid: true,
       message: ''
+    }
+  }
+
+  /**
+   * Pure helper: merges a required authorization with the prior record (authorize() overwrites in
+   * place, keeping currentLocked/currentLocks). Never shrinks the prior ceiling/caps, leaves room
+   * for the already-locked funds and one more lock slot, and refuses (fail fast) to silently
+   * renew or set an expiry that cannot cover the lock horizon.
+   * @param {any} prior prior authorization tuple/struct for this payee (or undefined)
+   * @param {String} requiredAmountHuman required amount, human units
+   * @param {String} priorCurrentHuman prior currentLockedAmount, human units
+   * @param {String} priorMaxHuman prior maxLockedAmount, human units
+   * @param {String} maxLockSeconds required lock duration
+   * @param {String} maxLockCounts required lock count
+   * @param {number} requiredExpiry now + maxLockSeconds + buffer (unix seconds)
+   * @param {String} callerExpiry expiryTimestamp explicitly passed by the caller, if any
+   */
+  protected computeReauthParams(
+    prior: any,
+    requiredAmountHuman: string,
+    priorCurrentHuman: string,
+    priorMaxHuman: string,
+    maxLockSeconds: string,
+    maxLockCounts: string,
+    requiredExpiry: number,
+    callerExpiry?: string
+  ): ReauthParams | { message: string } {
+    const toInt = (v: any): bigint => BigInt(Math.trunc(Number(v) || 0))
+    const reqSeconds = toInt(maxLockSeconds)
+    const reqCounts = toInt(maxLockCounts)
+    const bigMax = (x: bigint, y: bigint): bigint => (x > y ? x : y)
+    let newExpiry = callerExpiry
+    if (newExpiry !== undefined) {
+      const e = toInt(newExpiry)
+      if (e !== 0n && e < BigInt(requiredExpiry)) {
+        return {
+          message: `Requested expiryTimestamp ${e} is earlier than the required horizon ${requiredExpiry} (now + maxLockSeconds + buffer). Pass a later expiryTimestamp, or '0' for no expiry.`
+        }
+      }
+    }
+    let ceiling = new BigNumber(requiredAmountHuman)
+    let newSeconds = reqSeconds
+    let newCounts = reqCounts
+    if (prior) {
+      ceiling = BigNumber.max(
+        ceiling.plus(priorCurrentHuman),
+        new BigNumber(priorMaxHuman)
+      )
+      newSeconds = bigMax(reqSeconds, toInt(prior?.maxLockSeconds ?? prior?.[3] ?? 0))
+      newCounts = bigMax(
+        bigMax(reqCounts, toInt(prior?.maxLockCounts ?? prior?.[4] ?? 0)),
+        toInt(prior?.currentLocks ?? prior?.[5] ?? 0) + 1n
+      )
+      const priorExpiry = toInt(prior?.expiryTimestamp ?? prior?.[6] ?? 0)
+      if (newExpiry === undefined && priorExpiry !== 0n) {
+        if (priorExpiry < BigInt(requiredExpiry)) {
+          return {
+            message: `Existing escrow authorization expires at ${priorExpiry}, before the required horizon ${requiredExpiry} (now + maxLockSeconds + buffer). Pass expiryTimestamp (a later unix timestamp, or '0' for no expiry) to renew it.`
+          }
+        }
+        newExpiry = priorExpiry.toString()
+      }
+    }
+    return {
+      ceiling: ceiling.toFixed(),
+      newSeconds: newSeconds.toString(),
+      newCounts: newCounts.toString(),
+      newExpiry
     }
   }
 
