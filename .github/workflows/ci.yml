@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -17,15 +21,8 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v7
         with:
-          node-version: "22"
-      - name: Cache node_modules
-        uses: actions/cache@v6
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-lint-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-lint-${{ env.cache-name }}-
+          node-version: "24"
+          cache: npm
       - run: npm ci
       - run: npm run lint
 
@@ -38,15 +35,8 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v7
         with:
-          node-version: "22"
-      - name: Cache node_modules
-        uses: actions/cache@v6
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-test-unit-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-test-unit-${{ env.cache-name }}-
+          node-version: "24"
+          cache: npm
       # Env var expansion workaround
       # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
       - name: Set ADDRESS_FILE
@@ -98,11 +88,7 @@ jobs:
             sleep 10
             attempt=$((attempt + 1))
           done
-      - run: npm run test:unit:cover
-      - uses: actions/upload-artifact@v7
-        with:
-          name: coverage-unit
-          path: coverage/
+      - run: npm run test:unit
 
   test_integration:
     name: test_integration (${{ matrix.transport }})
@@ -123,15 +109,8 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v7
         with:
-          node-version: "22"
-      - name: Cache node_modules
-        uses: actions/cache@v6
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-test-integration-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-test-integration-${{ env.cache-name }}-
+          node-version: "24"
+          cache: npm
 
       # Env var expansion workaround
       # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
@@ -200,12 +179,7 @@ jobs:
           done
 
       - name: integration (${{ matrix.transport }})
-        run: |
-          if [ "${{ matrix.transport }}" = "http" ]; then
-            npm run test:integration:cover
-          else
-            npm run test:integration
-          fi
+        run: npm run test:integration
         env:
           INDEXING_RETRY_INTERVAL: 4000
           INDEXING_MAX_RETRIES: 120
@@ -223,21 +197,19 @@ jobs:
           docker logs ocean-node-1 2>&1 || echo "Container not found"
         if: ${{ failure() }}
 
-      - name: Upload coverage
-        if: matrix.transport == 'http'
-        uses: actions/upload-artifact@v7
-        with:
-          name: coverage-integration
-          path: coverage/
-
   build:
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        node: ["22", "24"]
+        os: [ubuntu-latest]
+        node: ["22", "24", "26"]
+        include:
+          - os: windows-latest
+            node: "24"
+          - os: macos-latest
+            node: "24"
 
     steps:
       - uses: actions/checkout@v7
@@ -246,32 +218,11 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
-      - name: Cache node_modules
-        uses: actions/cache@v6
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-${{ matrix.node }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-${{ matrix.node }}-build-${{ env.cache-name }}-
+          cache: npm
       - run: npm ci
       - run: npm run build
       - run: npm run doc:json
 
-  coverage:
-    runs-on: ubuntu-latest
-    needs: [test_unit, test_integration]
-    if: ${{ success() && github.actor != 'dependabot[bot]' }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: actions/download-artifact@v8
-        with:
-          name: coverage-unit
-      - uses: actions/download-artifact@v8
-        with:
-          name: coverage-integration
   create_guide:
     runs-on: ubuntu-latest
     needs: [test_unit, test_integration]
@@ -282,7 +233,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: "22"
+          node-version: "24"
 
       - name: checkout ocean.js repo
         uses: actions/checkout@v7
