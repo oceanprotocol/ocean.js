@@ -127,6 +127,9 @@ describe('Service on Demand flow tests', () => {
     config = await getTestConfig(publisherAccount)
     providerUrl = config?.oceanNodeUri
     addresses = getAddresses()
+    // Barge/dev deploys fresh contracts not present in the bundled address map, so
+    // source the escrow from the local deployment the test reads (works without ADDRESS_FILE).
+    config.escrow = getAddress(addresses.Escrow)
     paymentToken = addresses.Ocean
     chainId = Number((await consumerAccount.provider.getNetwork()).chainId)
   })
@@ -202,9 +205,14 @@ describe('Service on Demand flow tests', () => {
     // enough for start but not the later extend/restart locks. A fresh large deposit and a
     // high maxLockedAmount cover the whole lifecycle (mirrors ocean-node's fundEscrow).
     const fundAmount = '100000'
-    const escrow = new EscrowContract(getAddress(addresses.Escrow), consumerAccount)
+    const escrow = new EscrowContract(
+      getAddress(config.escrow),
+      consumerAccount,
+      chainId,
+      config
+    )
     const datatoken = new Datatoken(consumerAccount)
-    await datatoken.approve(paymentToken, getAddress(addresses.Escrow), fundAmount)
+    await datatoken.approve(paymentToken, getAddress(config.escrow), fundAmount)
     await escrow.deposit(paymentToken, fundAmount)
     // authorize() returns null (and would fail) when an authorization already exists for this
     // payer/payee/token, so only create one when absent. A prior run's authorization is reused;
