@@ -78,6 +78,14 @@ describe('EscrowContract.computeReauthParams (pure re-authorization planner)', (
       assert.include(r.message, '1500')
       assert.include(r.message, '2000')
     })
+
+    it('floors counts to at least 1 when maxLockCounts is omitted (no 0-slot auth)', () => {
+      // Guards the no-prior path: a 0 count would authorize maxLockCounts=0 and brick createLock.
+      const r = plan(undefined, '5', '0', '0', '3600', undefined as any, 2000)
+      assert.isFalse(isFailFast(r))
+      if (isFailFast(r)) return
+      assert.strictEqual(r.newCounts, '1')
+    })
   })
 
   describe('C4 — ceiling and caps never shrink below the prior record', () => {
@@ -191,12 +199,13 @@ describe('EscrowContract.computeReauthParams (pure re-authorization planner)', (
   })
 
   describe('C6 — garbage second/count inputs do not throw', () => {
-    it('truncates a fractional duration and floors a non-numeric count to 0', () => {
+    it('truncates a fractional duration and clamps a non-numeric count to the 1 floor', () => {
       const r = plan(undefined, '5', '0', '0', '1.5', 'abc', 0)
       assert.isFalse(isFailFast(r))
       if (isFailFast(r)) return
       assert.strictEqual(r.newSeconds, '1')
-      assert.strictEqual(r.newCounts, '0')
+      // 'abc' -> 0, then floored to the minimum of 1 usable lock slot.
+      assert.strictEqual(r.newCounts, '1')
     })
   })
 })
