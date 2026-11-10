@@ -1,5 +1,6 @@
 import { Signer, isAddress } from 'ethers'
 import { LoggerInstance } from '../../utils/Logger.js'
+import { OceanNodeProviderError } from '../../utils/ProviderErrors.js'
 import { redactSensitiveFields } from '../../utils/General.js'
 import {
   StorageObject,
@@ -39,7 +40,9 @@ import {
   ServiceUserData,
   ServicePayment,
   SignerOrAuthTokenOrSignature,
-  CompleteSignature
+  CompleteSignature,
+  EscrowEventRecord,
+  EscrowEventsFilter
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -207,6 +210,59 @@ export class HttpProvider {
       if (signal?.aborted) throw e
       LoggerInstance.error('getNodeMetricsHistory failed:', e)
       return null
+    }
+  }
+
+  /**
+   * Queries indexed escrow events via the REST route `GET /api/services/escrow/events`.
+   * Equality filters go on the query string; `ranges` are flattened to `<field>Min`/`<field>Max`.
+   * The REST route reads only `min`/`max`, so any `gt`/`lt` bound is dropped (with a warning) —
+   * use the P2P transport for exclusive bounds. A public read: no auth is sent.
+   * @param {string} nodeUri - node HTTP endpoint
+   * @param {EscrowEventsFilter} [filter] - optional equality / range filters and pagination
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<EscrowEventRecord[]>} the matching event rows, or [] on failure
+   */
+  public async getEscrowEvents(
+    nodeUri: string,
+    filter: EscrowEventsFilter = {},
+    signal?: AbortSignal
+  ): Promise<EscrowEventRecord[]> {
+    const params = new URLSearchParams()
+    for (const [key, value] of Object.entries(filter)) {
+      if (value === undefined || value === null || key === 'ranges') continue
+      params.set(key, String(value))
+    }
+    let droppedExclusiveBound = false
+    for (const [field, range] of Object.entries(filter.ranges ?? {})) {
+      if (range.min !== undefined) params.set(`${field}Min`, String(range.min))
+      if (range.max !== undefined) params.set(`${field}Max`, String(range.max))
+      if (range.gt !== undefined || range.lt !== undefined) droppedExclusiveBound = true
+    }
+    if (droppedExclusiveBound) {
+      LoggerInstance.warn(
+        'getEscrowEvents: gt/lt range bounds are not supported over HTTP (REST reads only min/max) and were ignored. Use the P2P transport for exclusive bounds.'
+      )
+    }
+    let url = this.baseUrl(nodeUri) + '/api/services/escrow/events'
+    const query = params.toString()
+    if (query) url += `?${query}`
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+      if (response?.ok) {
+        const data = await response.json()
+        return Array.isArray(data) ? data : []
+      }
+      return []
+    } catch (e) {
+      // A caller-driven cancellation is not a compatibility failure: surface it.
+      if (signal?.aborted) throw e
+      LoggerInstance.error('getEscrowEvents failed:', e)
+      return []
     }
   }
 
@@ -572,7 +628,7 @@ export class HttpProvider {
       'Payload was:',
       JSON.stringify(redactSensitiveFields(providerData))
     )
-    throw new Error(JSON.stringify(resolvedResponse))
+    throw new OceanNodeProviderError(resolvedResponse, response.status)
   }
 
   /**
@@ -644,6 +700,7 @@ export class HttpProvider {
    * @param {number} queueMaxWaitTime Maximum time in seconds to wait in the compute queue if resources are not available
    * @param {dockerRegistryAuth} dockerRegistryAuth Docker registry authentication data.
    * @param {string} outputBucketId Persistent-storage bucket id to store job results in, mounted at /data/outputs. Mutually exclusive with output.
+   * @param {string[]} subsidyProviders Optional consumer-selected subsidy provider addresses; resolved tri-state by the node (omit = node default, [] = none, populated = only these). See ocean-node #1485.
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
   public async computeStart(
@@ -663,7 +720,8 @@ export class HttpProvider {
     signal?: AbortSignal,
     queueMaxWaitTime?: number,
     dockerRegistryAuth?: dockerRegistryAuth,
-    outputBucketId?: string
+    outputBucketId?: string,
+    subsidyProviders?: string[]
   ): Promise<ComputeJob | ComputeJob[]> {
     const computeStartUrl = this.baseUrl(nodeUri) + '/api/services/compute'
 
@@ -711,6 +769,7 @@ export class HttpProvider {
       }
     }
     if (outputBucketId) payload.outputBucketId = outputBucketId
+    if (subsidyProviders) payload.subsidyProviders = subsidyProviders
     if (policyServer) payload.policyServer = policyServer
     if (queueMaxWaitTime) payload.queueMaxWaitTime = queueMaxWaitTime
     let response
@@ -743,7 +802,7 @@ export class HttpProvider {
       resolvedResponse
     )
     LoggerInstance.error('Payload was:', redactSensitiveFields(payload))
-    throw new Error(JSON.stringify(resolvedResponse))
+    throw new OceanNodeProviderError(resolvedResponse, response.status)
   }
 
   /** Instruct the provider to start a FREE compute job
@@ -848,7 +907,7 @@ export class HttpProvider {
       resolvedResponse
     )
     LoggerInstance.error('Payload was:', redactSensitiveFields(payload))
-    throw new Error(JSON.stringify(resolvedResponse))
+    throw new OceanNodeProviderError(resolvedResponse, response.status)
   }
 
   /**
@@ -1441,6 +1500,91 @@ export class HttpProvider {
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
+  /**
+   * Builds the typed error for a non-ok response whose body is read as text. The message
+   * stays the raw text (as before); `code`/`body` are populated when the text is JSON.
+   */
+  private async toProviderError(response: {
+    status: number
+    text: () => Promise<string>
+  }): Promise<OceanNodeProviderError> {
+    const text = await response.text()
+    let body: any = text
+    try {
+      body = JSON.parse(text)
+    } catch {}
+    return new OceanNodeProviderError(body, response.status, text)
+  }
+
+  /**
+   * Enables or disables the node's maintenance (drain) mode. Admin only: the caller must
+   * be in the node's ALLOWED_ADMINS / admin access list.
+   *
+   * While enabled the node rejects new commitment (`computeStart`, `freeComputeStart`,
+   * `initializeCompute`, `serviceStart`, `serviceExtend`) with HTTP 503 and
+   * `code: 'MAINTENANCE_MODE'` (see `isMaintenanceError`); running jobs and services
+   * continue. Read progress via `getNodeStatus` (`maintenance`).
+   *
+   * Calls `POST /api/admin/maintenance`. The request is signed over
+   * `address + nonce + 'setMaintenance'`; `enabled` is sent as a real JSON boolean, which
+   * the node requires.
+   * @param {string} nodeUri - The node URI.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken - Admin signer / auth token.
+   * @param {boolean} enabled - true to start draining, false to resume.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<{ maintenance: boolean }>} The node's resulting maintenance state.
+   */
+  public async setMaintenance(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    enabled: boolean,
+    signal?: AbortSignal
+  ): Promise<{ maintenance: boolean }> {
+    const url = this.baseUrl(nodeUri) + '/api/admin/maintenance'
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SET_MAINTENANCE,
+      signal
+    )
+
+    let response
+    try {
+      const authHeader = this.getAuthorization(signerOrAuthToken)
+      response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          enabled,
+          signature,
+          nonce,
+          address: consumerAddress
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authHeader ? { Authorization: authHeader } : {})
+        },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Set maintenance failed:')
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+
+    if (response?.ok) {
+      return (await response.json()) as { maintenance: boolean }
+    }
+
+    const error = await this.toProviderError(response)
+    LoggerInstance.error(
+      'Set maintenance failed: ',
+      response.status,
+      response.statusText,
+      error.body
+    )
+    throw error
+  }
+
   private noZeroX(input: string): string {
     return this.zeroXTransformer(input, false)
   }
@@ -1961,7 +2105,7 @@ export class HttpProvider {
       body: JSON.stringify(body),
       signal
     })
-    if (!response.ok) throw new Error(await response.text())
+    if (!response.ok) throw await this.toProviderError(response)
     const data = await response.json()
     return Array.isArray(data) ? data : [data]
   }
@@ -2000,6 +2144,7 @@ export class HttpProvider {
 
   /**
    * Extends a running service's expiry by paying for additional duration.
+   * @param {string[]} subsidyProviders Optional consumer-selected subsidy provider addresses; resolved tri-state by the node (omit = node default, [] = none, populated = only these). See ocean-node #1485.
    * @return {Promise<ServiceJob[]>} The updated service job (single-element array).
    */
   public async serviceExtend(
@@ -2008,7 +2153,8 @@ export class HttpProvider {
     serviceId: string,
     additionalDuration: number,
     payment: ServicePayment,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    subsidyProviders?: string[]
   ): Promise<ServiceJob[]> {
     const route = this.baseUrl(nodeUri) + '/api/services/serviceExtend'
     const authPayload = await this.getSignedCommandParams(
@@ -2024,10 +2170,16 @@ export class HttpProvider {
         'Content-Type': 'application/json',
         ...(authHeader ? { Authorization: authHeader } : {})
       },
-      body: JSON.stringify({ ...authPayload, serviceId, additionalDuration, payment }),
+      body: JSON.stringify({
+        ...authPayload,
+        serviceId,
+        additionalDuration,
+        payment,
+        ...(subsidyProviders ? { subsidyProviders } : {})
+      }),
       signal
     })
-    if (!response.ok) throw new Error(await response.text())
+    if (!response.ok) throw await this.toProviderError(response)
     const data = await response.json()
     return Array.isArray(data) ? data : [data]
   }

@@ -66,7 +66,9 @@ import {
   OceanNode,
   NodeP2P,
   SignerOrAuthTokenOrSignature,
-  CompleteSignature
+  CompleteSignature,
+  EscrowEventRecord,
+  EscrowEventsFilter
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS, NodeLogEntry } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -327,18 +329,47 @@ export class P2pError extends Error {
    * same object the untyped code returned, instead of raising where it used to return.
    */
   readonly peerResponse?: { value: unknown }
+  /** HTTP status the peer reported in its status frame, when it reported one. */
+  readonly httpStatus?: number
+  /** Machine-readable `code` from the peer's status frame (e.g. `MAINTENANCE_MODE`). */
+  readonly code?: string
+  /** The peer's status frame / reply body, when it reported the failure itself. */
+  readonly body?: unknown
 
   constructor(
     type: P2pErrorType,
     message: string,
-    options: { cause?: unknown; peerId?: string; peerResponse?: { value: unknown } } = {}
+    options: {
+      cause?: unknown
+      peerId?: string
+      peerResponse?: { value: unknown }
+      httpStatus?: number
+      code?: string
+      body?: unknown
+    } = {}
   ) {
     super(message, options.cause == null ? undefined : { cause: options.cause })
     this.name = 'P2pError'
     this.type = type
     this.peerId = options.peerId
     this.peerResponse = options.peerResponse
+    this.httpStatus = options.httpStatus
+    this.code = options.code
+    this.body = options.body
   }
+}
+
+/**
+ * Wraps a peer-reported failure (a status frame with `httpStatus >= 400`) so the
+ * node's `code`, status and body survive. The message is the same text the untyped
+ * code threw; `asP2pCommandError` adds the usual `P2P command error:` prefix later.
+ */
+export function peerReportedError(frame: Record<string, any>, message: string): P2pError {
+  return new P2pError('protocol_failed', message, {
+    httpStatus: frame.httpStatus,
+    code: typeof frame.code === 'string' ? frame.code : undefined,
+    body: frame
+  })
 }
 
 /**
@@ -421,11 +452,14 @@ export function isRetryableP2pError(type: P2pErrorType): boolean {
  * Final error for a failed command. Preserves the `P2P command error: <message>`
  * shaping the untyped code produced — consumers match on it — and adds the type.
  */
-function asP2pCommandError(err: unknown, type: P2pErrorType): P2pError {
+export function asP2pCommandError(err: unknown, type: P2pErrorType): P2pError {
   const message = (err as { message?: string } | null)?.message ?? ''
   return new P2pError(type, `P2P command error: ${message}`, {
     cause: err,
-    peerId: err instanceof P2pError ? err.peerId : undefined
+    peerId: err instanceof P2pError ? err.peerId : undefined,
+    httpStatus: err instanceof P2pError ? err.httpStatus : undefined,
+    code: err instanceof P2pError ? err.code : undefined,
+    body: err instanceof P2pError ? err.body : undefined
   })
 }
 
@@ -2268,7 +2302,8 @@ export class P2pProvider {
       if (typeof status?.httpStatus === 'number' && status.httpStatus >= 400) {
         // Same message shaping as the buffered check below, so error text does not
         // change for the paths that were already covered.
-        throw new Error(
+        throw peerReportedError(
+          status,
           typeof status.error === 'string'
             ? status.error
             : status.error != null
@@ -2390,7 +2425,8 @@ export class P2pProvider {
 
       const res = response as Record<string, any> | null
       if (typeof res?.httpStatus === 'number' && res.httpStatus >= 400) {
-        throw new Error(
+        throw peerReportedError(
+          res,
           typeof res.error === 'string' ? res.error : JSON.stringify(res.error)
         )
       }
@@ -2474,6 +2510,37 @@ export class P2pProvider {
       return Array.isArray(result) ? result : []
     } catch (e) {
       LoggerInstance.error('P2P getNodeJobs failed:', e)
+      return []
+    }
+  }
+
+  /**
+   * Queries indexed escrow events via the P2P GET_ESCROW_EVENTS command. The `ranges` object
+   * (including exclusive `gt`/`lt` bounds) is passed through verbatim; the node compares uint256
+   * bounds with BigInt. A public read: no signer / auth token is sent.
+   * @param {OceanNode} nodeUri - peerId/multiaddr of the node
+   * @param {EscrowEventsFilter} [filter] - optional equality / range filters and pagination
+   * @param {AbortSignal} [signal] - optional abort signal to cancel the request
+   * @return {Promise<EscrowEventRecord[]>} the matching event rows, or [] on failure
+   */
+  public async getEscrowEvents(
+    nodeUri: OceanNode,
+    filter: EscrowEventsFilter = {},
+    signal?: AbortSignal
+  ): Promise<EscrowEventRecord[]> {
+    try {
+      const result = await this.sendP2pCommand(
+        nodeUri,
+        PROTOCOL_COMMANDS.GET_ESCROW_EVENTS,
+        { ...filter },
+        null,
+        signal
+      )
+      return Array.isArray(result) ? result : []
+    } catch (e) {
+      // A caller-driven cancellation is not a compatibility failure: surface it.
+      if (signal?.aborted) throw e
+      LoggerInstance.error('P2P getEscrowEvents failed:', e)
       return []
     }
   }
@@ -2882,7 +2949,8 @@ export class P2pProvider {
     signal?: AbortSignal,
     queueMaxWaitTime?: number,
     dockerRegistryAuth?: dockerRegistryAuth,
-    outputBucketId?: string
+    outputBucketId?: string,
+    subsidyProviders?: string[]
   ): Promise<ComputeJob | ComputeJob[]> {
     const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
       nodeUri,
@@ -2907,6 +2975,7 @@ export class P2pProvider {
     }
     if (metadata) body.metadata = metadata
     if (additionalViewers) body.additionalViewers = additionalViewers
+    if (subsidyProviders) body.subsidyProviders = subsidyProviders
     if (policyServer) body.policyServer = policyServer
     if (queueMaxWaitTime) body.queueMaxWaitTime = queueMaxWaitTime
     if (dockerRegistryAuth) {
@@ -3466,6 +3535,41 @@ export class P2pProvider {
   }
 
   /**
+   * Enables or disables the node's maintenance (drain) mode via P2P. Admin only.
+   *
+   * While enabled the node rejects new `computeStart`, `freeComputeStart`,
+   * `initializeCompute`, `serviceStart` and `serviceExtend` with `code: 'MAINTENANCE_MODE'`
+   * (see `isMaintenanceError`); running jobs continue. The request is signed over
+   * `address + nonce + 'setMaintenance'` and `enabled` is sent as a real boolean, which the
+   * node requires.
+   * @param {OceanNode} nodeUri - The node peerId / multiaddr.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken - Admin signer / auth token.
+   * @param {boolean} enabled - true to start draining, false to resume.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<{ maintenance: boolean }>} The node's resulting maintenance state.
+   */
+  public async setMaintenance(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    enabled: boolean,
+    signal?: AbortSignal
+  ): Promise<{ maintenance: boolean }> {
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SET_MAINTENANCE,
+      signal
+    )
+    return this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SET_MAINTENANCE,
+      { enabled, signature, nonce, address: consumerAddress },
+      signerOrAuthToken,
+      signal
+    )
+  }
+
+  /**
    * Download node logs via P2P.
    */
   public async downloadNodeLogs(
@@ -3891,7 +3995,8 @@ export class P2pProvider {
     serviceId: string,
     additionalDuration: number,
     payment: ServicePayment,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    subsidyProviders?: string[]
   ): Promise<ServiceJob[]> {
     const authPayload = await this.getSignedCommandParams(
       nodeUri,
@@ -3902,7 +4007,13 @@ export class P2pProvider {
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.SERVICE_EXTEND,
-      { ...authPayload, serviceId, additionalDuration, payment },
+      {
+        ...authPayload,
+        serviceId,
+        additionalDuration,
+        payment,
+        ...(subsidyProviders ? { subsidyProviders } : {})
+      },
       signerOrAuthToken,
       signal
     )

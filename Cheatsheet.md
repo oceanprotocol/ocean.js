@@ -256,19 +256,39 @@ const providerInitializeComputeResults = await ProviderInstance.initializeComput
     Number(chainId)
 )
 // Initialize payment contract
+// chainId from provider.getNetwork() is a bigint, so convert it for ConfigHelper/EscrowContract.
+const config = new ConfigHelper().getConfig(Number(chainId))
+// On public networks ConfigHelper populates config.escrow. On a local/dev chain it is unset,
+// so load the trusted escrow from your deployment (e.g. ocean-contracts' address.json) first,
+// otherwise getAddress(config.escrow) below throws:
+//   config.escrow = getAddress('<your deployed Escrow address>')
+if (
+    getAddress(providerInitializeComputeResults.payment.escrowAddress) !==
+    getAddress(config.escrow)
+) {
+    throw new Error(
+        'Escrow address returned by the node does not match the configured escrow'
+    )
+}
 const escrow = new EscrowContract(
-    getAddress(providerInitializeComputeResults.payment.escrowAddress),
-    consumerAccount
+    getAddress(config.escrow),
+    consumerAccount,
+    Number(chainId),
+    config
 )
 const amountToDeposit = (providerInitializeComputeResults.payment.amount * 2).toString()
-await escrow.verifyFundsForEscrowPayment(
+const escrowValidation = await escrow.verifyFundsForEscrowPayment(
     paymentToken,
     computeEnv.consumerAddress,
     await unitsToAmount(consumerAccount, paymentToken, amountToDeposit),
-    providerInitializeComputeResults.payment.amount.toString(),
+    await unitsToAmount(consumerAccount, paymentToken, providerInitializeComputeResults.payment.amount.toString()),
     providerInitializeComputeResults.payment.minLockSeconds.toString(),
     '10'
 )
+// Abort before ordering if the escrow could not be validated/funded.
+if (!escrowValidation.isValid) {
+    throw new Error(escrowValidation.message)
+}
 
 algo.transferTxId = await handleOrder(
     providerInitializeComputeResults.algorithm,
@@ -373,4 +393,47 @@ if (history) {
 }
 
 
+```
+
+### Put a node in maintenance (admin)
+
+Maintenance (drain) mode makes a node refuse new commitment (`computeStart`,
+`freeComputeStart`, `initializeCompute`, `serviceStart`, `serviceExtend`) while jobs and
+services that are already running carry on. The signer must be one of the node's admins.
+Works over HTTP and P2P node URIs. `enabled` must be a real boolean.
+
+```javascript
+// start draining
+const { maintenance } = await ProviderInstance.setMaintenance(providerUrl, adminSigner, true)
+
+// observe: on a node that supports maintenance, `maintenance.enabled` is always present.
+// Older nodes predate the feature and omit `maintenance` entirely, so the value can be
+// absent — hence the optional chaining below. Running counts and the drain ETA (unix
+// seconds) appear only in the node's detailed status.
+const status = await ProviderInstance.getNodeStatus(providerUrl)
+console.log(status?.maintenance?.enabled)
+
+// resume
+await ProviderInstance.setMaintenance(providerUrl, adminSigner, false)
+```
+
+### Detect a maintenance rejection
+
+A guarded call on a draining node fails with HTTP 503 and `code: 'MAINTENANCE_MODE'`. The
+error keeps its old JSON `message`, and now also exposes `httpStatus`, `code` and `body`.
+Use `isMaintenanceError` rather than matching text (a 503 without that code is a different
+problem, e.g. compute engines not configured).
+
+```javascript
+import { isMaintenanceError, MAINTENANCE_MODE_CODE } from '@oceanprotocol/lib'
+
+try {
+    await ProviderInstance.freeComputeStart(providerUrl, consumer, environmentId, datasets, algorithm)
+} catch (e) {
+    if (isMaintenanceError(e)) {
+        console.log('Node is draining, pick another node:', e.httpStatus, e.code === MAINTENANCE_MODE_CODE)
+    } else {
+        throw e
+    }
+}
 ```

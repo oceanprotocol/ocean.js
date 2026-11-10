@@ -251,6 +251,9 @@ describe('Compute flow tests', async () => {
     aquarius = new Aquarius(config?.oceanNodeUri)
     providerUrl = config?.oceanNodeUri
     addresses = getAddresses()
+    // Barge/dev deploys fresh contracts not present in the bundled address map, so
+    // source the escrow from the local deployment the test reads (works without ADDRESS_FILE).
+    config.escrow = getAddress(addresses.Escrow)
     paymentToken = addresses.Ocean
   })
 
@@ -582,9 +585,16 @@ describe('Compute flow tests', async () => {
       'Cannot order algorithm'
     )
     // escrow adding funds for paid compute
+    assert(
+      getAddress(providerInitializeComputeResults.payment.escrowAddress) ===
+        getAddress(config.escrow),
+      'Escrow address returned by the node does not match the configured escrow'
+    )
     escrow = new EscrowContract(
-      getAddress(providerInitializeComputeResults.payment.escrowAddress),
-      consumerAccount
+      getAddress(config.escrow),
+      consumerAccount,
+      Number(chainId),
+      config
     )
     const paymentTokenPublisher = new Datatoken(publisherAccount)
     const balancePublisherPaymentToken = await paymentTokenPublisher.balance(
@@ -609,14 +619,19 @@ describe('Compute flow tests', async () => {
     const amountToDeposit = (
       providerInitializeComputeResults.payment.amount * 2
     ).toString()
-    await escrow.verifyFundsForEscrowPayment(
+    const escrowValidation = await escrow.verifyFundsForEscrowPayment(
       paymentToken,
       computeEnv.consumerAddress,
       await unitsToAmount(consumerAccount, paymentToken, amountToDeposit),
-      providerInitializeComputeResults.payment.amount.toString(),
+      await unitsToAmount(
+        consumerAccount,
+        paymentToken,
+        providerInitializeComputeResults.payment.amount.toString()
+      ),
       providerInitializeComputeResults.payment.minLockSeconds.toString(),
       '10'
     )
+    assert(escrowValidation.isValid, escrowValidation.message)
     const auth = await escrow.getAuthorizations(
       paymentToken,
       await consumerAccount.getAddress(),
@@ -628,9 +643,19 @@ describe('Compute flow tests', async () => {
     )
     assert(new BigNumber(funds[0]).isGreaterThan(0), 'Should have funds in escrow')
     assert(auth.length > 0, 'Should have authorization')
+    // The authorization ceiling must cover the quoted payment amount but stay bounded — never an
+    // inflated value from a double unit conversion (OJ-01 produced ~1e18x the intended amount).
+    const authCeiling = new BigNumber(auth[0].maxLockedAmount.toString())
+    const quoted = new BigNumber(
+      providerInitializeComputeResults.payment.amount.toString()
+    )
     assert(
-      new BigNumber(auth[0].maxLockedAmount.toString()).isGreaterThan(0),
-      ' Should have maxLockedAmount in auth'
+      authCeiling.isGreaterThanOrEqualTo(quoted),
+      'Authorization ceiling should cover the quoted payment amount'
+    )
+    assert(
+      authCeiling.isLessThan(quoted.multipliedBy(1000)),
+      'Authorization ceiling must not be an inflated (double-conversion) value'
     )
     assert(
       new BigNumber(auth[0].maxLockCounts.toString()).isGreaterThan(0),

@@ -1,8 +1,9 @@
 import { assert } from 'chai'
 import { provider, getAddresses } from '../config'
-import { Signer } from 'ethers'
+import { Signer, ContractFactory, parseUnits, getAddress } from 'ethers'
+import MockERC20Decimals from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 
-import { Datatoken, amountToUnits, unitsToAmount } from '../../src/'
+import { Datatoken, amountToUnits, unitsToAmount, ConfigHelper } from '../../src/'
 import { EscrowContract } from '../../src/contracts/Escrow'
 import BigNumber from 'bignumber.js'
 
@@ -17,7 +18,7 @@ describe('Escrow payments flow', () => {
   let addresses
   let OCEAN
 
-  before(async () => {
+  before(async function () {
     user1 = (await provider.getSigner(3)) as Signer
     user2 = (await provider.getSigner(4)) as Signer
     user3 = (await provider.getSigner(5)) as Signer
@@ -26,6 +27,15 @@ describe('Escrow payments flow', () => {
 
     addresses = await getAddresses()
     OCEAN = addresses.Ocean
+
+    // This suite exercises the Escrow v2 ABI (authorize/createLock/reLock carry the v2 params).
+    // Against a pre-v2 escrow those calls would revert and, with mocha `bail: true`, abort the
+    // whole unit run. Skip cleanly unless the deployed escrow advertises the v2 lock-subsidy
+    // surface — mirrors the skip-when-not-deployed pattern used by the subsidy test suites.
+    if (!addresses.Escrow) this.skip()
+    const { chainId } = await user2.provider.getNetwork()
+    const probe = new EscrowContract(addresses.Escrow, user2, Number(chainId))
+    if (!(await probe.isEscrowLockSubsidy())) this.skip()
   })
 
   it('should initialize Escrow class', async () => {
@@ -158,7 +168,15 @@ describe('Escrow payments flow', () => {
     )
 
     await Escrow.authorize(OCEAN, payee, '20', '100', '3')
-    await escrowPayee.contract.createLock(jobId, OCEAN, payer, amountUnits, '100')
+    await escrowPayee.contract.createLock(
+      jobId,
+      OCEAN,
+      payer,
+      amountUnits,
+      '100',
+      '0',
+      []
+    )
     const locksBefore = await escrowPayee.getLocks(OCEAN, payer, payee)
     const initialLock = locksBefore.find((lock) => lock.jobId.toString() === jobId)
     assert(initialLock, 'initial lock not found')
@@ -213,7 +231,9 @@ describe('Escrow payments flow', () => {
       [OCEAN, OCEAN],
       [payer, payer],
       amountUnits,
-      expiries
+      expiries,
+      ['0', '0'],
+      [[], []]
     )
 
     const locksBefore = await escrowPayee.getLocks(OCEAN, payer, payee)
@@ -280,5 +300,85 @@ describe('Escrow payments flow', () => {
         `unexpected error message: ${error.message}`
       )
     }
+  })
+
+  it('Datatoken.approve uses the real token decimals (6), not 18 (OJ-01)', async () => {
+    const { chainId } = await user2.provider.getNetwork()
+    const factory = new ContractFactory(
+      MockERC20Decimals.abi,
+      MockERC20Decimals.bytecode,
+      user2
+    )
+    const mock = await factory.deploy('Mock6', 'M6', 6)
+    await mock.waitForDeployment()
+    const mockAddress = await mock.getAddress()
+    const owner = await user2.getAddress()
+    const spender = await user3.getAddress()
+    const spender2 = await user4.getAddress()
+
+    const dt = new Datatoken(user2, Number(chainId))
+
+    // approve reads the token's real decimals (6) on-chain from the token address,
+    // instead of the old hardcoded 18. This is exactly the approve call
+    // verifyFundsForEscrowPayment makes, so the escrow flow's allowance for a
+    // 6-decimal token equals the deposit amount in token units, never inflated.
+    await dt.approve(mockAddress, spender, '5')
+    const onchain = await mock.allowance(owner, spender)
+    assert(
+      onchain.toString() === parseUnits('5', 6).toString(),
+      `expected 5000000, got ${onchain.toString()}`
+    )
+    assert(
+      onchain.toString() !== parseUnits('5', 18).toString(),
+      'allowance must not be the 18-decimals inflated value'
+    )
+
+    await dt.approve(mockAddress, spender2, '7')
+    const onchain2 = await mock.allowance(owner, spender2)
+    assert(
+      onchain2.toString() === parseUnits('7', 6).toString(),
+      `expected 7000000, got ${onchain2.toString()}`
+    )
+  })
+
+  it('verifyFundsForEscrowPayment rejects an escrow address not matching config.escrow (OJ-01)', async () => {
+    const { chainId } = await user2.provider.getNetwork()
+    // Build a config with escrow explicitly set to the real escrow, then
+    // instantiate the EscrowContract at a WRONG address (OCEAN). The guard must
+    // reject it. Passing the config explicitly makes this deterministic and
+    // independent of the ADDRESS_FILE env var. This proves the library no longer
+    // trusts a node-supplied escrow address.
+    const config = new ConfigHelper().getConfig(Number(chainId))
+    config.escrow = getAddress(addresses.Escrow)
+    const bogus = new EscrowContract(getAddress(OCEAN), user2, Number(chainId), config)
+    const res = await bogus.verifyFundsForEscrowPayment(
+      OCEAN,
+      await user2.getAddress(),
+      '5',
+      '5',
+      '100',
+      '3'
+    )
+    assert(res.isValid === false, 'expected isValid to be false')
+    assert(res.message.includes('does not match'), `unexpected message: ${res.message}`)
+  })
+
+  it('verifyFundsForEscrowPayment fails closed when config.escrow is unset (OJ-01)', async () => {
+    const { chainId } = await user2.provider.getNetwork()
+    // Without a configured escrow address the library cannot validate the escrow
+    // it was instantiated with, so it must refuse rather than trust this.address.
+    const config = new ConfigHelper().getConfig(Number(chainId))
+    delete config.escrow
+    const escrow = new EscrowContract(getAddress(OCEAN), user2, Number(chainId), config)
+    const res = await escrow.verifyFundsForEscrowPayment(
+      OCEAN,
+      await user2.getAddress(),
+      '5',
+      '5',
+      '100',
+      '3'
+    )
+    assert(res.isValid === false, 'expected isValid to be false')
+    assert(res.message.includes('not set'), `unexpected message: ${res.message}`)
   })
 })
