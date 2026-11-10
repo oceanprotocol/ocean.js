@@ -58,6 +58,16 @@ export interface NodeStatusIndexer {
   block: string
 }
 
+export interface NodeStatusMaintenance {
+  enabled: boolean
+  /** Detailed status only: compute jobs still running while draining. */
+  runningComputeJobs?: number
+  /** Detailed status only: services still running while draining. */
+  runningServices?: number
+  /** Detailed status only: unix seconds, drain ETA. */
+  latestExpectedEndTime?: number
+}
+
 export interface NodeStatus {
   id: string
   publicKey: string
@@ -69,6 +79,8 @@ export interface NodeStatus {
   provider: NodeStatusProvider[]
   indexer: NodeStatusIndexer[]
   escrowAddress: Record<string, string>
+  /** Maintenance (drain) mode. Absent on nodes that predate the feature. */
+  maintenance?: NodeStatusMaintenance
   supportedStorage: Record<string, boolean>
   platform: {
     cpus: number
@@ -249,6 +261,7 @@ export const PROTOCOL_COMMANDS = {
   FETCH_CONFIG: 'fetchConfig',
   PUSH_CONFIG: 'pushConfig',
   GET_LOGS: 'getLogs',
+  SET_MAINTENANCE: 'setMaintenance',
   JOBS: 'jobs',
   PERSISTENT_STORAGE_CREATE_BUCKET: 'persistentStorageCreateBucket',
   PERSISTENT_STORAGE_UPDATE_BUCKET: 'persistentStorageUpdateBucket',

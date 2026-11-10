@@ -146,6 +146,12 @@ const file = await downloadFile(download) // works for HTTP (URL) and P2P (buffe
 
 ## Core concepts
 
+- **[Cheatsheet](Cheatsheet.md)**: Quick reference for common operations
+  - Publishing datasets
+  - Consuming data
+  - Free and paid compute workflows
+  - Getting compute job status
+  - Node maintenance (drain) mode: `setMaintenance`, `NodeStatus.maintenance`, and detecting rejections with `isMaintenanceError` / `OceanNodeProviderError` / `MAINTENANCE_MODE_CODE`
 - **Data NFT** (ERC721): represents ownership of an asset. Its metadata points at the DDO.
 - **Datatoken** (ERC20): the access token. One datatoken (1.0) buys access to one service. Created from a data NFT.
 - **DDO**: the DID document describing the asset (metadata, services, files, credentials). Schema and validation live in [`@oceanprotocol/ddo-js`](https://github.com/oceanprotocol/ddo.js).
