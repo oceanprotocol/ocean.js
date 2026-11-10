@@ -268,7 +268,7 @@ Every state-changing contract method comes in two forms:
 
 ## Contributing
 
-See [CLAUDE.md](CLAUDE.md) for repository conventions and structure (note: parts of it predate v9).
+See [CLAUDE.md](CLAUDE.md) for repository conventions and structure.
 
 ```bash
 nvm use                  # Node version from .nvmrc (22.x)
