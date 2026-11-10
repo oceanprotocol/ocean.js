@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`@oceanprotocol/lib` (currently v9.x) — the JavaScript/TypeScript client library for Ocean Protocol. It lets apps publish data as ERC721 data NFTs + ERC20 datatokens, price them (fixed-rate exchange, free dispenser), and consume them (download or Compute-to-Data), talking to on-chain contracts via ethers and to off-chain Ocean Node services (Provider / Aquarius) over HTTP or libp2p P2P.
+`@oceanprotocol/lib` (currently v10.x) — the JavaScript/TypeScript client library for Ocean Protocol. It lets apps publish data as ERC721 data NFTs + ERC20 datatokens, price them (fixed-rate exchange, free dispenser), and consume them (download or Compute-to-Data), talking to on-chain contracts via ethers and to off-chain Ocean Node services (Provider / Aquarius) over HTTP or libp2p P2P.
 
 - Pure **ESM-only** package: `"type": "module"`, entry `src/index.ts`, Node `>=22` (`engines.node: ">=22"`, `.nvmrc` = 22.x). There is **no CommonJS/UMD build** — most runtime deps (libp2p, `multiformats`, `uint8arrays`) are ESM-only. CJS consumers use Node's `require(esm)` (Node ≥ 22.12) or a dynamic `import()`.
 - Blockchain layer is **ethers v6** (the `web3` peerDependency is legacy and not used by the wrappers).
