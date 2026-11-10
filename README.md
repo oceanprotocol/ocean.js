@@ -11,7 +11,7 @@
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-7b1173.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![js oceanprotocol](https://img.shields.io/badge/js-oceanprotocol-7b1173.svg)](https://github.com/oceanprotocol/eslint-config-oceanprotocol)
 
-`@oceanprotocol/lib` v9 | ESM-only | Node.js >= 22 | ethers v6
+`@oceanprotocol/lib` v10 | ESM-only | Node.js >= 22 | ethers v6
 
 ## What it is
 
@@ -22,6 +22,7 @@ ocean.js (`@oceanprotocol/lib`) is the client library for [Ocean Nodes](https://
 - **Publish and consume flows**: publish downloadable files or compute-to-data (C2D) services, order access, download, and run free or paid compute jobs.
 - **Pricing**: fixed-rate exchanges and dispensers (free access).
 - **v9 highlights**: P2P transport, JWT/auth tokens, escrow for paid compute, Oasis Sapphire (confidential EVM) support, access lists, and node persistent storage.
+- **v10 highlights**: Escrow v2 (authorization expiry/renew, prefunded sponsorship reads, ERC-165 discovery), read-only subsidy-provider wrappers for dashboards (`SubsidyView` / `OPFSubsidyProvider` / `OneTimeSubsidyProvider`), consumer-selectable subsidy providers on compute/service start, node maintenance (drain) mode, and updated deps (`@oceanprotocol/contracts@^3.2.0`, `@oceanprotocol/ddo-js@^1.0.0`).
 
 The package is **ESM-only** and requires **Node.js >= 22**. It is built with [tsup](https://tsup.egoist.dev); `tsc` is only used to emit type declarations.
 
@@ -270,7 +271,9 @@ Every state-changing contract method comes in two forms:
 
 **Upgrading from v8.** v9 is a major release: the library is ESM-only (no CJS/UMD bundle), requires Node >= 22 and ethers v6, talks to a single Ocean Node via `oceanNodeUri` (the separate `providerUri`/`metadataCacheUri`/subgraph configuration is gone) and adds P2P, auth tokens and escrow. See the [v9.0.0 entry in the CHANGELOG](CHANGELOG.md) and update imports and config accordingly.
 
-**Compatibility.** Contract ABIs and addresses are bundled into the build from `@oceanprotocol/contracts` (`^2.9.0`, a devDependency; consumers do not install it); DDO handling uses the runtime dependency `@oceanprotocol/ddo-js` (`^1.0.0`). [ocean-cli](https://github.com/oceanprotocol/ocean-cli) consumes this library (`^9.0.0`).
+**Upgrading from v9 to v10.** v10 is largely additive — the publish/consume/compute APIs are unchanged. It bumps to `@oceanprotocol/contracts@^3.2.0` (Escrow v2) and adds the subsidy-provider read wrappers, consumer-selectable subsidy providers on compute/service start, and node maintenance (drain) mode. See the v10 highlights above and the [CHANGELOG](CHANGELOG.md).
+
+**Compatibility.** Contract ABIs and addresses are bundled into the build from `@oceanprotocol/contracts` (`^3.2.0`, a devDependency; consumers do not install it); DDO handling uses the runtime dependency `@oceanprotocol/ddo-js` (`^1.0.0`). [ocean-cli](https://github.com/oceanprotocol/ocean-cli) consumes this library (`^10.0.0`).
 
 ## Contributing
 
