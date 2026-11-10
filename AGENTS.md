@@ -4,28 +4,30 @@ This file provides guidance to AI coding agents (Claude Code, Codex, Copilot, et
 
 ## What this is
 
-`@oceanprotocol/lib` (currently v8.x) — the JavaScript/TypeScript client library for Ocean Protocol. It lets apps publish data as ERC721 data NFTs + ERC20 datatokens, price them (fixed-rate exchange, free dispenser), and consume them (download or Compute-to-Data), talking to on-chain contracts via ethers and to off-chain Ocean Node services (Provider / Aquarius) over HTTP or libp2p P2P.
+`@oceanprotocol/lib` (currently v10.x) — the JavaScript/TypeScript client library for Ocean Protocol. It lets apps publish data as ERC721 data NFTs + ERC20 datatokens, price them (fixed-rate exchange, free dispenser), and consume them (download or Compute-to-Data), talking to on-chain contracts via ethers and to off-chain Ocean Node services (Provider / Aquarius) over HTTP or libp2p P2P.
 
-- Pure ESM package: `"type": "module"`, entry `src/index.ts`, Node `>=18` (CI builds on 20 & 22; `.nvmrc` = 22).
+- Pure **ESM-only** package: `"type": "module"`, entry `src/index.ts`, Node `>=22` (`engines.node: ">=22"`, `.nvmrc` = 24). There is **no CommonJS/UMD build** — most runtime deps (libp2p, `multiformats`, `uint8arrays`) are ESM-only. CJS consumers use Node's `require(esm)` (Node ≥ 22.12) or a dynamic `import()`.
 - Blockchain layer is **ethers v6** (the `web3` peerDependency is legacy and not used by the wrappers).
-- Ships bundled by microbundle to `dist/` (cjs / esm / modern / umd + `dist/types/*.d.ts`).
-- DDO parsing/validation and DID versioning are delegated to the external `@oceanprotocol/ddo-js` (`DDOManager`); ABIs come from `@oceanprotocol/contracts`.
+- Built with **tsup** → `dist/` (ESM bundle), with `tsc --emitDeclarationOnly` emitting `dist/types/*.d.ts`. (microbundle was removed in v9.)
+- DDO parsing/validation and DID versioning are delegated to the external `@oceanprotocol/ddo-js` (`DDOManager`, a `^1.0.0` runtime dependency); ABIs come from `@oceanprotocol/contracts` (`^2.9.0` devDependency, bundled into the build).
+- v9 is a major release vs v8: ESM-only, Node ≥ 22, a single Ocean Node via `oceanNodeUri` (the old separate `providerUri`/`metadataCacheUri`/subgraph config is gone), plus P2P transport, JWT/auth tokens, and escrow for paid compute.
 
 ## Common commands
 
 Build / develop:
 - `npm start` — clean, generate metadata, then `tsc -w` (watch mode).
-- `npm run build` — production build: `clean` → `build:metadata` → microbundle (formats modern,esm,cjs,umd, compressed). This is what `prepublishOnly` runs.
+- `npm run build` — production build: `clean` → `build:metadata` → `tsup` (ESM bundle) → `build:types`. This is what `prepublishOnly` runs.
+- `npm run build:types` — `tsc --emitDeclarationOnly --declaration --outDir dist/types`.
 - `npm run build:tsc` — plain `tsc --sourceMap` (no bundling).
 - `npm run build:metadata` — writes `src/metadata.json` (package version + git commit) via `scripts/get-metadata.js`. **Required before type-check and before running tests**; `type-check`, the release hook, and CI all invoke it. If you see stale/odd metadata errors, re-run this.
 - `npm run clean` — removes `dist/`, `doc/`, `.nyc_output`.
 
 Lint / format / types:
-- `npm run lint` — ESLint over `.ts,.tsx` **and** `npm run type-check`.
+- `npm run lint` — `eslint .` **and** `npm run type-check`.
 - `npm run lint:fix` — ESLint autofix.
 - `npm run format` — Prettier over `**/*.{js,jsx,ts,tsx}`.
 - `npm run type-check` — `build:metadata` + `tsc --noEmit`.
-- Style is enforced by `.prettierrc` (no semicolons, single quotes, `printWidth` 90, no trailing commas, 2-space) and `.eslintrc` (extends `oceanprotocol` + `plugin:prettier/recommended`; empty catch allowed; several rules downgraded to `warn`).
+- Style is enforced by `.prettierrc` (no semicolons, single quotes, `printWidth` 90, no trailing commas, 2-space) and a flat `eslint.config.js` (ESLint 10). TypeScript is pinned to `^6.0.3` on purpose (don't bump to 7 without checking the known blockers).
 
 Docs (generated — do not hand-edit output):
 - `npm run docs` — TypeDoc + `typedoc-plugin-markdown` → `docs/` (per-class/interface markdown).
@@ -110,10 +112,12 @@ Wrappers (each maps to an Ocean contract):
   - `OneTimeSubsidyProvider` **extends** `SubsidyView` — one-time onboarding-credit model (`getTokenConfig`, `effectiveCredit`, `remainingCredit`, `usedBy`/`usedByAt`, `hasUserCredit`, round accounting, access lists).
   - **Discovery:** read the `SubsidyProviders: string[]` config registry (no single configured address), instantiate a `SubsidyView` per address, feature-detect via `supportsInterface`/`subsidyKind()`. Amounts are human-readable token units throughout (optional `tokenDecimals` fast-path).
 
+Note: the short names above are the contracts, but several **exported class names end in `Contract`** (`EscrowContract`, `AccessListContract`, `AccesslistFactory`, `EnterpriseFeeCollectorContract`) even though their source files keep the short names (`Escrow.ts`, `AccessList.ts`, `AccessListFactory.ts`, `EnterpriseFeeCollector.ts`) — import by the exported class name.
+
 **Dual-method transaction pattern (important — follow it when adding methods).** Every state-changing operation exists as a pair:
 - `fooTx(...) : Promise<TransactionRequest>` — builds the *unsigned* tx (gas estimated via `buildTxOverrides`, assembled via `buildUnsignedTx`).
-- `foo<G extends boolean = false>(..., estimateGas?: G) : Promise<ReceiptOrEstimate<G>>` — calls `fooTx`, then either returns the gas estimate (`estimateGas===true`) or signs & sends via `sendPreparedTransaction(getSignerAccordingSdk(), tx)` and returns the receipt.
-Read-only methods are plain `getX`. `ReceiptOrEstimate<G>` lives in `@types/ReturnTypes`.
+- `foo<G extends boolean = false>(..., estimateGas?: G) : Promise<ReceiptOrEstimate<G>>` — calls `fooTx`, then either returns the gas estimate (`estimateGas===true`) or signs & sends via `sendPreparedTransaction(getSignerAccordingSdk(), tx)`.
+Read-only methods are plain `getX`. `ReceiptOrEstimate<G>` lives in `@types/ReturnTypes`. **Despite the name, `ReceiptOrEstimate<false>` resolves to ethers' `TransactionResponse` (not a receipt)** — `sendPreparedTransaction` awaits `.wait()` internally so the tx is already mined, but returns the response object (or `null` on send failure); callers who need the receipt call `await tx.wait()`.
 
 ### services/ — off-chain Ocean Node clients
 
