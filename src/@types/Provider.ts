@@ -266,6 +266,7 @@ export const PROTOCOL_COMMANDS = {
   SERVICE_LIST: 'serviceList',
   SERVICE_EXTEND: 'serviceExtend',
   SERVICE_GET_STREAMABLE_LOGS: 'serviceGetStreamableLogs',
+  GET_ESCROW_EVENTS: 'getEscrowEvents',
   SERVICE_GET_RESULT: 'serviceGetResult'
 }
 
