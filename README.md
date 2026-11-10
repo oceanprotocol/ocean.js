@@ -25,6 +25,7 @@ This is in alpha state. If you run into problems, please open up a [new issue](h
 
 - [📚 Prerequisites](#-prerequisites)
 - [🏗 Installation & Usage](#-installation--usage)
+- [🆕 What's new in v10](#-whats-new-in-v10)
 - [📖 Documentation](#-documentation)
 - [🦑 Development](#-development)
 - [✨ Code Style](#-code-style)
@@ -85,6 +86,78 @@ const { ConfigHelper } = require('@oceanprotocol/lib')
 
 On Node 22.0–22.11 this throws `ERR_REQUIRE_ESM`; use a dynamic `await import(...)`
 instead, or move the calling module to ESM.
+
+## 🆕 What's new in v10
+
+v10 is a major release. The headline changes versus the v9.x line:
+
+### Packaging & toolchain (breaking)
+
+- **ESM-only.** The CommonJS build was dropped — see [ESM only](#esm-only) above. From CJS,
+  use `require(esm)` (Node ≥ 22.12) or a dynamic `import()`.
+- **`moduleResolution`.** Consumers must use `"bundler"` or `"nodenext"`; the old `"node"`
+  (node10) mode cannot resolve this package's `exports` map and was removed in TypeScript 7.
+- **Updated peer/runtime deps.** Built against **`@oceanprotocol/contracts` `^3.2.0`**
+  (Escrow v2 + ERC-165 ABIs) and **`@oceanprotocol/ddo-js` `^1.0.0`**. Node `>=18` (CI builds
+  on 20 & 22; `.nvmrc` = 22).
+
+### Escrow v2
+
+The `Escrow` (`EscrowContract`) wrapper now targets **Escrow v2**:
+
+- `authorize` gained an `expiryTimestamp` and now **updates** an existing authorization
+  (enables renew / shorten / revoke).
+- `reLock` / `reLocks` gained `jobType` + `subsidyProviders`.
+- Prefunded-sponsorship reads: `getSponsoredTotal`, `getReclaimable`, `getSponsorship`,
+  `maxSponsorsPerLock`, `sweepReclaimable`.
+- ERC-165 discovery: `supportsInterface`, `isEscrowCore` / `isEscrowLockSubsidy` /
+  `isEscrowEnterprise`, `escrowKind`, `version`.
+- Enterprise read passthroughs: `feeCollector`, `isTokenAllowed`, `previewFee`.
+- New `getEscrowEvents` reader.
+
+> ⚠️ v2 accounting: `getUserFunds().locked` is the payer-funded portion only; `getLocks().amount`
+> is the gross locked amount. Lock creation (`createLock`) is intentionally **not** wrapped — it is
+> done only by ocean-node (the payee).
+
+### Subsidy providers (dashboard reads)
+
+New read-only wrappers over Ocean's job-cost sponsorship contracts (no signing), for subsidy
+dashboards:
+
+- **`SubsidyView`** — base wrapper over the standardized `ISubsidyView` read surface, usable
+  against any provider (discovery, figures, gates).
+- **`OPFSubsidyProvider`** (extends `SubsidyView`) — OPF rolling-window model.
+- **`OneTimeSubsidyProvider`** (extends `SubsidyView`) — one-time onboarding-credit model.
+
+Discover deployed providers via the `SubsidyProviders: string[]` config registry +
+`supportsInterface` / `subsidyKind()`.
+
+### User-selectable subsidy providers
+
+`Provider.computeStart`, `serviceStart` and `serviceExtend` accept an optional consumer-selected
+`subsidyProviders: string[]`, resolved tri-state by the node (omit = node default, `[]` = none,
+populated = only these).
+
+### ERC-165 on contract wrappers
+
+Contract wrappers expose `supportsInterface` for on-chain capability discovery.
+
+### Node maintenance (drain) mode ([#2203](https://github.com/oceanprotocol/ocean.js/pull/2203))
+
+Client support for Ocean Node's maintenance/drain mode — a node can refuse *new* commitment
+(`computeStart`, `freeComputeStart`, `initializeCompute`, `serviceStart`, `serviceExtend`) while
+still serving already-committed work:
+
+- **`Provider.setMaintenance(nodeUri, signerOrAuthToken, enabled, signal?)`** — signed-admin
+  toggle, dispatched over both HTTP and P2P.
+- **`NodeStatus.maintenance`** — new optional status field (degrades cleanly against older nodes).
+- **`isMaintenanceError(e)`** + **`MAINTENANCE_MODE_CODE`** — guarded commands reject with HTTP
+  `503` and a machine-readable `code: "MAINTENANCE_MODE"`; discriminate on the `code`, not the
+  status (503 is also reused for "subsystem unavailable").
+- **`OceanNodeProviderError`** — typed error carrying `httpStatus` / `code` / `body` while keeping
+  `.message` byte-identical to the previous string errors (backwards-compatible).
+
+This change is additive — no existing method signature or response shape changes.
 
 ## 📖 Documentation
 
