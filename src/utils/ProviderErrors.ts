@@ -97,3 +97,56 @@ export function getErrorMessage(err: string): string {
     return err
   }
 }
+
+/** Machine-readable `code` the node attaches to maintenance (drain mode) rejections. */
+export const MAINTENANCE_MODE_CODE = 'MAINTENANCE_MODE'
+
+/**
+ * Error thrown when an Ocean Node answers a request with a non-ok response.
+ *
+ * Extends `Error` and keeps `message` byte-identical to what the library threw before
+ * (the JSON-stringified response body, or the raw text when that is what was read), so
+ * `e.message`, `instanceof Error` and `JSON.parse(e.message)` keep working. The extra
+ * fields let callers branch on a machine-readable `code` instead of matching text.
+ */
+export class OceanNodeProviderError extends Error {
+  /** HTTP status of the node's reply (also carried on the P2P status frame). */
+  readonly httpStatus?: number
+  /** Machine-readable code from the node's body, e.g. `MAINTENANCE_MODE`. */
+  readonly code?: string
+  /** The node's response body: parsed JSON when it was JSON, raw text otherwise. */
+  readonly body?: any
+
+  /**
+   * @param resolved The node's response body (parsed JSON or raw text).
+   * @param httpStatus HTTP status of the response.
+   * @param message Optional message override; defaults to `JSON.stringify(resolved)`.
+   *   Callers that read the body as text (e.g. `toProviderError`) pass that text here so
+   *   the message stays byte-identical to the pre-existing `new Error(text)` throw.
+   */
+  constructor(resolved: any, httpStatus?: number, message?: string) {
+    super(message ?? JSON.stringify(resolved))
+    this.name = 'OceanNodeProviderError'
+    this.httpStatus = httpStatus
+    this.code = typeof resolved?.code === 'string' ? resolved.code : undefined
+    this.body = resolved
+  }
+}
+
+/**
+ * True when `e` is a node rejection caused by maintenance (drain) mode.
+ * Works for both transports: HTTP throws `OceanNodeProviderError`, P2P throws a
+ * `P2pError` that carries the same `code` field.
+ *
+ * A type guard: in the true branch `e` narrows to an `Error` whose `code` is
+ * `MAINTENANCE_MODE_CODE`. `httpStatus` and `body` are exposed as OPTIONAL because this
+ * check does not validate them — they are present on the errors the library throws, but
+ * the guard only asserts `code`.
+ */
+export function isMaintenanceError(e: unknown): e is Error & {
+  code: typeof MAINTENANCE_MODE_CODE
+  httpStatus?: number
+  body?: unknown
+} {
+  return e instanceof Error && (e as { code?: unknown }).code === MAINTENANCE_MODE_CODE
+}
