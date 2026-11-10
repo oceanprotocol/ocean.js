@@ -1,31 +1,33 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI coding agents (Claude Code, Codex, Copilot, etc.) when working with code in this repository.
 
 ## What this is
 
-`@oceanprotocol/lib` (currently v8.x) — the JavaScript/TypeScript client library for Ocean Protocol. It lets apps publish data as ERC721 data NFTs + ERC20 datatokens, price them (fixed-rate exchange, free dispenser), and consume them (download or Compute-to-Data), talking to on-chain contracts via ethers and to off-chain Ocean Node services (Provider / Aquarius) over HTTP or libp2p P2P.
+`@oceanprotocol/lib` (currently v10.x) — the JavaScript/TypeScript client library for Ocean Protocol. It lets apps publish data as ERC721 data NFTs + ERC20 datatokens, price them (fixed-rate exchange, free dispenser), and consume them (download or Compute-to-Data), talking to on-chain contracts via ethers and to off-chain Ocean Node services (Provider / Aquarius) over HTTP or libp2p P2P.
 
-- Pure ESM package: `"type": "module"`, entry `src/index.ts`, Node `>=18` (CI builds on 20 & 22; `.nvmrc` = 22).
+- Pure **ESM-only** package: `"type": "module"`, entry `src/index.ts`, Node `>=22` (`engines.node: ">=22"`, `.nvmrc` = 24). There is **no CommonJS/UMD build** — most runtime deps (libp2p, `multiformats`, `uint8arrays`) are ESM-only. CJS consumers use Node's `require(esm)` (Node ≥ 22.12) or a dynamic `import()`.
 - Blockchain layer is **ethers v6** (the `web3` peerDependency is legacy and not used by the wrappers).
-- Ships bundled by microbundle to `dist/` (cjs / esm / modern / umd + `dist/types/*.d.ts`).
-- DDO parsing/validation and DID versioning are delegated to the external `@oceanprotocol/ddo-js` (`DDOManager`); ABIs come from `@oceanprotocol/contracts`.
+- Built with **tsup** → `dist/` (ESM bundle), with `tsc --emitDeclarationOnly` emitting `dist/types/*.d.ts`. (microbundle was removed in v9.)
+- DDO parsing/validation and DID versioning are delegated to the external `@oceanprotocol/ddo-js` (`DDOManager`, a `^1.0.0` runtime dependency); ABIs come from `@oceanprotocol/contracts` (`^2.9.0` devDependency, bundled into the build).
+- v9 is a major release vs v8: ESM-only, Node ≥ 22, a single Ocean Node via `oceanNodeUri` (the old separate `providerUri`/`metadataCacheUri`/subgraph config is gone), plus P2P transport, JWT/auth tokens, and escrow for paid compute.
 
 ## Common commands
 
 Build / develop:
 - `npm start` — clean, generate metadata, then `tsc -w` (watch mode).
-- `npm run build` — production build: `clean` → `build:metadata` → microbundle (formats modern,esm,cjs,umd, compressed). This is what `prepublishOnly` runs.
+- `npm run build` — production build: `clean` → `build:metadata` → `tsup` (ESM bundle) → `build:types`. This is what `prepublishOnly` runs.
+- `npm run build:types` — `tsc --emitDeclarationOnly --declaration --outDir dist/types`.
 - `npm run build:tsc` — plain `tsc --sourceMap` (no bundling).
 - `npm run build:metadata` — writes `src/metadata.json` (package version + git commit) via `scripts/get-metadata.js`. **Required before type-check and before running tests**; `type-check`, the release hook, and CI all invoke it. If you see stale/odd metadata errors, re-run this.
 - `npm run clean` — removes `dist/`, `doc/`, `.nyc_output`.
 
 Lint / format / types:
-- `npm run lint` — ESLint over `.ts,.tsx` **and** `npm run type-check`.
+- `npm run lint` — `eslint .` **and** `npm run type-check`.
 - `npm run lint:fix` — ESLint autofix.
 - `npm run format` — Prettier over `**/*.{js,jsx,ts,tsx}`.
 - `npm run type-check` — `build:metadata` + `tsc --noEmit`.
-- Style is enforced by `.prettierrc` (no semicolons, single quotes, `printWidth` 90, no trailing commas, 2-space) and `.eslintrc` (extends `oceanprotocol` + `plugin:prettier/recommended`; empty catch allowed; several rules downgraded to `warn`).
+- Style is enforced by `.prettierrc` (no semicolons, single quotes, `printWidth` 90, no trailing commas, 2-space) and a flat `eslint.config.js` (ESLint 10). TypeScript is pinned to `^6.0.3` on purpose (don't bump to 7 without checking the known blockers).
 
 Docs (generated — do not hand-edit output):
 - `npm run docs` — TypeDoc + `typedoc-plugin-markdown` → `docs/` (per-class/interface markdown).
@@ -49,7 +51,7 @@ Running a SINGLE test:
 
 ### Unit vs integration split
 
-- `test/unit/**` — pure contract-wrapper tests (Datatoken, Nft, NftFactory, FixedRateExchange, Dispenser, Router, Escrow, EnterpriseFeeCollector, AssetUtils). These still hit a **local chain** (they deploy/interact via the barge Ganache node) but don't require the full Node/Aquarius/Indexer stack the way integration does. `mock-local-storage` and `source-map-support` are auto-required (mocharc).
+- `test/unit/**` — pure contract-wrapper tests (Datatoken, Nft, NftFactory, FixedRateExchange, Dispenser, Router, Escrow, EnterpriseFeeCollector, OPFSubsidyProvider, AssetUtils). These still hit a **local chain** (they deploy/interact via the barge Ganache node) but don't require the full Node/Aquarius/Indexer stack the way integration does. `mock-local-storage` and `source-map-support` are auto-required (mocharc).
 - `test/integration/**` — end-to-end flows against the whole Ocean stack: `PublishFlows`, `PublishEditConsume`, `ComputeFlow`, `Provider`, `Auth`, `Sapphire`, plus `CodeExamples`/`ComputeExamples` (see "Generated guides"). `_P2PWarmup.test.ts` warms up the libp2p transport first.
 - Shared test setup is in `test/config.ts` (`getTestConfig`, `getAddresses`, a default `JsonRpcProvider` on the development network) and `test/integration/helpers.ts`.
 
@@ -74,7 +76,7 @@ npm run test:integration      # or: npm test
 ### Release / publish
 
 Semi-automatic via `release-it`, always triggered manually from a clean `main`:
-- `npm run release` — bumps version, regenerates `CHANGELOG.md` (`auto-changelog`) + `dist/lib.json` (via the `after:bump` hook that runs `build` + `changelog` + `doc:json`), commits, tags `v${version}`, and creates a GitHub release. Needs `GITHUB_TOKEN`.
+- `npm run release` — bumps version, adds the new version's section to `CHANGELOG.md` (`scripts/changelog.sh`: only tags merged into HEAD, older sections left untouched) + `dist/lib.json` (via the `after:bump` hook that runs `build` + `changelog` + `doc:json`), commits, tags `v${version}`, and creates a GitHub release. Needs `GITHUB_TOKEN`.
 - `release-it` is configured with `npm.publish = false` — the actual npm publish is done by `.github/workflows/publish.yml`, triggered on the **git tag push**: `npm publish` for normal tags, `npm publish --tag next` when the tag contains `next`.
 - Pre-releases: first one `./node_modules/.bin/release-it minor --preRelease=next` (→ e.g. `v0.18.0-next.0`), then `npm run release` for subsequent `next.N`.
 
@@ -85,7 +87,7 @@ Semi-automatic via `release-it`, always triggered manually from a clean `main`:
 ### config/ — networks & addresses
 
 - `Config` (class) holds RPC/node URIs, all contract addresses, tx tuning (block timeout, confirmations, gas multiplier), and an `sdk: 'evm' | 'oasis'` flag.
-- `ConfigHelper.getConfig(chainId | networkName, infuraProjectId?)` looks up a per-network template from the static `configHelperNetworks` array (mainnet, polygon, base, optimism/-sepolia, sepolia, bsc, energyweb, moonriver, gen-x, gaiax, oasis_sapphire (+testnet), pontus-x-devnet, and `development`=8996 for barge). It then merges in contract addresses from `@oceanprotocol/contracts` `address.json`, or — in Node when `ADDRESS_FILE` is set — from that file on disk (this is what makes local/barge testing work). Address keys are remapped (`ERC721Factory`→`nftFactoryAddress`, `FixedPrice`→`fixedRateExchangeAddress`, etc.).
+- `ConfigHelper.getConfig(chainId | networkName, infuraProjectId?)` looks up a per-network template from the static `configHelperNetworks` array (mainnet, polygon, base, optimism/-sepolia, sepolia, bsc, energyweb, moonriver, gen-x, gaiax, oasis_sapphire (+testnet), pontus-x-devnet, and `development`=8996 for barge). It then merges in contract addresses from `@oceanprotocol/contracts` `address.json`, or — in Node when `ADDRESS_FILE` is set — from that file on disk (this is what makes local/barge testing work). Address keys are remapped (`ERC721Factory`→`nftFactoryAddress`, `FixedPrice`→`fixedRateExchangeAddress`, etc.). The subsidy system adds two keys threaded through verbatim: `SubsidyProviders: string[]` (the registry of deployed subsidy-provider addresses — discover each one's kind via a `SubsidyView`) and `SponsorshipLib` (the Escrow-v2 delegatecall library, for deploy/verify tooling only).
 - `KNOWN_CONFIDENTIAL_EVMS` = Sapphire chain IDs `23294`/`23295`; these force `sdk='oasis'`. `getNodeEndpointConfig()` applies `NODE_ENDPOINT`/`NODE_URL` env over `oceanNodeUri` (default `http://127.0.0.1:8001`).
 
 ### contracts/ — typed ethers v6 wrappers
@@ -102,17 +104,24 @@ Wrappers (each maps to an Ocean contract):
 - `FixedRateExchange` — buy/sell datatokens at a fixed rate, rate/fee management, `calcBaseInGivenDatatokensOut`, `getExchange`/`getFeesInfo`.
 - `Dispenser` — free datatoken faucet (`dispense`, `create`, `status`, `isDispensable`).
 - `Router` (FactoryRouter) — approved base tokens, OPC fees, `buyDatatokenBatch`.
-- `Escrow` — payment escrow (deposit/withdraw/authorize/locks/reLock/bundle); the current feature branch (`feature/new_bundle_for_escrow`) is actively evolving this.
+- `Escrow` (`EscrowContract`) — payment escrow (deposit/withdraw/authorize/getLocks/reLock/bundle/cancel). Now targets **Escrow v2** (contracts #1057, `@oceanprotocol/contracts@3.2.0-rc.0`): `authorize` gained `expiryTimestamp` and now **updates** an existing authorization (enables renew/shorten/revoke); `reLock`/`reLocks` gained `jobType` + `subsidyProviders`; plus prefunded-sponsorship reads (`getSponsoredTotal`, `getReclaimable`, `getSponsorship` — requires the lock token for decimals, `maxSponsorsPerLock`, `sweepReclaimable`), ERC-165 discovery (`supportsInterface`, `isEscrowCore`/`isEscrowLockSubsidy`/`isEscrowEnterprise`, `escrowKind`, `version`), and enterprise read passthroughs (`feeCollector`/`isTokenAllowed`/`previewFee`). ⚠️ v2 accounting: `getUserFunds().locked` = payer-funded portion `P` only; `getLocks().amount` = gross `L`. **Lock creation (`createLock`) is intentionally NOT wrapped — it is done only by ocean-node (the payee).**
 - `EnterpriseFeeCollector`, plus `AccessList` + `AccessListFactory` (soulbound allow/deny lists used on confidential EVM).
+- **Subsidy providers** — a read-only class hierarchy over Ocean's job-cost sponsorship contracts, used by subsidy **dashboards** (no signing). All take a **required** address (no hardcoded default) and never wrap admin setters or the escrow-only `onSubsidyClaim`/`onSubsidyLock` callbacks.
+  - `SubsidyView` — the base wrapper over the standardized `ISubsidyView` read surface, usable against **any** provider: discovery (`supportsInterface`, `isSubsidyView`/`isSubsidyProvider`/`isSubsidyViewV2`/`isSubsidyModeConfig`/`isSubsidyLockProvider`, `subsidyKind`, `version`), figures (`subsidyBuckets`, `remainingSubsidy`, `quoteSubsidy`, and v2 `quoteSubsidyModes`/`quoteSubsidyByMode`/`subsidyModeConfig`), and gates (`isUserAllowed`/`isNodeAllowed`/`isJobTypeSubsidized`/`getAllowedJobTypes`/`availableBalance`). Its `getDefaultAbi()` merges the `ISubsidyViewV2` + `ISubsidyModeConfig` + ERC-165 fragments into the base ABI.
+  - `OPFSubsidyProvider` **extends** `SubsidyView` — OPF rolling-window getters (daily/weekly/monthly `remaining`/`used`, `getTokenLimits`, period indexes, `secondsUntil*Reset`, access lists). `remaining*` returns `MaxUint256` (as a string) when a cap is disabled.
+  - `OneTimeSubsidyProvider` **extends** `SubsidyView` — one-time onboarding-credit model (`getTokenConfig`, `effectiveCredit`, `remainingCredit`, `usedBy`/`usedByAt`, `hasUserCredit`, round accounting, access lists).
+  - **Discovery:** read the `SubsidyProviders: string[]` config registry (no single configured address), instantiate a `SubsidyView` per address, feature-detect via `supportsInterface`/`subsidyKind()`. Amounts are human-readable token units throughout (optional `tokenDecimals` fast-path).
+
+Note: the short names above are the contracts, but several **exported class names end in `Contract`** (`EscrowContract`, `AccessListContract`, `AccesslistFactory`, `EnterpriseFeeCollectorContract`) even though their source files keep the short names (`Escrow.ts`, `AccessList.ts`, `AccessListFactory.ts`, `EnterpriseFeeCollector.ts`) — import by the exported class name.
 
 **Dual-method transaction pattern (important — follow it when adding methods).** Every state-changing operation exists as a pair:
 - `fooTx(...) : Promise<TransactionRequest>` — builds the *unsigned* tx (gas estimated via `buildTxOverrides`, assembled via `buildUnsignedTx`).
-- `foo<G extends boolean = false>(..., estimateGas?: G) : Promise<ReceiptOrEstimate<G>>` — calls `fooTx`, then either returns the gas estimate (`estimateGas===true`) or signs & sends via `sendPreparedTransaction(getSignerAccordingSdk(), tx)` and returns the receipt.
-Read-only methods are plain `getX`. `ReceiptOrEstimate<G>` lives in `@types/ReturnTypes`.
+- `foo<G extends boolean = false>(..., estimateGas?: G) : Promise<ReceiptOrEstimate<G>>` — calls `fooTx`, then either returns the gas estimate (`estimateGas===true`) or signs & sends via `sendPreparedTransaction(getSignerAccordingSdk(), tx)`.
+Read-only methods are plain `getX`. `ReceiptOrEstimate<G>` lives in `@types/ReturnTypes`. **Despite the name, `ReceiptOrEstimate<false>` resolves to ethers' `TransactionResponse` (not a receipt)** — `sendPreparedTransaction` awaits `.wait()` internally so the tx is already mined, but returns the response object (or `null` on send failure); callers who need the receipt call `await tx.wait()`.
 
 ### services/ — off-chain Ocean Node clients
 
-- `Provider` / `ProviderInstance` — exported names for `BaseProvider`, a **transport-dispatching façade**. Every method takes an `OceanNode` target and routes to `HttpProvider` (REST) or `P2pProvider` (libp2p) based on `isP2pUri()` (URL → HTTP; peerId/multiaddr/NodeP2P → P2P). Surface includes: `getNonce`, `encrypt`, `getFileInfo`/`checkDidFiles`, `initialize` (returns provider fees for an order), `getDownloadUrl` (consume), the full compute lifecycle (`getComputeEnvironments`, `initializeCompute`, `computeStart`, `freeComputeStart`, `computeStatus`, `computeStop`, `computeStreamableLogs`, `getComputeResultUrl`, `getComputeResult`), JWT auth tokens (`generateAuthToken`, `generateSignedAuthToken`, `invalidateAuthToken`), P2P DDO `resolveDdo`/`validateDdo`, node status/jobs/logs, policy-server passthrough, and persistent-storage buckets. Auth params accept a `SignerOrAuthTokenOrSignature` (an ethers `Signer`, a JWT string, or a precomputed `CompleteSignature`). On compute start it also fire-and-forgets a notification to an incentive backend if `INCENTIVE_BACKEND_URL` is set. Request signing scheme throughout = `address + nonce + command` (see `SignatureUtils.signRequest` and `@types/Provider` `PROTOCOL_COMMANDS`).
+- `Provider` / `ProviderInstance` — exported names for `BaseProvider`, a **transport-dispatching façade**. Every method takes an `OceanNode` target and routes to `HttpProvider` (REST) or `P2pProvider` (libp2p) based on `isP2pUri()` (URL → HTTP; peerId/multiaddr/NodeP2P → P2P). Surface includes: `getNonce`, `encrypt`, `getFileInfo`/`checkDidFiles`, `initialize` (returns provider fees for an order), `getDownloadUrl` (consume), the full compute lifecycle (`getComputeEnvironments`, `initializeCompute`, `computeStart`, `freeComputeStart`, `computeStatus`, `computeStop`, `computeStreamableLogs`, `getComputeResultUrl`, `getComputeResult`), JWT auth tokens (`generateAuthToken`, `generateSignedAuthToken`, `invalidateAuthToken`), P2P DDO `resolveDdo`/`validateDdo`, node status/jobs/logs, policy-server passthrough, and persistent-storage buckets. Auth params accept a `SignerOrAuthTokenOrSignature` (an ethers `Signer`, a JWT string, or a precomputed `CompleteSignature`). `computeStart`, `serviceStart` and `serviceExtend` accept an optional consumer-selected `subsidyProviders: string[]`, resolved **tri-state** by the node (omit = node default, `[]` = none, populated = only these; ocean-node #1485). On compute start it also fire-and-forgets a notification to an incentive backend if `INCENTIVE_BACKEND_URL` is set. Request signing scheme throughout = `address + nonce + command` (see `SignatureUtils.signRequest` and `@types/Provider` `PROTOCOL_COMMANDS`).
 - `Aquarius` — metadata/DDO index client: `resolve(did)`, `waitForIndexer(did, txid?)` (polls until the indexer has cached the asset/update), `validate(ddo, signer, providerUrl)`, `querySearch(query)`, `getAssetMetadata(did)`. Transparently supports a P2P node URI (delegates to `ProviderInstance.resolveDdo/validateDdo`). DDO shape handling is via `@oceanprotocol/ddo-js`.
 
 ### utils/ — flows + helpers (the flows live here)

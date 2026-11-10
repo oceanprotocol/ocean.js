@@ -9,15 +9,49 @@ import {
 
 // ── Resource requirements (templates) ─────────────────────────────────
 
-export interface TemplateResourceRequirement {
-  // Exactly one of `id` or `kind` is set.
-  id?: string // exact resource id: 'cpu' | 'ram' | 'disk' | named GPU ('gpu-0')
-  kind?: 'discrete' | 'fungible' // match ANY resource of this kind across the env pool
-  type?: string // optional: further filter within kind ('gpu', 'fpga', 'tpu')
-  min: number // MUST have at least this much
-  recommended?: number // ideal amount; below this the env is a poorer fit
-  unit?: string // display hint: 'cores' | 'GB' | 'count'
-  description?: string
+/** One way to book the recommended VRAM: `gpuCount` identical GPUs of one group, one host. */
+export interface GpuLayout {
+  gpuCount: number // integer >= 1; layouts ascending by gpuCount
+  // Decimal GB each card needs, headroom included. Required when gpuCount > 1, forbidden for
+  // one GPU (that card must hold `recommended`).
+  vramPerGpu?: number
+}
+
+// A template's `recommendedResources` entry. No `min`: CPU/RAM/disk are booked best effort,
+// the GPU as one of its layouts. Plan with utils/ServiceResources.
+export type TemplateResourceRequirement =
+  | { id: 'cpu'; recommended: number; unit: 'cores'; description?: string } // >= 0
+  | { id: 'ram' | 'disk'; recommended: number; unit: 'GB'; description?: string } // >= 0
+  | {
+      kind: 'discrete'
+      type: 'gpu'
+      recommended: number // > 0; total VRAM, decimal GB (normally the smallest layout total)
+      unit: 'GB'
+      gpuCountEnv?: string // userConfigurableEnvVars key that forces the GPU width
+      layouts: GpuLayout[] // non-empty
+      description?: string // prose, never parsed
+    }
+
+/**
+ * Authoring-time GPU sizing rule (`<flow>/sizing.json` in the templates repo), never sent to
+ * the node. deriveGpuLayouts() turns it into a template's `recommended` + `layouts`; the
+ * formula is at gpuFloorGb(). The templates repo shares the formula's test vectors
+ * (test/unit/fixtures/gpu-sizing-vectors.json).
+ */
+export interface GpuSizingProfile {
+  version: 1
+  engine: string // informational: 'vllm', 'comfyui', 'placement', …
+  widths: number[] // GPU counts the engine accepts: ascending ints 1..64, at most 8
+  shardableGiB: number // splits 1/n across GPUs (weights, sharded state); >= 0
+  replicatedGiB: number // on every GPU whatever n (runtime, graphs, replicated KV); >= 0
+  memUtil: number | Record<string, number> // engine budget in (0,1), or one per width ("8")
+  outsideGiB?: number // must fit outside the engine budget on each card; default 0
+  driverReserveGiB?: number // nvidia-smi total minus torch-visible memory; default 0.5
+  // Per-width floor replacing the formula, keyed by width ("4"), with its provenance.
+  overrides?: Record<
+    string,
+    { vramPerGpu: number; source: 'measured' | 'policy' | 'estimate'; note: string }
+  >
 }
 
 export interface UserConfigurableEnvVar {
@@ -53,7 +87,6 @@ export interface ServiceTemplatePublic {
   userConfigurableEnvVars?: UserConfigurableEnvVar[]
   command?: string[] // Docker CMD override; ${KEY} expanded from userData
   entrypoint?: string[] // Docker ENTRYPOINT override
-  requiredResources?: TemplateResourceRequirement[]
   recommendedResources?: TemplateResourceRequirement[]
   workflows?: ServiceTemplateWorkflow[]
 }
@@ -231,4 +264,9 @@ export interface ServiceStartParams extends ServiceContainerSpec {
   duration: number // seconds; must fall within the env's minServiceDuration..maxServiceDuration (node enforces)
   payment: ServicePayment
   outputBucketId?: string // persistent-storage bucket bind-mounted at /data/outputs
+  // Optional consumer-selected subsidy provider contract addresses (EIP-55). Forwarded to
+  // the node, which resolves them tri-state (see ocean-node #1485): omitting the field uses
+  // the node's configured providers, an empty array means no subsidy provider, and a
+  // populated array uses only these — subject to the node's SUBSIDY_PROVIDER_FILTER policy.
+  subsidyProviders?: string[]
 }
