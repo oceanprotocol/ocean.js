@@ -3,14 +3,90 @@ import Decimal from 'decimal.js'
 import { Config } from '../config/Config.js'
 import { Datatoken } from '../contracts/Datatoken.js'
 import { ConsumeMarketFee, OrderParams } from '../@types/Datatoken.js'
-import { ProviderFees } from '../@types/Provider.js'
+import { MaxProviderFee, ProviderFees, ProviderFeePreview } from '../@types/Provider.js'
 import { ProviderInstance } from '../services/Provider.js'
 import { ZERO_ADDRESS } from './Constants.js'
 import { approve, approveWei } from './TokenUtils.js'
+import { amountToUnits, unitsToAmount } from './ContractUtils.js'
 import { Dispenser } from '../contracts/Dispenser.js'
 import { FixedRateExchange } from '../contracts/FixedRateExchange.js'
 import { FreOrderParams } from '../@types/FixedPrice.js'
 import { DDOManager, type Asset } from '@oceanprotocol/ddo-js'
+
+/**
+ * Enforces an optional, caller-supplied ceiling on the provider fee before any approval or
+ * transaction is made. The ceiling is OPT-IN:
+ *  - when `maxProviderFee` is omitted, or its `providerFeeToken` is the zero address, no ceiling
+ *    is applied and the fee is accepted as returned (intentional "not configured" opt-out — this
+ *    is insecure against untrusted nodes/DDOs, see `orderAsset`);
+ *  - when a non-zero `providerFeeToken` is supplied the caller intends to enforce a bound, so this
+ *    FAILS CLOSED: a missing/empty amount, a mismatched fee token, a non-integer fee from the node,
+ *    or a fee above the ceiling all throw rather than silently skipping the check.
+ * A zero (or absent) node fee is a no-op (nothing is charged), so it never throws on token mismatch.
+ * @param {ProviderFees} fees - The resolved provider fee (node-returned or caller-supplied).
+ * @param {MaxProviderFee} [maxProviderFee] - The optional ceiling (token + human-readable amount).
+ * @param {Signer} signer - Signer used to read the ceiling token's decimals.
+ * @throws {Error} When the fee violates a configured ceiling, or the ceiling input is malformed.
+ */
+export async function assertProviderFeeWithinCeiling(
+  fees: ProviderFees,
+  maxProviderFee: MaxProviderFee | undefined,
+  signer: Signer
+): Promise<void> {
+  // Opt-out: no ceiling configured.
+  if (!maxProviderFee || maxProviderFee.providerFeeToken === ZERO_ADDRESS) return
+
+  // Determine the amount actually being charged. A zero/absent fee is nothing to bound.
+  let feeBaseUnits: bigint
+  try {
+    feeBaseUnits = fees?.providerFeeAmount ? BigInt(fees.providerFeeAmount) : 0n
+  } catch {
+    throw new Error(
+      `Provider returned a non-integer providerFeeAmount "${fees?.providerFeeAmount}"`
+    )
+  }
+  if (feeBaseUnits === 0n) return
+
+  // A ceiling token was set, so the caller means to enforce a bound: fail closed on partial input.
+  if (
+    maxProviderFee.providerFeeAmount === undefined ||
+    maxProviderFee.providerFeeAmount === null ||
+    maxProviderFee.providerFeeAmount === ''
+  ) {
+    throw new Error(
+      'maxProviderFee.providerFeeAmount is required when maxProviderFee.providerFeeToken is set'
+    )
+  }
+
+  if (
+    fees.providerFeeToken?.toLowerCase() !== maxProviderFee.providerFeeToken.toLowerCase()
+  ) {
+    throw new Error(
+      `Provider fee token ${fees.providerFeeToken} does not match the allowed token ${maxProviderFee.providerFeeToken}`
+    )
+  }
+
+  let maxAllowedBaseUnits: string
+  try {
+    maxAllowedBaseUnits = await amountToUnits(
+      signer,
+      maxProviderFee.providerFeeToken,
+      maxProviderFee.providerFeeAmount
+    )
+  } catch (error) {
+    throw new Error(
+      `Invalid maxProviderFee.providerFeeAmount "${maxProviderFee.providerFeeAmount}": ${
+        (error as Error).message
+      }`
+    )
+  }
+
+  if (feeBaseUnits > BigInt(maxAllowedBaseUnits)) {
+    throw new Error(
+      `Provider fee amount ${fees.providerFeeAmount} (base units) exceeds the allowed maximum of ${maxAllowedBaseUnits} (base units, ${maxProviderFee.providerFeeAmount} tokens)`
+    )
+  }
+}
 
 /**
  * Orders an asset based on the specified pricing schema and configuration.
@@ -26,6 +102,13 @@ import { DDOManager, type Asset } from '@oceanprotocol/ddo-js'
  * @param {number} [datatokenIndex=0] - Index of the datatoken within the asset.
  * @param {number} [serviceIndex=0] - Index of the service within the asset.
  * @param {number} [fixedRateIndex=0] - Index of the fixed rate within the pricing schema.
+ * @param {MaxProviderFee} [maxProviderFee] - Optional, OPT-IN ceiling for the provider fee
+ *  (token + human-readable amount). Applies to both node-returned and caller-supplied provider fees.
+ *  When a non-zero `providerFeeToken` is given, the call throws BEFORE any approval or transaction if
+ *  the node's fee token differs or its amount exceeds the ceiling (and fails closed on a missing
+ *  ceiling amount). Omitting `maxProviderFee`, or passing the zero address as its token, disables the
+ *  check and accepts whatever fee the node returns — which is INSECURE against untrusted nodes/DDOs;
+ *  always pass a real ceiling unless the node is fully trusted.
  * @returns {Promise<void>} - A promise that resolves when the asset order process is completed.
  * @throws {Error} If the pricing schema is not supported or if required indexes are invalid.
  */
@@ -41,7 +124,8 @@ export async function orderAsset(
   consumeMarketFixedSwapFee: string = '0',
   datatokenIndex: number = 0,
   serviceIndex: number = 0,
-  fixedRateIndex: number = 0
+  fixedRateIndex: number = 0,
+  maxProviderFee?: MaxProviderFee
 ) {
   const ddoInstance = DDOManager.getDDOClass(asset)
   const { datatokens } = ddoInstance.getAssetFields()
@@ -89,6 +173,11 @@ export async function orderAsset(
       )
     ).providerFee
 
+  // Enforce the opt-in provider-fee ceiling BEFORE any approval or transaction. This runs
+  // independently of the address gate below so a hostile node cannot skip the check by
+  // returning a zero recipient alongside a large amount.
+  await assertProviderFeeWithinCeiling(fees, maxProviderFee, consumerAccount)
+
   if (
     fees &&
     fees.providerFeeAddress !== ZERO_ADDRESS &&
@@ -101,7 +190,7 @@ export async function orderAsset(
         config,
         await consumerAccount.getAddress(),
         fees.providerFeeToken,
-        services[0].datatokenAddress,
+        datatokens[datatokenIndex].address,
         fees.providerFeeAmount
       )
     } catch (error) {
@@ -237,5 +326,97 @@ export async function orderAsset(
     }
     default:
       throw new Error('Pricing schema not supported !')
+  }
+}
+
+/**
+ * Read-only preview of the provider fee for an asset service. Sends no transaction or approval.
+ *
+ * ADVISORY ONLY — this preview is NOT a security control and MUST NOT be the basis of a spend
+ * decision. The returned token, amount and recipient come from the node's `initialize` response
+ * and are attacker-controlled when the node/DDO is untrusted. `providerFeeAmountFormatted` is
+ * derived from the (possibly hostile) fee token's `decimals()`, so a malicious token can make a
+ * large fee render as small — always cross-check `providerFeeAmount` (base units). The preview
+ * also issues its own `initialize` call, so the fee a later `orderAsset` actually pays can differ
+ * (TOCTOU). The real protection is `orderAsset`'s `maxProviderFee` ceiling, set from an
+ * independent trust anchor — not from this preview.
+ * @param {Asset} asset - The asset.
+ * @param {Signer} consumerAccount - The consumer signer (used for address and decimals lookup).
+ * @param {Config} config - The configuration settings.
+ * @param {string} [providerUrl] - Optional node URL, defaults to config.oceanNodeUri.
+ * @param {number} [serviceIndex=0] - Index of the service within the asset.
+ * @returns {Promise<ProviderFeePreview>} - The provider fee as returned by the node.
+ */
+export async function getProviderFees(
+  asset: Asset,
+  consumerAccount: Signer,
+  config: Config,
+  providerUrl?: string,
+  serviceIndex: number = 0
+): Promise<ProviderFeePreview> {
+  const ddoInstance = DDOManager.getDDOClass(asset)
+  const { services } = ddoInstance.getDDOFields()
+  if (!services[serviceIndex]?.id)
+    throw new Error(
+      `There is no service with index: ${serviceIndex} defined for the asset with did: ${asset.id}`
+    )
+  const { providerFee } = await ProviderInstance.initialize(
+    asset.id,
+    services[serviceIndex].id,
+    0,
+    await consumerAccount.getAddress(),
+    providerUrl || config.oceanNodeUri
+  )
+  return buildProviderFeePreview(providerFee, (token, amount) =>
+    unitsToAmount(consumerAccount, token, amount)
+  )
+}
+
+/**
+ * Pure assembly of a `ProviderFeePreview` from a node-returned provider fee. Extracted from
+ * `getProviderFees` so the defaulting, the "is a fee actually charged?" predicate, and the
+ * hostile-token fallback are unit-testable without a live node. `formatAmount` is injected (the
+ * production caller passes `unitsToAmount`), which also lets callers substitute a decimals source.
+ * Never throws: a malformed amount yields "not charged", and a `formatAmount` that rejects (e.g. a
+ * token that reverts on `decimals()`) falls back to the raw base-unit amount.
+ * @param {ProviderFees} [providerFee] - The fee as returned by the node (may be undefined/partial).
+ * @param {(token: string, amount: string) => Promise<string>} formatAmount - Base-units → human.
+ * @returns {Promise<ProviderFeePreview>} - The normalized, defaulted preview.
+ */
+export async function buildProviderFeePreview(
+  providerFee: ProviderFees | undefined,
+  formatAmount: (token: string, amount: string) => Promise<string>
+): Promise<ProviderFeePreview> {
+  const token = providerFee?.providerFeeToken || ZERO_ADDRESS
+  const amount = providerFee?.providerFeeAmount || '0'
+  const address = providerFee?.providerFeeAddress || ZERO_ADDRESS
+  const validUntil = providerFee?.validUntil || '0'
+
+  // Mirror orderAsset's "is a fee actually charged?" predicate so the preview never reports a fee
+  // that would not be paid: a zero recipient or a zero amount means no charge.
+  let isCharged: boolean
+  try {
+    isCharged = token !== ZERO_ADDRESS && address !== ZERO_ADDRESS && BigInt(amount) > 0n
+  } catch {
+    isCharged = false
+  }
+
+  let formatted = '0'
+  if (isCharged) {
+    try {
+      formatted = await formatAmount(token, amount)
+    } catch {
+      // A hostile/invalid token can revert on decimals(); fall back to the raw base-unit amount
+      // rather than throwing the whole preview or silently showing 0.
+      formatted = amount
+    }
+  }
+
+  return {
+    providerFeeToken: token,
+    providerFeeAmount: amount,
+    providerFeeAmountFormatted: formatted,
+    providerFeeAddress: address,
+    validUntil
   }
 }

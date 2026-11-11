@@ -13,6 +13,19 @@ export interface ProviderFees {
   validUntil: string
 }
 
+export interface MaxProviderFee {
+  providerFeeToken: string
+  providerFeeAmount: string // human-readable token units, e.g. '5' for 5 USDC
+}
+
+export interface ProviderFeePreview {
+  providerFeeToken: string
+  providerFeeAmount: string // base units (wei), as returned by the node
+  providerFeeAmountFormatted: string // human-readable, via unitsToAmount
+  providerFeeAddress: string
+  validUntil: string
+}
+
 export interface ProviderInitialize {
   datatoken: string
   nonce: string
