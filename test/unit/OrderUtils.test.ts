@@ -268,4 +268,13 @@ describe('OrderUtils - buildProviderFeePreview (getProviderFees core)', () => {
     // Must not throw the whole preview, and must NOT silently show 0 for a real fee.
     assert.equal(preview.providerFeeAmountFormatted, '7500000000000000000')
   })
+
+  it('normalizes a numeric validUntil (nonzero service timeout) to a string', async () => {
+    const { fn } = recordingFormatter('0')
+    // Ocean Node returns validUntil as a number for a service with a nonzero timeout.
+    const fee = { ...makeFees(ZERO_ADDRESS, '0'), validUntil: 1788888888 as any }
+    const preview = await buildProviderFeePreview(fee, fn)
+    assert.strictEqual(preview.validUntil, '1788888888')
+    assert.equal(typeof preview.validUntil, 'string')
+  })
 })

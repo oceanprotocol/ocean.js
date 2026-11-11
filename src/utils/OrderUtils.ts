@@ -390,7 +390,9 @@ export async function buildProviderFeePreview(
   const token = providerFee?.providerFeeToken || ZERO_ADDRESS
   const amount = providerFee?.providerFeeAmount || '0'
   const address = providerFee?.providerFeeAddress || ZERO_ADDRESS
-  const validUntil = providerFee?.validUntil || '0'
+  // Ocean Node returns a numeric `validUntil` for a service with a nonzero timeout, so normalize it
+  // to keep ProviderFeePreview.validUntil an honest `string`.
+  const validUntil = String(providerFee?.validUntil || '0')
 
   // Mirror orderAsset's "is a fee actually charged?" predicate so the preview never reports a fee
   // that would not be paid: a zero recipient or a zero amount means no charge.
