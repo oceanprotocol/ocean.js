@@ -113,14 +113,22 @@ const resolvedDDO = await aquarius.waitForIndexer(fixedDDO.id)
 assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
 const config = new ConfigHelper().getConfig(Number(chainId))
+// On a local/dev chain (8996) without ADDRESS_FILE, ConfigHelper may not populate contract
+// addresses. Fall back to your deployment's FixedPrice only when it is missing; keep any
+// address the config already supplied (e.g. on public networks).
+if (!config.fixedRateExchangeAddress) config.fixedRateExchangeAddress = addresses.FixedPrice
 const datatoken = new Datatoken(consumerAccount, Number(chainId))
 
 // Optional: preview the provider fee before ordering. Advisory only — a malicious node/token can
-// misreport it, so cross-check providerFeeAmount (base units). The ceiling below is the real guard.
+// misreport it, so cross-check providerFeeAmount (base units) and never derive the ceiling from it.
 const feePreview = await getProviderFees(resolvedDDO, consumerAccount, config, providerUrl)
 console.log(
-    `Provider fee: ${feePreview.providerFeeAmountFormatted} ${feePreview.providerFeeToken}`
+    `Provider fee (advisory): ${feePreview.providerFeeAmountFormatted} ${feePreview.providerFeeToken}`
 )
+
+// The ceiling TOKEN must come from a source YOU trust (your dapp config / a known address), not
+// from the node preview — otherwise the node picks which token you approve. Keep it nonzero.
+const expectedFeeToken = addresses.Ocean // the token you expect to pay provider fees in
 
 // orderAsset resolves pricing (fixed-rate / dispenser), handles the provider fee and places the
 // order in one call. maxProviderFee is an opt-in ceiling: the order throws BEFORE any approval or
@@ -138,7 +146,7 @@ const orderTx = await orderAsset(
     0,         // datatokenIndex
     0,         // serviceIndex
     0,         // fixedRateIndex
-    { providerFeeToken: feePreview.providerFeeToken, providerFeeAmount: '1' } // allow at most 1 token
+    { providerFeeToken: expectedFeeToken, providerFeeAmount: '1' } // allow at most 1 expectedFeeToken
 )
 console.log(`Order started, tx: ${orderTx.hash}`)
 
