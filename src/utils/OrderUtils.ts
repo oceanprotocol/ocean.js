@@ -227,7 +227,7 @@ export async function orderAsset(
       }
       if (templateIndex === 2 || templateIndex === 4) {
         return await datatoken.buyFromDispenserAndOrder(
-          services[serviceIndex].datatokenAddress,
+          datatokens[datatokenIndex].address,
           orderParams,
           config.dispenserAddress
         )
