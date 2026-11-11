@@ -151,6 +151,15 @@ export async function orderAsset(
       `There is no service with index: ${serviceIndex} defined for the asset with did: ${asset.id}`
     )
 
+  // The ordered datatoken must be the one that authorizes the requested service, otherwise the
+  // order would pay for and unlock a different datatoken. Reject the mismatch before approving
+  // fees or sending any transaction.
+  if (
+    services[serviceIndex].datatokenAddress?.toLowerCase() !==
+    datatokens[datatokenIndex].address.toLowerCase()
+  )
+    throw new Error('Selected datatoken does not match the selected service.')
+
   const templateIndex = await datatoken.getId(datatokens[datatokenIndex].address)
 
   const fixedRates = await datatoken.getFixedRates(datatokens[datatokenIndex].address)
