@@ -109,48 +109,44 @@ const { chainId } = await publisherAccount.provider.getNetwork()
 ### Consume Flow
 As a prerequisite for this flow, publish flow needs to be executed before.
 ```javascript
-const fixedRate = new FixedRateExchange(freAddress, consumerAccount, Number(chainId))
-await fixedRate.buyDatatokens(freId, '1', '2')
-
 const resolvedDDO = await aquarius.waitForIndexer(fixedDDO.id)
 assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
-// Initialize - obtain proof for ordering assets
+const config = new ConfigHelper().getConfig(Number(chainId))
+const datatoken = new Datatoken(consumerAccount, Number(chainId))
 
-const initializeData = await ProviderInstance.initialize(
-    resolvedDDO.id,
-    resolvedDDO.services[0].id,
-    0,
-    await consumerAccount.getAddress(),
-    providerUrl
+// Optional: preview the provider fee before ordering. Advisory only — a malicious node/token can
+// misreport it, so cross-check providerFeeAmount (base units). The ceiling below is the real guard.
+const feePreview = await getProviderFees(resolvedDDO, consumerAccount, config, providerUrl)
+console.log(
+    `Provider fee: ${feePreview.providerFeeAmountFormatted} ${feePreview.providerFeeToken}`
 )
 
-const providerFees: ProviderFees = {
-    providerFeeAddress: initializeData.providerFee.providerFeeAddress,
-    providerFeeToken: initializeData.providerFee.providerFeeToken,
-    providerFeeAmount: initializeData.providerFee.providerFeeAmount,
-    v: initializeData.providerFee.v,
-    r: initializeData.providerFee.r,
-    s: initializeData.providerFee.s,
-    providerData: initializeData.providerFee.providerData,
-    validUntil: initializeData.providerFee.validUntil
-}
-// Starting order after retriving provider fees
-const tx = await datatoken.startOrder(
-    freDatatokenAddress,
-    await consumerAccount.getAddress(),
-    0,
-    providerFees
+// orderAsset resolves pricing (fixed-rate / dispenser), handles the provider fee and places the
+// order in one call. maxProviderFee is an opt-in ceiling: the order throws BEFORE any approval or
+// transaction if the node asks for a different token, or more than the cap.
+const orderTx = await orderAsset(
+    resolvedDDO,
+    consumerAccount,
+    config,
+    datatoken,
+    providerUrl,
+    undefined, // consumerAddress  (defaults to the signer)
+    undefined, // consumeMarketOrderFee
+    undefined, // providerFees     (fetched from the node)
+    '0',       // consumeMarketFixedSwapFee
+    0,         // datatokenIndex
+    0,         // serviceIndex
+    0,         // fixedRateIndex
+    { providerFeeToken: feePreview.providerFeeToken, providerFeeAmount: '1' } // allow at most 1 token
 )
-const orderTx = await tx.wait()
-const orderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
-console.log(`Order started, tx: ${orderStartedTx.transactionHash}`)
+console.log(`Order started, tx: ${orderTx.hash}`)
 
 const downloadURL = await ProviderInstance.getDownloadUrl(
-      fixedDDO.id,
-      fixedDDO.services[0].id,
+      resolvedDDO.id,
+      resolvedDDO.services[0].id,
       0,
-      orderStartedTx.transactionHash,
+      orderTx.hash,
       providerUrl,
       consumerAccount
     )
