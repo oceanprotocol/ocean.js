@@ -604,20 +604,32 @@ describe('estimateJobSubsidy', () => {
       assert.isTrue(r.warnings.some((w) => w.includes('IEscrowLockSubsidy')))
     })
 
-    it('adds queueMaxWaitTime to minLockSeconds but not to the billed cost', async () => {
+    it('adds queueMaxWaitTime to minLockSeconds but not to the billed cost (compute)', async () => {
       behaviours[P1] = { v1: 1 }
       behaviours[P2] = { v1: 1 }
-      const r = await estimateJobSubsidy(params({ queueMaxWaitTime: 300 }))
-      // effectiveDuration 600 + queue 300 = 900, padded by max(3600, ceil(0.25*900))
+      const r = await estimateJobSubsidy(params({ jobType: 1, queueMaxWaitTime: 300 }))
+      // compute: effectiveDuration 600 + queue 300 = 900, padded by max(3600, ceil(0.25*900))
       assert.equal(r.minLockSeconds, 900 + 3600)
       assert.equal(num(r.cost), 10) // cost unchanged
       let err: Error
       try {
-        await estimateJobSubsidy(params({ queueMaxWaitTime: -1 }))
+        await estimateJobSubsidy(params({ jobType: 1, queueMaxWaitTime: -1 }))
       } catch (e) {
         err = e
       }
       assert.include(err?.message, 'queueMaxWaitTime')
+    })
+
+    it('ignores queueMaxWaitTime for a service job (jobType 2) and warns', async () => {
+      behaviours[P1] = { v1: 1 }
+      behaviours[P2] = { v1: 1 }
+      // jobType 2 (service): queue wait is not part of the lock — minLockSeconds is unchanged.
+      const r = await estimateJobSubsidy(params({ jobType: 2, queueMaxWaitTime: 300 }))
+      assert.equal(r.minLockSeconds, 600 + 3600)
+      assert.equal(num(r.cost), 10)
+      assert.isTrue(
+        r.warnings.some((w) => w.includes('queueMaxWaitTime is compute-only'))
+      )
     })
   })
 })

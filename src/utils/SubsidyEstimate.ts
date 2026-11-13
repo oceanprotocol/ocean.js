@@ -227,6 +227,15 @@ export async function estimateJobSubsidy(
     )
   }
   const jobTypeId = normalizeJobType(params.jobType)
+  // Queue wait is a compute-env concept only: the node adds it to the lock duration for COMPUTE
+  // (jobType 1), never for SERVICE. Ignore it for non-compute jobs rather than inflating the lock.
+  const isComputeJob = jobTypeId === 1
+  const lockQueueWait = isComputeJob ? queueMaxWaitTime : 0
+  if (!isComputeJob && queueMaxWaitTime > 0) {
+    warnings.push(
+      'queueMaxWaitTime is compute-only (jobType 1) and was ignored for this job type.'
+    )
+  }
   const payer = checksum(params.payer, 'payer')
   const token = checksum(params.token, 'token')
 
@@ -541,9 +550,9 @@ export async function estimateJobSubsidy(
     cost: costHuman,
     costBaseUnits,
     minutesBilled: costEstimate.minutesBilled,
-    // The node locks for job duration + queue wait (compute); queue wait never affects billed cost.
+    // The node locks for job duration + queue wait (compute only); queue wait never affects cost.
     minLockSeconds: serviceMinLockSeconds(
-      costEstimate.effectiveDurationSeconds + queueMaxWaitTime
+      costEstimate.effectiveDurationSeconds + lockQueueWait
     ),
     escrowAddress,
     maxSponsorsPerLock: cap,
