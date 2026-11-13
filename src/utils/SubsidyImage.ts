@@ -29,7 +29,15 @@ export function resolveServiceImage(
   dockerfile?: string,
   serviceId?: string
 ): string {
-  if (dockerfile) return `${serviceId!.toLowerCase()}-svc-image:latest`
+  if (dockerfile) {
+    // A dockerfile build needs the serviceId to name its synthetic image. The subsidy gate never
+    // reaches this branch (imageReferenceMatches returns false on any dockerfile first), but this
+    // function is exported, so fail with a clear message instead of dereferencing an absent id.
+    if (!serviceId) {
+      throw new Error('resolveServiceImage requires serviceId when dockerfile is set.')
+    }
+    return `${serviceId.toLowerCase()}-svc-image:latest`
+  }
   if (checksum) return `${image}@${checksum}`
   return `${image}:${tag ?? 'latest'}`
 }

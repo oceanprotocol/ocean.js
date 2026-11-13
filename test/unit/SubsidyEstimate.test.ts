@@ -462,6 +462,8 @@ describe('estimateJobSubsidy', () => {
 
     it('clamps the selection cap to 10 even if the escrow reports more', async () => {
       maxSponsors = 1000
+      behaviours[P1] = { v1: 1 }
+      behaviours[P2] = { v1: 1 }
       const r = await estimateJobSubsidy(params())
       assert.equal(r.maxSponsorsPerLock, 10)
     })

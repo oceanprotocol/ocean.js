@@ -156,6 +156,8 @@ function buildScenario(
  * address outside the advertised set is dropped as `outside_node_set` (the node would reject the
  * whole request). Pass a scenario's `selected` list as `subsidyProviders` at start: the node
  * treats a non-empty list as a REPLACEMENT of its own set, so it then applies exactly that list.
+ * An empty `selected` means no subsidy — pass it verbatim as `subsidyProviders: []` (an explicit
+ * opt-out); OMITTING the argument instead makes the node fall back to its own configured providers.
  *
  * A gate that returns `null` (provider does not expose it) is unknown, NOT disqualifying; only
  * an explicit `false` drops a provider. At most `min(escrow maxSponsorsPerLock, 10)` providers
@@ -249,7 +251,9 @@ export async function estimateJobSubsidy(
     token,
     resources,
     durationSeconds,
-    params.jobType
+    // Normalized job type, so the cost floor (minJobDuration vs minServiceDuration) agrees with the
+    // provider gates even for whitespace-padded / mixed-case 'compute' inputs.
+    jobTypeId
   )
   if (!costEstimate) {
     throw new Error(
