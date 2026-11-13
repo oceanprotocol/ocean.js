@@ -79,6 +79,18 @@ export interface NodeStatus {
   provider: NodeStatusProvider[]
   indexer: NodeStatusIndexer[]
   escrowAddress: Record<string, string>
+  /** chainId -> subsidy-provider contract addresses the node applies. Absent on older nodes. */
+  subsidyProviders?: Record<string, string[]>
+  /**
+   * When true, a caller-supplied `subsidyProviders` list must be a subset of the node's
+   * `subsidyProviders` for the chain (the node rejects the request otherwise). Absent on older nodes.
+   */
+  subsidyProviderFilter?: boolean
+  /**
+   * Per-provider-contract image allowlist (provider address -> allowed docker refs). A provider
+   * only subsidizes a job whose image matches; `{}` / absent = unrestricted. Absent on older nodes.
+   */
+  subsidyProviderAllowedImages?: Record<string, string[]>
   /** Maintenance (drain) mode. Absent on nodes that predate the feature. */
   maintenance?: NodeStatusMaintenance
   supportedStorage: Record<string, boolean>
