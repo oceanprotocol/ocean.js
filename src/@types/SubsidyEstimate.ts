@@ -32,8 +32,23 @@ export interface EstimateJobSubsidyParams {
   jobType: number | string
   /** The image gate needs tag/checksum/dockerfile, not just an image name. */
   container: SubsidyImageContainer
-  /** Default false; the caller computes it per the node's recipe (see `isNonEmpty`). */
+  /**
+   * Set true when the job must NOT be subsidized under a provider's image allowlist because the
+   * workload is not the trusted operator image. The caller computes it with the node's OWN predicate
+   * for the job type (the helper takes no algorithm/task object, so it cannot derive this):
+   *  - service: `isNonEmpty(dockerEntrypoint) || isNonEmpty(dockerCmd)`
+   *  - compute: `isNonEmpty(algorithm.meta.container.entrypoint) || hasUserSuppliedAlgorithm(algorithm)`
+   *    where a user-supplied algorithm (rawcode, a `fileObject`, or a `documentId`/`serviceId` DID) is
+   *    untrusted and must set this true. Omitting it for compute would subsidize an attacker algorithm
+   *    run against a trusted image's allowlist. Default false.
+   */
   hasCustomEntrypoint?: boolean
+  /**
+   * Compute-only: the env's queue max wait (seconds). Added to the lock duration used for
+   * `minLockSeconds` (the node locks for job duration + queue wait), NOT to the billed cost.
+   * Default 0.
+   */
+  queueMaxWaitTime?: number
   /** Added to what the node advertises (see the filter semantics on `estimateJobSubsidy`). */
   customSubsidyProviders?: string[]
   /** Human token units; default = the job cost. */

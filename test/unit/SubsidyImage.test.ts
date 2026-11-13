@@ -8,8 +8,9 @@ import {
 } from '../../src/utils/SubsidyImage.js'
 
 describe('subsidy image gate', () => {
-  // lowercase on purpose: the gate must checksum before lookup
-  const A = '0x1111111111111111111111111111111111111111'
+  // mixed-case checksummed, with letters, so its lowercase and checksummed forms differ
+  // (the gate must checksum before lookup)
+  const A = '0xabCDeF0123456789AbcdEf0123456789aBCDEF01'
   const B = '0x2222222222222222222222222222222222222222'
   const C = '0x3333333333333333333333333333333333333333'
   const IMAGE = 'oceanprotocol/algo'
@@ -152,11 +153,20 @@ describe('subsidy image gate', () => {
     })
 
     it('merges entries when two keys normalize to the same address', () => {
-      const r = filterSubsidyByAllowedImages([A], container, false, {
+      const map = {
         [A.toLowerCase()]: ['other/image:1'],
         [getAddress(A)]: [`${IMAGE}:${TAG}`]
-      })
-      assert.deepEqual(r.kept, [A])
+      }
+      // the fixture has letters, so the two cased forms are genuinely distinct map keys
+      assert.notEqual(A.toLowerCase(), getAddress(A))
+      assert.lengthOf(Object.keys(map), 2)
+      // an image matching EITHER key's entry is kept — both lists are merged, not overwritten
+      assert.deepEqual(filterSubsidyByAllowedImages([A], container, false, map).kept, [A])
+      assert.deepEqual(
+        filterSubsidyByAllowedImages([A], { image: 'other/image', tag: '1' }, false, map)
+          .kept,
+        [A]
+      )
     })
 
     it('keyed address with no matching entry is dropped; an empty list blocks it', () => {

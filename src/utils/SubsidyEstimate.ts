@@ -103,8 +103,24 @@ function buildScenario(
   cost: bigint,
   needed: bigint,
   cap: number,
-  available: bigint
+  available: bigint,
+  lockSubsidySupported: boolean
 ): JobSubsidyScenario {
+  // PREFUNDED (lock-time sponsorship) only works when the escrow implements IEscrowLockSubsidy.
+  // Without it the lock cannot be pre-funded, so prefunded quotes must NOT reduce escrowNeeded —
+  // report the full cost, or the payer under-funds the lock.
+  if (mode === SubsidyMode.PREFUNDED && !lockSubsidySupported) {
+    const fullShortfall = cost > available ? cost - available : 0n
+    return {
+      mode,
+      selected: [],
+      projectedTotalSubsidy: formatUnits(0n, decimals),
+      meetsSubsidyNeeded: needed <= 0n,
+      escrowNeeded: formatUnits(cost, decimals),
+      escrowAvailable: formatUnits(available, decimals),
+      escrowShortfall: formatUnits(fullShortfall, decimals)
+    }
+  }
   const leg = (p: JobSubsidyProviderQuote) =>
     toUnits(
       mode === SubsidyMode.PREFUNDED
@@ -204,6 +220,12 @@ export async function estimateJobSubsidy(
       )
     }
   }
+  const queueMaxWaitTime = params.queueMaxWaitTime ?? 0
+  if (!Number.isFinite(queueMaxWaitTime) || queueMaxWaitTime < 0) {
+    throw new Error(
+      `queueMaxWaitTime must be a finite number >= 0 (got ${params.queueMaxWaitTime}).`
+    )
+  }
   const jobTypeId = normalizeJobType(params.jobType)
   const payer = checksum(params.payer, 'payer')
   const token = checksum(params.token, 'token')
@@ -292,15 +314,19 @@ export async function estimateJobSubsidy(
 
   // Escrow: per-lock sponsor cap and the payer's withdrawable balance.
   const escrow = new EscrowContract(escrowAddress, signer, chainId, params.config)
-  const [onChainCap, funds] = await Promise.all([
+  const [onChainCap, funds, lockSubsidy] = await Promise.all([
     safe(() => escrow.maxSponsorsPerLock()),
-    escrow.getUserFunds(payer, token)
+    escrow.getUserFunds(payer, token),
+    safe(() => escrow.isEscrowLockSubsidy())
   ])
   let cap = ESCROW_SPONSOR_HARD_CAP
   if (typeof onChainCap === 'number' && onChainCap > 0) {
     cap = Math.min(onChainCap, ESCROW_SPONSOR_HARD_CAP)
   }
   const available = BigInt(funds[0].toString())
+  // PREFUNDED sponsorship needs the lock-subsidy escrow extension; a null/absent flag (older or
+  // non-lock escrow) is treated as unsupported so the prefunded scenario never under-states escrow.
+  const lockSubsidySupported = lockSubsidy === true
 
   // Candidate set: advertised ∪ custom, deduped + checksummed.
   const subsidyProviderFilter = status.subsidyProviderFilter ?? false
@@ -478,7 +504,8 @@ export async function estimateJobSubsidy(
     cost,
     needed,
     cap,
-    available
+    available,
+    lockSubsidySupported
   )
   const prefunded = buildScenario(
     SubsidyMode.PREFUNDED,
@@ -487,8 +514,19 @@ export async function estimateJobSubsidy(
     cost,
     needed,
     cap,
-    available
+    available,
+    lockSubsidySupported
   )
+
+  if (
+    !lockSubsidySupported &&
+    providers.some((p) => toUnits(p.quotes.prefunded.subsidy, decimals) > 0n)
+  ) {
+    warnings.push(
+      'The escrow does not support lock subsidies (IEscrowLockSubsidy); PREFUNDED sponsorship is ' +
+        'unavailable, so the prefunded scenario assumes the full cost.'
+    )
+  }
 
   warnings.push(
     'Advisory estimate: the node recomputes cost and the escrow/subsidy contracts settle ' +
@@ -503,7 +541,10 @@ export async function estimateJobSubsidy(
     cost: costHuman,
     costBaseUnits,
     minutesBilled: costEstimate.minutesBilled,
-    minLockSeconds: serviceMinLockSeconds(costEstimate.effectiveDurationSeconds),
+    // The node locks for job duration + queue wait (compute); queue wait never affects billed cost.
+    minLockSeconds: serviceMinLockSeconds(
+      costEstimate.effectiveDurationSeconds + queueMaxWaitTime
+    ),
     escrowAddress,
     maxSponsorsPerLock: cap,
     subsidyProviderFilter,

@@ -53,6 +53,7 @@ describe('estimateJobSubsidy', () => {
   let status: any
   let maxSponsors: number
   let escrowAvailable: bigint
+  let lockSubsidyOn: boolean
   let gateCalls: string[]
   let quoteCalls: string[]
   const saved: Array<[any, string, any]> = []
@@ -103,6 +104,7 @@ describe('estimateJobSubsidy', () => {
     quoteCalls = []
     maxSponsors = 10
     escrowAvailable = eth(3)
+    lockSubsidyOn = true
     status = {
       address: PAYEE,
       escrowAddress: { [String(CHAIN)]: ESCROW },
@@ -137,6 +139,7 @@ describe('estimateJobSubsidy', () => {
     stub(EscrowContract.prototype, 'getUserFunds', async () =>
       Result.fromItems([escrowAvailable, 0n], ['available', 'locked'])
     )
+    stub(EscrowContract.prototype, 'isEscrowLockSubsidy', async () => lockSubsidyOn)
   })
 
   afterEach(() => {
@@ -583,6 +586,38 @@ describe('estimateJobSubsidy', () => {
       )
       assert.equal(r.costBaseUnits, parseUnits('10', 6).toString())
       assert.equal(num(r.scenarios.reimbursement.escrowAvailable), 3)
+    })
+
+    it('ignores prefunded quotes when the escrow has no lock-subsidy support', async () => {
+      lockSubsidyOn = false
+      behaviours[P1] = { v2: true, modes: { re: 6, pre: 8 } }
+      behaviours[P2] = { v2: true, modes: { re: 0, pre: 0 } }
+      const r = await estimateJobSubsidy(params())
+      // reimbursement is unaffected
+      assert.deepEqual(r.scenarios.reimbursement.selected, [P1])
+      assert.equal(num(r.scenarios.reimbursement.projectedTotalSubsidy), 6)
+      // prefunded cannot pre-fund the lock: full cost, nothing selected, warned
+      const pre = r.scenarios.prefunded
+      assert.deepEqual(pre.selected, [])
+      assert.equal(num(pre.projectedTotalSubsidy), 0)
+      assert.equal(num(pre.escrowNeeded), 10)
+      assert.isTrue(r.warnings.some((w) => w.includes('IEscrowLockSubsidy')))
+    })
+
+    it('adds queueMaxWaitTime to minLockSeconds but not to the billed cost', async () => {
+      behaviours[P1] = { v1: 1 }
+      behaviours[P2] = { v1: 1 }
+      const r = await estimateJobSubsidy(params({ queueMaxWaitTime: 300 }))
+      // effectiveDuration 600 + queue 300 = 900, padded by max(3600, ceil(0.25*900))
+      assert.equal(r.minLockSeconds, 900 + 3600)
+      assert.equal(num(r.cost), 10) // cost unchanged
+      let err: Error
+      try {
+        await estimateJobSubsidy(params({ queueMaxWaitTime: -1 }))
+      } catch (e) {
+        err = e
+      }
+      assert.include(err?.message, 'queueMaxWaitTime')
     })
   })
 })
