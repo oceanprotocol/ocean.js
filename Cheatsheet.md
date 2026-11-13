@@ -109,48 +109,55 @@ const { chainId } = await publisherAccount.provider.getNetwork()
 ### Consume Flow
 As a prerequisite for this flow, publish flow needs to be executed before.
 ```javascript
-const fixedRate = new FixedRateExchange(freAddress, consumerAccount, Number(chainId))
-await fixedRate.buyDatatokens(freId, '1', '2')
-
 const resolvedDDO = await aquarius.waitForIndexer(fixedDDO.id)
 assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
-// Initialize - obtain proof for ordering assets
+const config = new ConfigHelper().getConfig(Number(chainId))
+// On a local/dev chain (8996) without ADDRESS_FILE, ConfigHelper may not populate contract
+// addresses. Fall back to your deployment's FixedPrice only when it is missing; keep any
+// address the config already supplied (e.g. on public networks).
+if (!config.fixedRateExchangeAddress) config.fixedRateExchangeAddress = addresses.FixedPrice
+const datatoken = new Datatoken(consumerAccount, Number(chainId))
 
-const initializeData = await ProviderInstance.initialize(
-    resolvedDDO.id,
-    resolvedDDO.services[0].id,
-    0,
-    await consumerAccount.getAddress(),
-    providerUrl
-)
+// Optional: preview the provider fee before ordering. Advisory only — a malicious node/token can
+// misreport it, so cross-check providerFeeAmount (base units) and never derive the ceiling from it.
+const feePreview = await getProviderFees(resolvedDDO, consumerAccount, config, providerUrl)
+// providerFeeAmountFormattedOk is false when the token's decimals() couldn't be read — the
+// formatted value is then raw base units, so label it as such instead of as tokens.
+const feeText = feePreview.providerFeeAmountFormattedOk
+    ? `${feePreview.providerFeeAmountFormatted} ${feePreview.providerFeeToken}`
+    : `${feePreview.providerFeeAmount} base units of ${feePreview.providerFeeToken} (token decimals unavailable)`
+console.log(`Provider fee (advisory): ${feeText}`)
 
-const providerFees: ProviderFees = {
-    providerFeeAddress: initializeData.providerFee.providerFeeAddress,
-    providerFeeToken: initializeData.providerFee.providerFeeToken,
-    providerFeeAmount: initializeData.providerFee.providerFeeAmount,
-    v: initializeData.providerFee.v,
-    r: initializeData.providerFee.r,
-    s: initializeData.providerFee.s,
-    providerData: initializeData.providerFee.providerData,
-    validUntil: initializeData.providerFee.validUntil
-}
-// Starting order after retriving provider fees
-const tx = await datatoken.startOrder(
-    freDatatokenAddress,
-    await consumerAccount.getAddress(),
-    0,
-    providerFees
+// The ceiling TOKEN must come from a source YOU trust (your dapp config / a known address), not
+// from the node preview — otherwise the node picks which token you approve. Keep it nonzero.
+const expectedFeeToken = addresses.Ocean // the token you expect to pay provider fees in
+
+// orderAsset resolves pricing (fixed-rate / dispenser), handles the provider fee and places the
+// order in one call. maxProviderFee is an opt-in ceiling: the order throws BEFORE any approval or
+// transaction if the node asks for a different token, or more than the cap.
+const orderTx = await orderAsset(
+    resolvedDDO,
+    consumerAccount,
+    config,
+    datatoken,
+    providerUrl,
+    undefined, // consumerAddress  (defaults to the signer)
+    undefined, // consumeMarketOrderFee
+    undefined, // providerFees     (fetched from the node)
+    '0',       // consumeMarketFixedSwapFee
+    0,         // datatokenIndex
+    0,         // serviceIndex
+    0,         // fixedRateIndex
+    { providerFeeToken: expectedFeeToken, providerFeeAmount: '1' } // allow at most 1 expectedFeeToken
 )
-const orderTx = await tx.wait()
-const orderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
-console.log(`Order started, tx: ${orderStartedTx.transactionHash}`)
+console.log(`Order started, tx: ${orderTx.hash}`)
 
 const downloadURL = await ProviderInstance.getDownloadUrl(
-      fixedDDO.id,
-      fixedDDO.services[0].id,
+      resolvedDDO.id,
+      resolvedDDO.services[0].id,
       0,
-      orderStartedTx.transactionHash,
+      orderTx.hash,
       providerUrl,
       consumerAccount
     )
