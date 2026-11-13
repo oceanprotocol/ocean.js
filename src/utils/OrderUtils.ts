@@ -345,7 +345,9 @@ export async function orderAsset(
  * decision. The returned token, amount and recipient come from the node's `initialize` response
  * and are attacker-controlled when the node/DDO is untrusted. `providerFeeAmountFormatted` is
  * derived from the (possibly hostile) fee token's `decimals()`, so a malicious token can make a
- * large fee render as small — always cross-check `providerFeeAmount` (base units). The preview
+ * large fee render as small — always cross-check `providerFeeAmount` (base units). When that
+ * conversion fails, `providerFeeAmountFormattedOk` is `false` and `providerFeeAmountFormatted` holds
+ * the raw base-unit amount (label it as such, not as tokens). The preview
  * also issues its own `initialize` call, so the fee a later `orderAsset` actually pays can differ
  * (TOCTOU). The real protection is `orderAsset`'s `maxProviderFee` ceiling, set from an
  * independent trust anchor — not from this preview.
@@ -413,6 +415,9 @@ export async function buildProviderFeePreview(
   }
 
   let formatted = '0'
+  // False only when a charged fee could not be converted to human units (below); the formatted
+  // field then carries the raw base-unit amount, so callers can label it correctly.
+  let formattedOk = true
   if (isCharged) {
     try {
       formatted = await formatAmount(token, amount)
@@ -420,6 +425,7 @@ export async function buildProviderFeePreview(
       // A hostile/invalid token can revert on decimals(); fall back to the raw base-unit amount
       // rather than throwing the whole preview or silently showing 0.
       formatted = amount
+      formattedOk = false
     }
   }
 
@@ -427,6 +433,7 @@ export async function buildProviderFeePreview(
     providerFeeToken: token,
     providerFeeAmount: amount,
     providerFeeAmountFormatted: formatted,
+    providerFeeAmountFormattedOk: formattedOk,
     providerFeeAddress: address,
     validUntil
   }

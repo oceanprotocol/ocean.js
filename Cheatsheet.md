@@ -122,9 +122,12 @@ const datatoken = new Datatoken(consumerAccount, Number(chainId))
 // Optional: preview the provider fee before ordering. Advisory only — a malicious node/token can
 // misreport it, so cross-check providerFeeAmount (base units) and never derive the ceiling from it.
 const feePreview = await getProviderFees(resolvedDDO, consumerAccount, config, providerUrl)
-console.log(
-    `Provider fee (advisory): ${feePreview.providerFeeAmountFormatted} ${feePreview.providerFeeToken}`
-)
+// providerFeeAmountFormattedOk is false when the token's decimals() couldn't be read — the
+// formatted value is then raw base units, so label it as such instead of as tokens.
+const feeText = feePreview.providerFeeAmountFormattedOk
+    ? `${feePreview.providerFeeAmountFormatted} ${feePreview.providerFeeToken}`
+    : `${feePreview.providerFeeAmount} base units of ${feePreview.providerFeeToken} (token decimals unavailable)`
+console.log(`Provider fee (advisory): ${feeText}`)
 
 // The ceiling TOKEN must come from a source YOU trust (your dapp config / a known address), not
 // from the node preview — otherwise the node picks which token you approve. Keep it nonzero.

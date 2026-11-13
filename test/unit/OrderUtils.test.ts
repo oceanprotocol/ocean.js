@@ -197,6 +197,11 @@ describe('OrderUtils - buildProviderFeePreview (getProviderFees core)', () => {
     assert.equal(preview.providerFeeAmount, '0')
     assert.equal(preview.providerFeeAddress, ZERO_ADDRESS)
     assert.equal(preview.providerFeeAmountFormatted, '0')
+    assert.equal(
+      preview.providerFeeAmountFormattedOk,
+      true,
+      'no charge => formatting is accurate'
+    )
     assert.equal(preview.validUntil, '0')
     assert.equal(calls.length, 0, 'formatter must not run when there is no fee')
   })
@@ -250,6 +255,7 @@ describe('OrderUtils - buildProviderFeePreview (getProviderFees core)', () => {
     assert.equal(preview.providerFeeAmount, '1000000000000000000')
     assert.equal(preview.providerFeeAddress, CHARGED_ADDRESS)
     assert.equal(preview.providerFeeAmountFormatted, '1.0')
+    assert.equal(preview.providerFeeAmountFormattedOk, true)
     assert.equal(calls.length, 1)
     assert.deepEqual(calls[0], {
       token: CHARGED_TOKEN,
@@ -267,6 +273,8 @@ describe('OrderUtils - buildProviderFeePreview (getProviderFees core)', () => {
     )
     // Must not throw the whole preview, and must NOT silently show 0 for a real fee.
     assert.equal(preview.providerFeeAmountFormatted, '7500000000000000000')
+    // The flag must signal that the formatted value is raw base units, not tokens.
+    assert.equal(preview.providerFeeAmountFormattedOk, false)
   })
 
   it('normalizes a numeric validUntil (nonzero service timeout) to a string', async () => {
