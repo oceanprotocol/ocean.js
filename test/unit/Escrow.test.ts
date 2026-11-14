@@ -1,6 +1,6 @@
 import { assert } from 'chai'
 import { provider, getAddresses } from '../config'
-import { Signer, ContractFactory, parseUnits, getAddress } from 'ethers'
+import { Signer, ContractFactory, parseUnits, getAddress, Wallet } from 'ethers'
 import MockERC20Decimals from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 
 import { Datatoken, amountToUnits, unitsToAmount, ConfigHelper } from '../../src/'
@@ -380,5 +380,92 @@ describe('Escrow payments flow', () => {
     )
     assert(res.isValid === false, 'expected isValid to be false')
     assert(res.message.includes('not set'), `unexpected message: ${res.message}`)
+  })
+
+  it('verifyFundsForEscrowPayment ignores the payee native balance (funded payer)', async () => {
+    const { chainId } = await user2.provider.getNetwork()
+    const config = new ConfigHelper().getConfig(Number(chainId))
+    config.escrow = getAddress(addresses.Escrow)
+    const escrow = new EscrowContract(addresses.Escrow, user2, Number(chainId), config)
+    // Fresh payee (the node) with zero native balance: it must not matter, only the payer pays gas.
+    const payee = Wallet.createRandom().address
+    assert(
+      (await user2.provider.getBalance(payee)) === 0n,
+      'payee must have zero native balance'
+    )
+    const res = await escrow.verifyFundsForEscrowPayment(
+      OCEAN,
+      payee,
+      '1',
+      '1',
+      '100',
+      '3'
+    )
+    assert(res.isValid === true, `expected isValid true, got: ${res.message}`)
+  })
+
+  it('verifyFundsForEscrowPayment rejects a payer with zero native balance and leaves no tx behind', async () => {
+    const { chainId } = await user2.provider.getNetwork()
+    const config = new ConfigHelper().getConfig(Number(chainId))
+    config.escrow = getAddress(addresses.Escrow)
+    const payer = Wallet.createRandom().connect(user2.provider)
+    const payerAddress = await payer.getAddress()
+    const payee = Wallet.createRandom().address
+    const escrow = new EscrowContract(addresses.Escrow, payer, Number(chainId), config)
+    const dt = new Datatoken(payer, Number(chainId))
+    const allowanceBefore = await dt.allowance(OCEAN, payerAddress, addresses.Escrow, 18)
+    const fundsBefore = await escrow.getUserFunds(payerAddress, OCEAN)
+
+    const res = await escrow.verifyFundsForEscrowPayment(
+      OCEAN,
+      payee,
+      '5',
+      '5',
+      '100',
+      '3'
+    )
+    assert(res.isValid === false, 'expected isValid to be false')
+    assert(
+      res.message.includes('Add funds to pay for gas'),
+      `unexpected message: ${res.message}`
+    )
+    assert(res.message.includes(payerAddress), 'message should name the payer')
+
+    const allowanceAfter = await dt.allowance(OCEAN, payerAddress, addresses.Escrow, 18)
+    const fundsAfter = await escrow.getUserFunds(payerAddress, OCEAN)
+    assert(allowanceAfter === allowanceBefore, 'allowance must be unchanged')
+    assert(
+      fundsAfter[0].toString() === fundsBefore[0].toString(),
+      'escrow funds must be unchanged'
+    )
+    const auths = Array.from(await escrow.getAuthorizations(OCEAN, payerAddress, payee))
+    assert(auths.length === 0, 'no authorization must be created')
+  })
+
+  it('verifyFundsForEscrowPayment fails closed for a signer without a provider', async () => {
+    const { chainId } = await user2.provider.getNetwork()
+    const config = new ConfigHelper().getConfig(Number(chainId))
+    config.escrow = getAddress(addresses.Escrow)
+    const noProvider = Wallet.createRandom()
+    const escrow = new EscrowContract(
+      addresses.Escrow,
+      noProvider,
+      Number(chainId),
+      config
+    )
+    const res = await escrow.verifyFundsForEscrowPayment(
+      OCEAN,
+      Wallet.createRandom().address,
+      '5',
+      '5',
+      '100',
+      '3',
+      18
+    )
+    assert(res.isValid === false, 'expected isValid to be false')
+    assert(
+      res.message.includes('Signer has no provider'),
+      `unexpected message: ${res.message}`
+    )
   })
 })
