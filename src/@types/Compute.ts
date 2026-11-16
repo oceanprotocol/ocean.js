@@ -29,6 +29,21 @@ export interface ComputeResourceRequest {
   amount: number
 }
 
+/** Result of `estimateServiceCost` — mirrors ocean-node's `calculateResourcesCost`. */
+export interface ServiceCostEstimate {
+  /** Cost in human token units, computed with the node's own arithmetic. */
+  costHuman: number
+  /** `feeToken` verbatim as the env advertised it (send this back, not the caller's casing). */
+  feeToken: string
+  /** Duration after the env minimum-duration floor clamp. */
+  effectiveDurationSeconds: number
+  /** `ceil(effectiveDuration / 60)` — what the node actually bills. */
+  minutesBilled: number
+  resources: ComputeResourceRequest[]
+  /** Resource ids the env has no price for; the node prices these at 0 silently. */
+  unpricedResourceIds: string[]
+}
+
 export interface ComputeResource {
   id: string
   type?: ComputeResourceType
