@@ -150,7 +150,8 @@ export class EscrowContract extends SmartContractWithAddress {
    * to check that the shortfall is affordable. The payee is (re-)authorized up to the funding
    * target.
    * @param {String} token as payment token for escrow
-   * @param {String} consumerAddress as consumerAddress for that environment
+   * @param {String} payee the node's address acting as the escrow payee, i.e. the account being
+   * authorized to create locks against the payer's (signer's) escrow funds
    * @param {String} amountToDeposit wanted deposit (human units). When omitted, the funding target
    * defaults to maxLockedAmount; only the shortfall from current escrow funds is deposited.
    * @param {String} maxLockedAmount amount necessary to be paid for starting compute job,
@@ -177,7 +178,7 @@ export class EscrowContract extends SmartContractWithAddress {
    */
   public async verifyFundsForEscrowPayment(
     token: string,
-    consumerAddress: string,
+    payee: string,
     amountToDeposit?: string,
     maxLockedAmount?: string,
     maxLockSeconds?: string,
@@ -203,20 +204,19 @@ export class EscrowContract extends SmartContractWithAddress {
       }
     }
 
-    // Resolve the token decimals exactly once.
-    const decimals = tokenDecimals ?? Number(await getTokenDecimals(this.signer, token))
-
-    const balanceNativeToken = await this.signer.provider?.getBalance(
-      getAddress(consumerAddress)
-    )
-    if (new BigNumber(balanceNativeToken).isZero()) {
+    // Resolve the payer (signer) and fail closed before any provider-dependent read, so a
+    // provider-less signer returns a clean result instead of throwing inside getTokenDecimals.
+    const owner = await this.signer.getAddress()
+    const { provider } = this.signer
+    if (!provider) {
       return {
         isValid: false,
-        message: 'Native token balance is 0. Please add funds'
+        message: 'Signer has no provider; cannot verify escrow funds'
       }
     }
 
-    const owner = await this.signer.getAddress()
+    // Resolve the token decimals exactly once.
+    const decimals = tokenDecimals ?? Number(await getTokenDecimals(this.signer, token))
     const tokenContract = new Datatoken(this.signer)
 
     // Funding target (human units): the larger of the requested deposit and the required job
@@ -260,7 +260,7 @@ export class EscrowContract extends SmartContractWithAddress {
     // getAuthorizations returns an ethers Result (a Proxy): indexing an out-of-range element
     // (e.g. auths[0] when empty) THROWS "out of result range" instead of yielding undefined.
     // Materialize to a plain array so .filter and auths[0] are safe when there is no authorization.
-    const auths = Array.from(await this.getAuthorizations(token, owner, consumerAddress))
+    const auths = Array.from(await this.getAuthorizations(token, owner, payee))
     const activeAuths = auths.filter((auth: any) => {
       const expiry = Number(auth?.expiryTimestamp ?? auth?.[6] ?? 0)
       const maxLocked = BigInt(auth?.maxLockedAmount ?? auth?.[1] ?? 0)
@@ -319,7 +319,25 @@ export class EscrowContract extends SmartContractWithAddress {
     // neither, and we must not approve tokens before confirming the shortfall is affordable.
     const funds = await this.getUserFunds(owner, token)
     const availableFunds = await this.unitsToAmount(token, funds[0].toString(), decimals)
-    if (new BigNumber(availableFunds).isLessThan(new BigNumber(depositAmount))) {
+    const needsDeposit = new BigNumber(availableFunds).isLessThan(
+      new BigNumber(depositAmount)
+    )
+
+    // Only a deposit or (re-)authorization sends a transaction. A payer whose escrow
+    // funds and authorization already suffice (or whose gas is sponsored) needs no gas,
+    // so skip the check. When a tx WILL be sent, verify the PAYER (owner) has gas —
+    // fail fast before the first approve/deposit/authorize.
+    if (needsDeposit || reauth) {
+      const balanceNativeToken = await provider.getBalance(owner)
+      if (balanceNativeToken === 0n) {
+        return {
+          isValid: false,
+          message: `Native token balance of ${owner} is 0. Add funds to pay for gas`
+        }
+      }
+    }
+
+    if (needsDeposit) {
       const topUp = new BigNumber(depositAmount)
         .minus(new BigNumber(availableFunds))
         .toFixed()
@@ -352,7 +370,7 @@ export class EscrowContract extends SmartContractWithAddress {
     if (reauth) {
       await this.authorize(
         getAddress(token),
-        getAddress(consumerAddress),
+        getAddress(payee),
         reauth.ceiling,
         reauth.newSeconds,
         reauth.newCounts,
