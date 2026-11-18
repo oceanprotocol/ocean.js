@@ -48,10 +48,7 @@ import { PROTOCOL_COMMANDS, AuthTokenOptions } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
 import { signRequest } from '../../utils/SignatureUtils.js'
-import {
-  prepareAuthTokenRequest,
-  normalizeAuthTokenArgs
-} from '../../utils/AuthToken.js'
+import { prepareAuthTokenRequest, normalizeAuthTokenArgs } from '../../utils/AuthToken.js'
 import {
   generateClientChallenge,
   resolveVerifiedIssuer

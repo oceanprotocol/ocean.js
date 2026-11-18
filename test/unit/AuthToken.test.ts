@@ -4,10 +4,7 @@ import {
   AUTH_TOKEN_VERSION
 } from '../../src/utils/SignatureUtils.js'
 import { prepareAuthTokenRequest } from '../../src/utils/AuthToken.js'
-import {
-  COMMANDS,
-  listScopableCommands
-} from '../../src/utils/CommandCatalog.js'
+import { COMMANDS, listScopableCommands } from '../../src/utils/CommandCatalog.js'
 import { STATUS_CHALLENGE_DOMAIN } from '../../src/utils/NodeIdentity.js'
 import {
   PROTOCOL_COMMANDS,

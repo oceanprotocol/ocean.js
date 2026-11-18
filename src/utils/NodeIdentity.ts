@@ -41,7 +41,7 @@ export async function verifyNodeChallenge(
   try {
     if (!peerId || !clientChallenge || !signedChallenge) return false
     const pid = peerIdFromString(peerId)
-    const publicKey = pid.publicKey
+    const { publicKey } = pid
     if (!publicKey) return false
     const data = toUtf8Bytes(STATUS_CHALLENGE_DOMAIN + clientChallenge)
     const sigHex = signedChallenge.startsWith('0x')

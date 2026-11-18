@@ -121,10 +121,7 @@ export function prepareAuthTokenRequest(args: {
       throw new Error('validUntil must be in the future')
     }
     // Precise client-side cap check against the node's advertised policy (don't hardcode 24h).
-    if (
-      maxTokenLifetime &&
-      validUntil > Date.now() + maxTokenLifetime * 1000 + 60_000
-    ) {
+    if (maxTokenLifetime && validUntil > Date.now() + maxTokenLifetime * 1000 + 60_000) {
       LoggerInstance.warn(
         `generateAuthToken: validUntil exceeds the node's maxTokenLifetime (${maxTokenLifetime}s); the node will reject it.`
       )

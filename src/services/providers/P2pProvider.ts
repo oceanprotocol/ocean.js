@@ -76,10 +76,7 @@ import {
   AuthTokenOptions
 } from '../../@types/Provider.js'
 import { signRequest } from '../../utils/SignatureUtils.js'
-import {
-  prepareAuthTokenRequest,
-  normalizeAuthTokenArgs
-} from '../../utils/AuthToken.js'
+import { prepareAuthTokenRequest, normalizeAuthTokenArgs } from '../../utils/AuthToken.js'
 import {
   generateClientChallenge,
   resolveVerifiedIssuer

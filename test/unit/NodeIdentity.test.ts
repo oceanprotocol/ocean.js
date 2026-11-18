@@ -44,7 +44,9 @@ describe('OJ-03 node identity challenge (client verify)', () => {
     const challenge = generateClientChallenge()
     // attacker signs but claims victim's peerId
     const sig = await attacker.sign(toUtf8Bytes(STATUS_CHALLENGE_DOMAIN + challenge))
-    expect(await verifyNodeChallenge(victimPeerId, challenge, hexlify(sig))).to.equal(false)
+    expect(await verifyNodeChallenge(victimPeerId, challenge, hexlify(sig))).to.equal(
+      false
+    )
   })
 
   it('resolveVerifiedIssuer fails closed when signedChallenge is absent', async () => {

@@ -38,7 +38,7 @@ describe('Auth token tests', async () => {
     let threw = false
     try {
       await ProviderInstance.generateAuthToken(account, providerUrl)
-    } catch (e) {
+    } catch {
       threw = true
     }
     expect(threw).to.equal(true)
