@@ -47,6 +47,8 @@ import {
   NodeP2P,
   CompleteSignature,
   SignerOrAuthTokenOrSignature,
+  AuthTokenOptions,
+  AuthTokenPolicy,
   EscrowEventRecord,
   EscrowEventsFilter
 } from '../../@types/index.js'
@@ -827,9 +829,23 @@ export class BaseProvider {
   public async generateAuthToken(
     consumer: Signer,
     nodeUri: OceanNode,
+    options?: AuthTokenOptions | AbortSignal,
     signal?: AbortSignal
   ): Promise<string> {
-    return this.getImpl(nodeUri).generateAuthToken(consumer, nodeUri, signal)
+    return this.getImpl(nodeUri).generateAuthToken(consumer, nodeUri, options, signal)
+  }
+
+  /**
+   * Read the node's auth-token policy (plan §10.3) so apps/UIs can show what the node
+   * requires/accepts (max lifetime, cross-node federation, revocation posture) before minting or
+   * presenting a token. Returns undefined on nodes that predate scoped tokens.
+   */
+  public async getNodeAuthTokenPolicy(
+    nodeUri: OceanNode,
+    signal?: AbortSignal
+  ): Promise<AuthTokenPolicy | undefined> {
+    const status = await this.getImpl(nodeUri).getNodeStatus(nodeUri, signal)
+    return status?.authTokenPolicy
   }
 
   public async generateSignedAuthToken(

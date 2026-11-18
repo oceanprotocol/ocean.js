@@ -44,9 +44,18 @@ import {
   EscrowEventRecord,
   EscrowEventsFilter
 } from '../../@types/index.js'
-import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
+import { PROTOCOL_COMMANDS, AuthTokenOptions } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
+import { signRequest } from '../../utils/SignatureUtils.js'
+import {
+  prepareAuthTokenRequest,
+  normalizeAuthTokenArgs
+} from '../../utils/AuthToken.js'
+import {
+  generateClientChallenge,
+  resolveVerifiedIssuer
+} from '../../utils/NodeIdentity.js'
 import { responseBodyToAsyncIterable } from '../../utils/bytes.js'
 import { assertServiceResultTarget } from './serviceResult.js'
 import {
@@ -109,13 +118,22 @@ export class HttpProvider {
     }
   }
 
-  public async getNodeStatus(nodeUri: string, signal?: AbortSignal): Promise<NodeStatus> {
+  public async getNodeStatus(
+    nodeUri: string,
+    signal?: AbortSignal,
+    // OJ-03 (plan §8.1): when provided, the node answers with `signedChallenge` proving it controls
+    // its peerId. Backward compatible — omitted ⇒ today's response.
+    clientChallenge?: string
+  ): Promise<NodeStatus> {
     const path = this.baseUrl(nodeUri) + '/directCommand'
     try {
       const response = await fetch(path, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: PROTOCOL_COMMANDS.STATUS }),
+        body: JSON.stringify({
+          command: PROTOCOL_COMMANDS.STATUS,
+          ...(clientChallenge ? { clientChallenge } : {})
+        }),
         signal
       })
       if (response?.ok) return response.json()
@@ -1185,40 +1203,55 @@ export class HttpProvider {
     return responseBodyToAsyncIterable(response.body)
   }
 
-  /** Generates an auth token
+  /** Generates an auth token.
+   *
+   * By default (plan §10.1) this now mints a **node-scoped v2 token** proving the issuer identity
+   * first (OJ-03) and requiring an explicit `validUntil`. BREAKING: a call with no `options` (or
+   * only a `signal`) now throws unless `validUntil` is supplied in `options`. Pass
+   * `{ audience: 'any', validUntil }` to mint an unrestricted token (old behaviour).
+   *
    * @param {Signer} consumer consumer Signer wallet object
    * @param {string} nodeUri The URI of the provider we want to query
-   * @param {AbortSignal} signal abort signal
+   * @param {AuthTokenOptions} [options] audience / scope / validUntil / allowUnverifiedIssuer.
+   *        For backward compatibility an AbortSignal may be passed here instead.
+   * @param {AbortSignal} [signal] abort signal
    * @return {Promise<string>}
    */
   public async generateAuthToken(
     consumer: Signer,
     nodeUri: string,
+    options?: AuthTokenOptions | AbortSignal,
     signal?: AbortSignal
   ): Promise<string> {
+    // Backward compat: old call sites pass `(consumer, nodeUri, signal)`.
+    const { opts, abortSignal } = normalizeAuthTokenArgs(options, signal)
     const consumerAddress = await consumer.getAddress()
     const url = this.baseUrl(nodeUri) + '/api/services/auth/token'
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
+    const nonce = (
+      (await this.getNonce(nodeUri, consumerAddress, abortSignal)) + 1
+    ).toString()
 
-    const issuerPeerId = (await this.getNodeStatus(nodeUri, signal))?.id
-    if (!issuerPeerId) throw new Error('Could not resolve node peerId for signature.')
-    const signature = await getSignature(
-      consumer,
+    // OJ-03: fetch status WITH a fresh challenge and verify the issuer identity before signing.
+    const clientChallenge = generateClientChallenge()
+    const status = await this.getNodeStatus(nodeUri, abortSignal, clientChallenge)
+    const issuerPeerId = await resolveVerifiedIssuer(status, clientChallenge, opts)
+
+    const prepared = prepareAuthTokenRequest({
+      consumerAddress,
       nonce,
-      PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN,
-      issuerPeerId
-    )
+      issuerPeerId,
+      options: opts,
+      maxTokenLifetime: status?.authTokenPolicy?.maxTokenLifetime
+    })
+    // The consumer is always a Signer here, so sign the prepared message directly.
+    const signature = await signRequest(consumer, prepared.message)
 
     try {
       const response = await fetch(url, {
         method: 'POST',
-        body: JSON.stringify({
-          address: consumerAddress,
-          signature,
-          nonce
-        }),
+        body: JSON.stringify({ ...prepared.body, signature }),
         headers: { 'Content-Type': 'application/json' },
-        signal
+        signal: abortSignal
       })
 
       if (!response?.ok) {
