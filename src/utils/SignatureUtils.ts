@@ -1,5 +1,54 @@
 import { JsonRpcSigner, Signer, getBytes, ethers } from 'ethers'
 import { LoggerInstance } from './Logger'
+import { PROTOCOL_COMMANDS } from '../@types/Provider.js'
+
+/**
+ * Scoped auth tokens — current token format version. SHARED wire contract with ocean-node: this
+ * MUST byte-match the node's `AUTH_TOKEN_VERSION`. ocean.js is the signer; ocean-node the verifier.
+ */
+export const AUTH_TOKEN_VERSION = 2
+
+/**
+ * Build the v2 scoped-auth-token signed message (plan §3.2). Byte-identical to the node's
+ * `buildCreateAuthTokenSignatureMessage`. The golden vectors in both repos' tests pin these bytes.
+ *
+ * message =
+ *   address + nonce + "createAuthToken" + issuerPeerId
+ *   + "|v:" + V + "|aud:" + AUD + "|cmd:" + CMD + "|exp:" + EXP
+ *
+ * AUD/CMD are canonicalized: dedup via `new Set` BEFORE `.sort()` (default ascending string sort),
+ * comma-joined. Omitted ⇒ empty string. Never pass `[]` (the node rejects it).
+ */
+export function buildCreateAuthTokenSignatureMessage(fields: {
+  address: string
+  nonce: string | number
+  issuerPeerId: string
+  audience?: string[]
+  scope?: string[]
+  validUntil: number // epoch ms, required for v2
+}): string {
+  const aud = fields.audience?.length
+    ? Array.from(new Set(fields.audience)).sort().join(',')
+    : ''
+  const cmd = fields.scope?.length
+    ? Array.from(new Set(fields.scope)).sort().join(',')
+    : ''
+  const V = String(AUTH_TOKEN_VERSION)
+  return (
+    String(fields.address) +
+    String(fields.nonce) +
+    String(PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN) +
+    String(fields.issuerPeerId ?? '') +
+    '|v:' +
+    V +
+    '|aud:' +
+    aud +
+    '|cmd:' +
+    cmd +
+    '|exp:' +
+    String(fields.validUntil)
+  )
+}
 
 /**
  * Signs the hash of a message using the provided signer.

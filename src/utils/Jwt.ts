@@ -1,11 +1,17 @@
 import jwt from 'jsonwebtoken'
-import { JwtPayload } from '../@types/Jwt'
+import { JwtPayload } from '../@types/Jwt.js'
 
 export function decodeJwt(token: string): JwtPayload {
   try {
     const decoded = jwt.decode(token, { json: true })
+    // jwt.decode returns null for a malformed token (it does not throw). Reject that rather than
+    // casting null through as a JwtPayload. Older tokens that merely omit the newer optional claims
+    // still decode to a valid object (address/nonce/createdAt present) and pass.
+    if (!decoded || typeof decoded !== 'object') {
+      throw new Error('Invalid JWT payload')
+    }
     return decoded as JwtPayload
-  } catch (error) {
+  } catch {
     throw new Error('Error decoding JWT')
   }
 }
