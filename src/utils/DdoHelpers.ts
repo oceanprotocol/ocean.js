@@ -1,5 +1,4 @@
-import sha256 from 'crypto-js/sha256.js'
-import { getAddress } from 'ethers'
+import { deriveDid, hashSerializedDdo } from '@oceanprotocol/ddo-js'
 
 /**
  * Generates a valid DID
@@ -8,9 +7,7 @@ import { getAddress } from 'ethers'
  * @returns {string} - The DID
  */
 export function generateDid(nftAddress: string, chainId: number): string {
-  nftAddress = getAddress(nftAddress)
-  const checksum = sha256(nftAddress + chainId.toString(10))
-  return `did:op:${checksum.toString()}`
+  return deriveDid(nftAddress, chainId, '4')
 }
 
 /**
@@ -19,5 +16,5 @@ export function generateDid(nftAddress: string, chainId: number): string {
  * @returns {string} - The SHA256 hash of the input data
  */
 export function getHash(data: any): string {
-  return sha256(data).toString()
+  return hashSerializedDdo(String(data), 'json-utf8').slice(2)
 }
