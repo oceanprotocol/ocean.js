@@ -1,8 +1,7 @@
-import { AuthTokenOptions, UNRESTRICTED_AUDIENCE } from '../@types/Provider'
-import { buildCreateAuthTokenSignatureMessage } from './SignatureUtils'
-import { COMMANDS } from './CommandCatalog'
-import { PROTOCOL_COMMANDS } from '../@types/Provider'
-import { LoggerInstance } from './Logger'
+import { AuthTokenOptions, UNRESTRICTED_AUDIENCE } from '../@types/Provider.js'
+import { buildCreateAuthTokenSignatureMessage } from './SignatureUtils.js'
+import { COMMANDS } from './CommandCatalog.js'
+import { LoggerInstance } from './Logger.js'
 
 // Client-side caps mirror the node's (plan §5.3). The node is authoritative; these just give
 // callers fast, precise errors.
@@ -105,51 +104,48 @@ export function prepareAuthTokenRequest(args: {
 
   const hasAudience = Array.isArray(audience) && audience.length > 0
   const hasScope = Array.isArray(scope) && scope.length > 0
-  const isV2 = hasAudience || hasScope || validUntil !== undefined
 
-  // ── validUntil: required for v2, never defaulted by ocean.js (plan §3.3 / §10.1)
-  if (isV2 && validUntil === undefined) {
+  // ── validUntil: REQUIRED, never defaulted by ocean.js (plan §3.3 / §10.1). Every token ocean.js
+  // mints is v2 (even the unrestricted `audience: 'any'` case, which is v2 with no audience claim),
+  // so a missing validUntil is always an error — checked BEFORE signing, regardless of audience.
+  if (validUntil === undefined) {
     throw new Error(
-      'validUntil is required when minting a scoped (v2) auth token (audience/scope set or node-scoped default)'
+      'validUntil is required to mint an auth token (epoch ms, within the node maxTokenLifetime)'
     )
   }
-  if (validUntil !== undefined) {
-    if (!Number.isInteger(validUntil)) {
-      throw new Error('validUntil must be an integer epoch-milliseconds timestamp')
-    }
-    if (validUntil <= Date.now()) {
-      throw new Error('validUntil must be in the future')
-    }
-    // Precise client-side cap check against the node's advertised policy (don't hardcode 24h).
-    if (maxTokenLifetime && validUntil > Date.now() + maxTokenLifetime * 1000 + 60_000) {
-      LoggerInstance.warn(
-        `generateAuthToken: validUntil exceeds the node's maxTokenLifetime (${maxTokenLifetime}s); the node will reject it.`
-      )
-    }
+  if (!Number.isInteger(validUntil)) {
+    throw new Error('validUntil must be an integer epoch-milliseconds timestamp')
+  }
+  if (validUntil <= Date.now()) {
+    throw new Error('validUntil must be in the future')
+  }
+  // Reject (don't just warn) an over-cap validUntil before signing when the node's advertised cap
+  // is known — mirrors the node's reject-don't-clamp rule, incl. its +60s skew (don't hardcode 24h).
+  if (maxTokenLifetime && validUntil > Date.now() + maxTokenLifetime * 1000 + 60_000) {
+    throw new Error(
+      `validUntil exceeds the node's maxTokenLifetime (${maxTokenLifetime}s); choose an earlier expiry.`
+    )
   }
 
-  // ── build the signed message
-  const message = isV2
-    ? buildCreateAuthTokenSignatureMessage({
-        address: consumerAddress,
-        nonce,
-        issuerPeerId,
-        audience: hasAudience ? audience : undefined,
-        scope: hasScope ? scope : undefined,
-        validUntil: validUntil as number
-      })
-    : String(consumerAddress) +
-      String(nonce) +
-      String(PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN) +
-      String(issuerPeerId)
+  // ── Snapshot the validated audience/scope ONCE, so a caller mutating their array during the
+  // async signing step cannot change what gets submitted after the signature is computed.
+  const audienceOut = hasAudience ? [...audience] : undefined
+  const scopeOut = hasScope ? [...scope] : undefined
+
+  // ── build the signed message (always v2)
+  const message = buildCreateAuthTokenSignatureMessage({
+    address: consumerAddress,
+    nonce,
+    issuerPeerId,
+    audience: audienceOut,
+    scope: scopeOut,
+    validUntil
+  })
 
   // ── body mirrors EXACTLY what was signed (omit absent aud/scope)
-  const body: Record<string, any> = { address: consumerAddress, nonce }
-  if (isV2) {
-    body.validUntil = validUntil
-    if (hasAudience) body.audience = audience
-    if (hasScope) body.scope = scope
-  }
+  const body: Record<string, any> = { address: consumerAddress, nonce, validUntil }
+  if (audienceOut) body.audience = audienceOut
+  if (scopeOut) body.scope = scopeOut
 
-  return { message, isV2, body }
+  return { message, isV2: true, body }
 }

@@ -826,6 +826,16 @@ export class BaseProvider {
     )
   }
 
+  /**
+   * Mint a JWT auth token.
+   *
+   * BREAKING (v10): this now mints a **node-scoped v2 token** and **requires an explicit
+   * `validUntil`** (epoch ms) in `options` — an old no-arg `generateAuthToken(consumer, nodeUri)`
+   * call throws. It also verifies the node's identity (OJ-03) before signing. Scope a token with
+   * `{ audience, scope, validUntil }`, or pass `{ audience: 'any', validUntil }` for an unrestricted
+   * token. For backward compatibility an `AbortSignal` may be passed as the 3rd argument instead of
+   * `options`; otherwise `options` is 3rd and the `AbortSignal` is 4th.
+   */
   public async generateAuthToken(
     consumer: Signer,
     nodeUri: OceanNode,
@@ -838,14 +848,18 @@ export class BaseProvider {
   /**
    * Read the node's auth-token policy (plan §10.3) so apps/UIs can show what the node
    * requires/accepts (max lifetime, cross-node federation, revocation posture) before minting or
-   * presenting a token. Returns undefined on nodes that predate scoped tokens.
+   * presenting a token. Throws when the node is unreachable (status is null); returns `undefined`
+   * only when the node responded but predates scoped tokens (no `authTokenPolicy`).
    */
   public async getNodeAuthTokenPolicy(
     nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<AuthTokenPolicy | undefined> {
     const status = await this.getImpl(nodeUri).getNodeStatus(nodeUri, signal)
-    return status?.authTokenPolicy
+    if (!status) {
+      throw new Error('Could not reach node to read its auth-token policy')
+    }
+    return status.authTokenPolicy
   }
 
   public async generateSignedAuthToken(

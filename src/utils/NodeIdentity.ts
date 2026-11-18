@@ -1,7 +1,7 @@
 import { peerIdFromString } from '@libp2p/peer-id'
 import { toUtf8Bytes, getBytes } from 'ethers'
-import { LoggerInstance } from './Logger'
-import { AuthTokenOptions, NodeStatus } from '../@types/Provider'
+import { LoggerInstance } from './Logger.js'
+import { AuthTokenOptions, NodeStatus } from '../@types/Provider.js'
 
 /**
  * OJ-03 — domain-separation prefix for the status identity challenge. SHARED constant: this MUST
@@ -74,7 +74,9 @@ export async function resolveVerifiedIssuer(
 ): Promise<string> {
   const peerId = status?.id
   if (!peerId) throw new Error('Could not resolve node peerId for signature.')
-  if (options?.allowUnverifiedIssuer) {
+  // Only an explicit `true` bypasses verification — a stray truthy value (e.g. a non-empty string)
+  // must NOT silently disable the OJ-03 check.
+  if (options?.allowUnverifiedIssuer === true) {
     LoggerInstance.warn(
       'generateAuthToken: allowUnverifiedIssuer=true — skipping the OJ-03 issuer identity check. ' +
         'The token is signed over an UNVERIFIED peerId and may be usable at a spoofed node. INSECURE.'

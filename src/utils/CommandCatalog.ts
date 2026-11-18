@@ -3,7 +3,7 @@ import {
   TOKEN_SCOPE_DISALLOWED,
   CommandInfo,
   CommandCategory
-} from '../@types/Provider'
+} from '../@types/Provider.js'
 
 /**
  * User-facing catalog of protocol commands, to support auth-token `scope` UX (plan §9.2).
@@ -191,21 +191,25 @@ const SEED: CatalogSeed[] = [
     category: 'admin',
     adminReadonly: true
   },
-  // auth management — token can never mint/revoke/validate tokens
+  // auth management — bearer-token auth is not supported for these (they require a fresh
+  // nonce-bound signature, or are node-to-node), so tokenAuth: false.
   {
     command: PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN,
     description: 'Create an auth token',
-    category: 'auth'
+    category: 'auth',
+    tokenAuth: false
   },
   {
     command: PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN,
     description: 'Invalidate an auth token',
-    category: 'auth'
+    category: 'auth',
+    tokenAuth: false
   },
   {
     command: PROTOCOL_COMMANDS.VALIDATE_AUTH_TOKEN,
     description: 'Validate an auth token (node-to-node)',
-    category: 'auth'
+    category: 'auth',
+    tokenAuth: false
   },
   {
     command: PROTOCOL_COMMANDS.POLICY_SERVER_PASSTHROUGH,

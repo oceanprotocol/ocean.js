@@ -1,6 +1,6 @@
 import { JsonRpcSigner, Signer, getBytes, ethers } from 'ethers'
 import { LoggerInstance } from './Logger'
-import { PROTOCOL_COMMANDS } from '../@types/Provider'
+import { PROTOCOL_COMMANDS } from '../@types/Provider.js'
 
 /**
  * Scoped auth tokens — current token format version. SHARED wire contract with ocean-node: this

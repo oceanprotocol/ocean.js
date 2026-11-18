@@ -33,15 +33,17 @@ describe('Auth token tests', async () => {
     expect(token).to.be.a('string')
   })
 
-  it('should throw when validUntil is missing', async () => {
+  it('should throw a validUntil-specific error when validUntil is missing', async () => {
     await sleep(100)
-    let threw = false
+    let message = ''
     try {
       await ProviderInstance.generateAuthToken(account, providerUrl)
-    } catch {
-      threw = true
+    } catch (e) {
+      message = (e as Error)?.message ?? ''
     }
-    expect(threw).to.equal(true)
+    // Must fail specifically on the missing expiry — not silently pass on a nonce-lookup or
+    // signedChallenge error (which would mean the node/test environment is misconfigured).
+    expect(message.toLowerCase()).to.contain('validuntil')
   })
 
   it('should invalidate auth token', async () => {

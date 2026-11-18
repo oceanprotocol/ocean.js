@@ -115,6 +115,39 @@ describe('prepareAuthTokenRequest', () => {
     expect(prepared.message).to.contain('|aud:|')
   })
 
+  it('requires validUntil even for the unrestricted case (always v2)', () => {
+    expect(() =>
+      prepareAuthTokenRequest({
+        ...base,
+        options: { audience: UNRESTRICTED_AUDIENCE }
+      })
+    ).to.throw(/validUntil is required/)
+  })
+
+  it('rejects a validUntil beyond the node maxTokenLifetime (reject, not warn)', () => {
+    expect(() =>
+      prepareAuthTokenRequest({
+        ...base,
+        maxTokenLifetime: 3600, // 1h
+        options: { validUntil: Date.now() + 100 * 24 * 60 * 60_000 } // 100 days
+      })
+    ).to.throw(/maxTokenLifetime/)
+  })
+
+  it('snapshots audience/scope so later caller mutation cannot change the body', () => {
+    const vu = Date.now() + 60_000
+    const audience = ['16Uiu2HAmA', '16Uiu2HAmB']
+    const scope = ['download']
+    const prepared = prepareAuthTokenRequest({
+      ...base,
+      options: { audience, scope, validUntil: vu }
+    })
+    audience.push('16Uiu2HAmEVIL')
+    scope.push('startCompute')
+    expect(prepared.body.audience).to.deep.equal(['16Uiu2HAmA', '16Uiu2HAmB'])
+    expect(prepared.body.scope).to.deep.equal(['download'])
+  })
+
   it('rejects an explicit empty audience / scope', () => {
     const vu = Date.now() + 60_000
     expect(() =>
@@ -172,9 +205,12 @@ describe('command catalog', () => {
     expect(COMMANDS[PROTOCOL_COMMANDS.FETCH_CONFIG].scopable).to.equal(true)
     expect(COMMANDS[PROTOCOL_COMMANDS.DOWNLOAD].scopable).to.equal(true)
   })
-  it('marks decryptDDO + mutating admin as tokenAuth:false', () => {
+  it('marks decryptDDO + mutating admin + auth-mgmt as tokenAuth:false', () => {
     expect(COMMANDS[PROTOCOL_COMMANDS.DECRYPT_DDO].tokenAuth).to.equal(false)
     expect(COMMANDS[PROTOCOL_COMMANDS.STOP_NODE].tokenAuth).to.equal(false)
+    expect(COMMANDS[PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN].tokenAuth).to.equal(false)
+    expect(COMMANDS[PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN].tokenAuth).to.equal(false)
+    expect(COMMANDS[PROTOCOL_COMMANDS.VALIDATE_AUTH_TOKEN].tokenAuth).to.equal(false)
     expect(COMMANDS[PROTOCOL_COMMANDS.DOWNLOAD].tokenAuth).to.equal(true)
   })
   it('TOKEN_SCOPE_DISALLOWED and listScopableCommands are consistent', () => {

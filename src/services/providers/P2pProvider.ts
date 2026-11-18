@@ -1798,6 +1798,42 @@ export class P2pProvider {
   }
 
   /**
+   * Best-effort extraction of the target peerId string from a P2P nodeUri (a bare peerId, a
+   * multiaddr with /p2p/<id>, a NodeP2P.nodeId, or a PeerId object). Returns null when the target
+   * does not carry a peerId (e.g. a bare multiaddr) — the caller then skips the identity match.
+   * Used by generateAuthToken's OJ-03 check to confirm the challenged peer is the one we targeted.
+   */
+  private extractTargetPeerId(nodeUri: OceanNode): string | null {
+    try {
+      if (typeof nodeUri === 'string') {
+        try {
+          const pid = this.peerIdFromMultiaddr(multiaddr(nodeUri))
+          if (pid) return pid
+        } catch {}
+        try {
+          return peerIdFromString(nodeUri).toString()
+        } catch {}
+        return null
+      }
+      if (nodeUri && typeof nodeUri === 'object') {
+        const asNode = nodeUri as NodeP2P
+        if (typeof asNode.nodeId === 'string' && asNode.nodeId) return asNode.nodeId
+        // Otherwise treat it as a libp2p PeerId object: stringify and validate it parses.
+        const asPeer = nodeUri as PeerId
+        if (typeof asPeer.toString === 'function') {
+          const s = asPeer.toString()
+          try {
+            return peerIdFromString(s).toString()
+          } catch {
+            return null
+          }
+        }
+      }
+    } catch {}
+    return null
+  }
+
+  /**
    * Budget for a DHT walk. `dhtLookupTimeout` was documented and defaulted here from
    * the start, but the line applying it was commented out — so a lookup silently ran
    * on whatever signal the operation carried: the dial timeout, far too short for a
@@ -3345,6 +3381,25 @@ export class P2pProvider {
     const clientChallenge = generateClientChallenge()
     const status = await this.getNodeStatus(nodeUri, abortSignal, clientChallenge)
     const issuerPeerId = await resolveVerifiedIssuer(status, clientChallenge, opts)
+
+    // OJ-03 on P2P: the challenge proves whoever answered controls `issuerPeerId`, but confirm that
+    // is the peer we TARGETED — otherwise a peer could relay our challenge to a different node and
+    // return that node's signature, making us sign a token for a peerId we did not mean to trust.
+    // Compare parsed peerIds so base58/CIDv1 encodings still match.
+    const targetPeerId = this.extractTargetPeerId(nodeUri)
+    if (targetPeerId && !opts?.allowUnverifiedIssuer) {
+      let sameTarget: boolean
+      try {
+        sameTarget = peerIdFromString(targetPeerId).equals(peerIdFromString(issuerPeerId))
+      } catch {
+        sameTarget = targetPeerId === issuerPeerId
+      }
+      if (!sameTarget) {
+        throw new Error(
+          'OJ-03: the verified issuer peerId does not match the targeted node; refusing to sign a token.'
+        )
+      }
+    }
 
     const prepared = prepareAuthTokenRequest({
       consumerAddress: address,
