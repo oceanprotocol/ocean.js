@@ -1623,7 +1623,7 @@ export class HttpProvider {
     did: string,
     signal?: AbortSignal
   ): Promise<any> {
-    const path = nodeUri + '/api/ddo/' + did
+    const path = this.baseUrl(nodeUri) + '/api/ddo/' + did
     const response = await fetch(path, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -1651,7 +1651,7 @@ export class HttpProvider {
     )
 
     const authHeader = this.getAuthorization(signerOrAuthToken)
-    const response = await fetch(`${nodeUri}/api/ddo/validate`, {
+    const response = await fetch(`${this.baseUrl(nodeUri)}/api/ddo/validate`, {
       method: 'POST',
       body: JSON.stringify({ ddo, publisherAddress, nonce, signature }),
       headers: {
@@ -1674,7 +1674,7 @@ export class HttpProvider {
     request: SearchQuery,
     signal?: AbortSignal
   ): Promise<QueryResult> {
-    const response = await fetch(`${nodeUri}/api/query`, {
+    const response = await fetch(`${this.baseUrl(nodeUri)}/api/query`, {
       method: 'POST',
       body: JSON.stringify(request),
       headers: { 'Content-Type': 'application/json' },
