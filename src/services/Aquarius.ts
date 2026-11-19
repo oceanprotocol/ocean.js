@@ -12,13 +12,67 @@ import { PROTOCOL_COMMANDS } from '../@types/Provider.js'
 import { isP2pUri, getAuthorization } from './providers/BaseProvider.js'
 import { ProviderInstance } from './Provider.js'
 
-export interface SearchQuery {
-  from?: number
-  size?: number
+/**
+ * The asset filters of the Ocean Node DDO search. A filter that is not set adds no
+ * condition; all filters that are set must hold. Each filter covers DDO v4 and v5.
+ * See the "DDO search" section of docs/database.md in oceanprotocol/ocean-node.
+ */
+export interface AssetFilter {
+  chainIds?: number[]
+  /** DDO versions, for example ['5.0.0'] */
+  versions?: string[]
+  ids?: string[]
+  excludeIds?: string[]
+  excludeNftAddresses?: string[]
+  owners?: string[]
+  /** in each group one of the lists must match; all groups must hold */
+  anyOf?: { ids?: string[]; owners?: string[]; datatokenAddresses?: string[] }[]
+  types?: ('dataset' | 'algorithm')[]
+  serviceTypes?: ('access' | 'compute')[]
+  datatokenAddresses?: string[]
+  tags?: string[]
+  /** each word in the name, description, author, tags, owner or datatoken; or a DID */
+  text?: string
+  nftStates?: number[]
+  /** also give the unlisted assets (state 5) */
+  includeUnlisted?: boolean
+  includePurgatory?: boolean
+  priceTypes?: string[]
+  excludePriceTypes?: string[]
+  /** ISO date */
+  createdAfter?: string
+  serviceEndpoints?: string[]
+  dataspace?: string
+  trustedAlgorithm?: { did: string; serviceId: string }
+  trustedAlgorithmPublisher?: string
+  /** only the DDOs that have indexedMetadata */
+  indexedOnly?: boolean
+}
 
-  query: any
-  sort?: { [jsonPath: string]: string }
-  aggs?: any
+/** A DDO search of Ocean Node. `page` starts at 1; `page` x `size` is 10000 at most. */
+export type SearchQuery =
+  | {
+      type?: 'assets'
+      filter?: AssetFilter
+      sort?: {
+        by: 'created' | 'orders' | 'price' | 'tokenSymbol' | 'relevance'
+        order?: 'asc' | 'desc'
+      }
+      page?: number
+      size?: number
+    }
+  | {
+      type: 'orders'
+      filter: { consumer: string } | { payer: string }
+      page?: number
+      size?: number
+    }
+  | { type: 'tags'; filter?: AssetFilter; size?: number }
+
+/** `results` holds DDOs, orders, or `{ tag, count }` for a tags search */
+export interface QueryResult<T = any> {
+  results: T[]
+  totalResults: number
 }
 
 export class Aquarius {
@@ -229,16 +283,16 @@ export class Aquarius {
   }
 
   /**
-   * Search over the DDOs using a query.
-   * @param  {SearchQuery} query Query to filter the DDOs.
+   * Search the DDOs, the orders or the tags of an Ocean Node.
+   * @param  {SearchQuery} query typed filters, sort and page; not an Elasticsearch body
    * @param {AbortSignal} signal abort signal
-   * @return {Promise<QueryResult>}
+   * @return {Promise<QueryResult>} one page of results and the total of all matches
    */
   public async querySearch(
     query: SearchQuery,
     signal?: AbortSignal,
     authorization?: string
-  ): Promise<any> {
+  ): Promise<QueryResult> {
     const path = this.aquariusURL + '/api/aquarius/assets/metadata/query'
 
     try {

@@ -236,18 +236,12 @@ describe('Publish consume test', async () => {
     // Regression guard for the route fix: querySearch() used to POST to
     // /api/aquarius/assets/query, which the node never registered (always 404). It now posts
     // to /api/aquarius/assets/metadata/query, so this must actually find the indexed asset.
-    const result = await aquarius.querySearch({
-      query: {
-        bool: {
-          filter: [{ term: { id: urlAssetId } }]
-        }
-      }
-    })
-    const flatResults = ([] as any[]).concat(...(Array.isArray(result) ? result : []))
+    const result = await aquarius.querySearch({ filter: { ids: [urlAssetId] } })
     assert(
-      flatResults.some((doc: any) => doc?.id === urlAssetId),
+      result.results.some((doc: any) => doc?.id === urlAssetId),
       'querySearch should find the just-indexed url asset by DID'
     )
+    assert(result.totalResults >= 1, 'querySearch should count the match')
   }).timeout(30000)
 
   it('Mint datasets datatokens to publisher', async () => {
