@@ -28,9 +28,9 @@ Before we start it is important that you have all of the necessary prerequisites
 
 ## 1. Initialize services
 
-Ocean.js uses off-chain services for metadata (Aquarius) and consuming datasets (Provider).
+Ocean.js uses Ocean Node, an off-chain service, for metadata and for consuming datasets.
 
-We start by initializing the services. To do this, we clone the Barge repository and run it. This will run the current default versions of [Aquarius](https://github.com/oceanprotocol/aquarius), [Provider](https://github.com/oceanprotocol/provider), and [Ganache](https://github.com/trufflesuite/ganache) with [our contracts](https://github.com/oceanprotocol/contracts) deployed to it.
+We start by initializing the services. To do this, we clone the Barge repository and run it. This will run the current default versions of [Ocean Node](https://github.com/oceanprotocol/ocean-node) and [Ganache](https://github.com/trufflesuite/ganache) with [our contracts](https://github.com/oceanprotocol/contracts) deployed to it.
 
 ```bash
 git clone https://github.com/oceanprotocol/barge.git
@@ -124,7 +124,6 @@ import { homedir } from 'os'
 import { ethers, getAddress, JsonRpcProvider, parseEther, Signer, toBeHex } from 'ethers'
 import {
   ProviderInstance,
-  Aquarius,
   NftFactory,
   Datatoken,
   Nft,
@@ -268,7 +267,6 @@ const ALGORITHM_DDO: DDO = {
 Now we define the variables which we will need later
 ```Typescript
 let config: Config
-let aquariusInstance: Aquarius
 let datatoken: Datatoken
 let providerUrl: string
 let publisherAccount: Signer
@@ -360,7 +358,7 @@ async function createAssetHelper(
     providerUrl,
     owner
   )
-  const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
+  const validateResult = await ProviderInstance.validateDdo(providerUrl, ddo, owner)
   await nft.setMetadata(
     nftAddress,
     await owner.getAddress(),
@@ -441,7 +439,6 @@ We need to load the configuration. Add the following code into your `run(){ }` f
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
     Object.assign(config, getNodeEndpointConfig())
-    aquariusInstance = new Aquarius(config?.oceanNodeUri)
     providerUrl = config?.oceanNodeUri
     addresses = JSON.parse(
       // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -561,12 +558,18 @@ Now, let's check that we successfully published a algorithm (create NFT + Datato
 
   ### 7.1 Resolve published datasets and algorithms
 ```Typescript
-    resolvedDatasetDdo = await aquariusInstance.waitForIndexer(datasetId)
-    resolvedAlgorithmDdo = await aquariusInstance.waitForIndexer(algorithmId)
+    resolvedDatasetDdo = await ProviderInstance.waitForIndexer(
+      config.oceanNodeUri,
+      datasetId
+    )
+    resolvedAlgorithmDdo = await ProviderInstance.waitForIndexer(
+      config.oceanNodeUri,
+      algorithmId
+    )
 ```
 <!--
-    assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')
-    assert(resolvedAlgorithmDdo, 'Cannot fetch DDO from Aquarius')
+    assert(resolvedDatasetDdo, 'Cannot fetch DDO from the node')
+    assert(resolvedAlgorithmDdo, 'Cannot fetch DDO from the node')
   }).timeout(80000)
 -->
 

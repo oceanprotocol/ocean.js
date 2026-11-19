@@ -42,7 +42,9 @@ import {
   SignerOrAuthTokenOrSignature,
   CompleteSignature,
   EscrowEventRecord,
-  EscrowEventsFilter
+  EscrowEventsFilter,
+  SearchQuery,
+  QueryResult
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -1621,7 +1623,7 @@ export class HttpProvider {
     did: string,
     signal?: AbortSignal
   ): Promise<any> {
-    const path = nodeUri + '/api/aquarius/assets/ddo/' + did
+    const path = nodeUri + '/api/ddo/' + did
     const response = await fetch(path, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -1649,7 +1651,7 @@ export class HttpProvider {
     )
 
     const authHeader = this.getAuthorization(signerOrAuthToken)
-    const response = await fetch(`${nodeUri}/api/aquarius/assets/ddo/validate`, {
+    const response = await fetch(`${nodeUri}/api/ddo/validate`, {
       method: 'POST',
       body: JSON.stringify({ ddo, publisherAddress, nonce, signature }),
       headers: {
@@ -1665,6 +1667,23 @@ export class HttpProvider {
       hash: j.hash,
       proof: { validatorAddress: j.publicKey, r: j.r[0], s: j.s[0], v: j.v }
     } as ValidateMetadata
+  }
+
+  public async query(
+    nodeUri: string,
+    request: SearchQuery,
+    signal?: AbortSignal
+  ): Promise<QueryResult> {
+    const response = await fetch(`${nodeUri}/api/query`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+      headers: { 'Content-Type': 'application/json' },
+      signal
+    })
+    if (!response.ok) {
+      throw new Error(`Query failed: ${response.status} ${await response.text()}`)
+    }
+    return response.json()
   }
 
   private async getData(url: string, authorization?: string): Promise<Response> {

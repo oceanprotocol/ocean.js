@@ -12,6 +12,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  # The ocean-node image that Barge starts: the image of oceanprotocol/ocean-node#1601, which
+  # has the database-neutral DDO query of querySearch. Remove when #1601 is released.
+  NODE_VERSION: pr-1601
+
 jobs:
   lint:
     runs-on: ubuntu-latest

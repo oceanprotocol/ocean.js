@@ -48,9 +48,17 @@ import {
   CompleteSignature,
   SignerOrAuthTokenOrSignature,
   EscrowEventRecord,
-  EscrowEventsFilter
+  EscrowEventsFilter,
+  SearchQuery,
+  QueryResult
 } from '../../@types/index.js'
-import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
+import {
+  DDOManager,
+  type Asset,
+  type DDO,
+  type ValidateMetadata
+} from '@oceanprotocol/ddo-js'
+import { sleep } from '../../utils/General.js'
 import fetch from 'cross-fetch'
 import { LoggerInstance } from '../../utils/Logger.js'
 import { decodeJwt } from '../../utils/Jwt.js'
@@ -221,6 +229,9 @@ function computeEnvironmentSatisfies(
       computeResourceMatchesModel(res, model)
   )
 }
+
+// the cap of waitForIndexer attempts
+const MAX_INDEXER_RETRIES = 500
 
 export class BaseProvider {
   private httpProvider = new HttpProvider()
@@ -874,6 +885,47 @@ export class BaseProvider {
     signal?: AbortSignal
   ): Promise<ValidateMetadata> {
     return this.getImpl(nodeUri).validateDdo(nodeUri, ddo, signerOrAuthToken, signal)
+  }
+
+  /**
+   * Search the DDOs, the orders or the tags of a node: typed filters, sort and page.
+   * See the "DDO search" section of docs/database.md in oceanprotocol/ocean-node.
+   * @return one page of results and the total of all matches
+   */
+  public async query(
+    nodeUri: OceanNode,
+    request: SearchQuery,
+    signal?: AbortSignal
+  ): Promise<QueryResult> {
+    return this.getImpl(nodeUri).query(nodeUri, request, signal)
+  }
+
+  /**
+   * Waits until the node has indexed the DDO (or, with `txid`, the update of that
+   * transaction). Returns null after `maxRetries` attempts, 500 at most.
+   */
+  public async waitForIndexer(
+    nodeUri: OceanNode,
+    did: string,
+    txid?: string,
+    signal?: AbortSignal,
+    interval: number = 30000,
+    maxRetries: number = 100
+  ): Promise<Asset> {
+    const attempts = Math.min(maxRetries, MAX_INDEXER_RETRIES)
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      try {
+        const ddo = await this.resolveDdo(nodeUri, did, signal)
+        if (ddo) {
+          const { indexedMetadata } = DDOManager.getDDOClass(ddo).getAssetFields()
+          if (!txid || indexedMetadata?.event?.txid === txid) return ddo as Asset
+        }
+      } catch (e) {
+        // not indexed yet: try again
+      }
+      await sleep(interval)
+    }
+    return null
   }
 
   public async isValidProvider(url: OceanNode, signal?: AbortSignal): Promise<boolean> {

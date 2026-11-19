@@ -1,7 +1,6 @@
 import { ethers, hexlify, Signer, toBeHex, toUtf8Bytes } from 'ethers'
 import { ConfigHelper } from '../../src/config/index.js'
 import SHA256 from 'crypto-js/sha256.js'
-import { Aquarius } from '../services/Aquarius.js'
 import { NftFactory } from '../contracts/NFTFactory.js'
 import { Nft } from '../contracts/NFT.js'
 import { DatatokenCreateParams, AssetFiles } from '../@types/Datatoken.js'
@@ -36,7 +35,6 @@ export function useOasisSDK(network: string | number): boolean {
  * @param encryptDDO encrypt or not?
  * @param providerUrl the provider URL
  * @param providerFeeToken the provider fee token
- * @param aquariusInstance aquarius, could be node instance url
  * @param allowAccessList?: string,
  * @param denyAccessList?: string
  * @returns ddo id as string
@@ -51,7 +49,6 @@ export async function createAsset(
   encryptDDO: boolean = true, // default is true
   providerUrl: string,
   providerFeeToken: string,
-  aquariusInstance: Aquarius,
   accessListFactory?: string, // access list factory address
   allowAccessList?: string, // allow list address
   denyAccessList?: string, // deny list address
@@ -235,7 +232,7 @@ export async function createAsset(
       owner,
       null
     )
-    const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
+    const validateResult = await ProviderInstance.validateDdo(providerUrl, ddo, owner)
     metadataHash = validateResult.hash
     flags = 2
   } else {
