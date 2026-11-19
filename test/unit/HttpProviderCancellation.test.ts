@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Wallet } from 'ethers'
-import { ProviderInstance } from '../../src/index.js'
+import { ProviderInstance, PROTOCOL_COMMANDS } from '../../src/index.js'
 
 /**
  * `getDownloadUrl` and `getComputeResult` grew a trailing `AbortSignal`, and on the P2P
@@ -43,6 +43,11 @@ describe('HTTP transport cancellation', () => {
           calls.push({ url, signal: init?.signal })
           if (url.includes('/nonce')) {
             return { ok: true, json: async () => ({ nonce: 7 }) } as any
+          }
+          // signing now resolves the node peerId via the STATUS directCommand
+          const parsed = init?.body ? JSON.parse(init.body) : undefined
+          if (parsed?.command === PROTOCOL_COMMANDS.STATUS) {
+            return { ok: true, json: async () => ({ id: 'peer-1' }) } as any
           }
           return { ok: true, body: null } as any
         }) as any
@@ -102,6 +107,10 @@ describe('HTTP transport cancellation', () => {
     globalThis.fetch = (async (url: string, init?: any) => {
       if (url.includes('/nonce')) {
         return { ok: true, json: async () => ({ nonce: 7 }) } as any
+      }
+      const parsed = init?.body ? JSON.parse(init.body) : undefined
+      if (parsed?.command === PROTOCOL_COMMANDS.STATUS) {
+        return { ok: true, json: async () => ({ id: 'peer-1' }) } as any
       }
       const signal: AbortSignal | undefined = init?.signal
       let sent = 0
