@@ -18,6 +18,8 @@ import {
 } from '../../src/services/providers/P2pProvider.js'
 
 const NODE = 'http://127.0.0.1:8001'
+// The node peerId the mock STATUS endpoint returns; every signature binds it (anti-replay).
+const NODE_PEER_ID = '16Uiu2HAmFm7aTf5Z1yCAQB4CRdSKVSB7rC5jBwVKkkaS5uRtbyG5'
 const MAINTENANCE_BODY = {
   error: 'Node is in maintenance mode; not accepting new compute or service requests',
   code: 'MAINTENANCE_MODE'
@@ -40,11 +42,17 @@ function mockFetch(
     if (String(url).includes('/api/services/nonce')) {
       return { ok: true, json: async () => ({ nonce }) } as any
     }
+    const parsed = init?.body ? JSON.parse(init.body) : undefined
+    // Signing resolves the node peerId via the STATUS directCommand; answer it and do NOT record
+    // it, so the signed request stays the only recorded call.
+    if (parsed?.command === PROTOCOL_COMMANDS.STATUS) {
+      return { ok: true, status: 200, json: async () => ({ id: NODE_PEER_ID }) } as any
+    }
     calls.push({
       url,
       method: init?.method,
       headers: init?.headers,
-      body: init?.body ? JSON.parse(init.body) : undefined
+      body: parsed
     })
     return {
       ok: reply.ok,
@@ -110,12 +118,21 @@ describe('Maintenance mode client support', () => {
           )
         )
       const recovered = ethers.verifyMessage(
-        hashed(address + nonce + 'setMaintenance'),
+        hashed(address + nonce + 'setMaintenance' + NODE_PEER_ID),
         signature
       )
       expect(recovered).to.equal(admin.address)
+      // anti-replay: the old unbound message (no peerId) must NOT recover the signer
+      const unbound = ethers.verifyMessage(
+        hashed(address + nonce + 'setMaintenance'),
+        signature
+      )
+      expect(unbound).to.not.equal(admin.address)
       // and it is NOT valid for a different command string
-      const wrong = ethers.verifyMessage(hashed(address + nonce + 'stopNode'), signature)
+      const wrong = ethers.verifyMessage(
+        hashed(address + nonce + 'stopNode' + NODE_PEER_ID),
+        signature
+      )
       expect(wrong).to.not.equal(admin.address)
     })
 
@@ -160,9 +177,17 @@ describe('Maintenance mode client support', () => {
     })
 
     it('wraps a network failure in the generic provider error', async () => {
-      globalThis.fetch = (async (url: string) => {
+      globalThis.fetch = (async (url: string, init?: any) => {
         if (String(url).includes('/api/services/nonce')) {
           return { ok: true, json: async () => ({ nonce: 1 }) } as any
+        }
+        const parsed = init?.body ? JSON.parse(init.body) : undefined
+        if (parsed?.command === PROTOCOL_COMMANDS.STATUS) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({ id: NODE_PEER_ID })
+          } as any
         }
         throw new TypeError('fetch failed')
       }) as any
@@ -180,6 +205,14 @@ describe('Maintenance mode client support', () => {
       globalThis.fetch = (async (url: string, init?: any) => {
         if (String(url).includes('/api/services/nonce')) {
           return { ok: true, json: async () => ({ nonce: 1 }) } as any
+        }
+        const parsed = init?.body ? JSON.parse(init.body) : undefined
+        if (parsed?.command === PROTOCOL_COMMANDS.STATUS) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({ id: NODE_PEER_ID })
+          } as any
         }
         seen = init?.signal
         return { ok: true, status: 200, json: async () => ({ maintenance: true }) } as any

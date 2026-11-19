@@ -1783,8 +1783,17 @@ export class P2pProvider {
     const parts = ma.toString().split('/p2p/')
     if (parts.length <= 1) return null
     // Strip trailing protocol components like /p2p-circuit
-    const raw = parts[parts.length - 1]
-    return raw.split('/')[0] || null
+    const raw = parts[parts.length - 1].split('/')[0]
+    if (!raw) return null
+    // A multiaddr may carry the peerId in a non-canonical multibase (e.g. a CIDv1 base32/base36
+    // form), which `ma.toString()` preserves verbatim. Re-parse so this returns the SAME canonical
+    // `PeerId.toString()` the bare-id / nodeId branches use — and that the node's verifier rebuilds
+    // from its own `getPeerIdString()` — otherwise a signature bound to the raw form is rejected.
+    try {
+      return peerIdFromString(raw).toString()
+    } catch {
+      return null
+    }
   }
 
   /**
@@ -2047,8 +2056,62 @@ export class P2pProvider {
     }
     const consumerAddress = await getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signature = await getSignature(signerOrAuthToken, nonce, command)
+    // Bind the target node's peerId into the signed message (anti-replay): a signature made for
+    // one node cannot be replayed against another. For P2P the nodeUri already carries the
+    // peerId, so derive it directly — no status round-trip needed.
+    let issuerPeerId = this.peerIdFromNodeUri(nodeUri)
+    if (!issuerPeerId) {
+      // The nodeUri carried no peerId (e.g. an address-only multiaddr). libp2p can still
+      // dial it by address, so bind the identity it actually connected to — authenticated
+      // by the Noise handshake and exposed as `connection.remotePeer` — rather than
+      // signing without a peerId. A dial failure propagates (we never sign blind).
+      const dialTimeoutMs = this.p2pConfig.dialTimeout ?? DEFAULT_DIAL_TIMEOUT_MS
+      const dial = timeoutSignal(signal, dialTimeoutMs)
+      try {
+        const connection = await this.getConnection(nodeUri, dial.signal)
+        issuerPeerId = connection.remotePeer.toString()
+      } finally {
+        dial.cleanup()
+      }
+    }
+    if (!issuerPeerId) throw new Error('Could not resolve node peerId for signature.')
+    const signature = await getSignature(signerOrAuthToken, nonce, command, issuerPeerId)
     return { consumerAddress, nonce, signature }
+  }
+
+  /** Extracts the target node's peerId string from a P2P nodeUri (peerId / multiaddr / NodeP2P). */
+  private peerIdFromNodeUri(nodeUri: OceanNode): string | undefined {
+    if (typeof nodeUri === 'string') {
+      try {
+        const pid = this.peerIdFromMultiaddr(multiaddr(nodeUri))
+        if (pid) return pid
+      } catch {}
+      try {
+        return peerIdFromString(nodeUri).toString()
+      } catch {}
+      return undefined
+    }
+    if (typeof nodeUri === 'object' && nodeUri !== null && !Array.isArray(nodeUri)) {
+      if ('nodeId' in nodeUri || 'multiaddress' in nodeUri) {
+        const nodeP2p = nodeUri as NodeP2P
+        if (nodeP2p.nodeId) {
+          try {
+            return peerIdFromString(nodeP2p.nodeId).toString()
+          } catch {}
+        }
+        if (Array.isArray(nodeP2p.multiaddress)) {
+          for (const addr of nodeP2p.multiaddress) {
+            const pid = this.peerIdFromMultiaddr(addr)
+            if (pid) return pid
+          }
+        }
+        return undefined
+      }
+      try {
+        return (nodeUri as PeerId).toString()
+      } catch {}
+    }
+    return undefined
   }
 
   /**
@@ -3433,10 +3496,13 @@ export class P2pProvider {
   ): Promise<{ success: boolean }> {
     const consumerAddress = await consumer.getAddress()
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
+    const issuerPeerId = (await this.getNodeStatus(nodeUri, signal))?.id
+    if (!issuerPeerId) throw new Error('Could not resolve node peerId for signature.')
     const signature = await getSignature(
       consumer,
       nonce,
-      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN
+      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN,
+      issuerPeerId
     )
     return this.sendP2pCommand(
       nodeUri,
