@@ -1271,10 +1271,16 @@ export class HttpProvider {
     const url = this.baseUrl(nodeUri) + '/api/services/auth/token/invalidate'
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
 
+    const issuerPeerId = (await this.getNodeStatus(nodeUri, signal))?.id
+    if (!issuerPeerId) {
+      this.throwIfAborted(signal)
+      throw new Error('Could not resolve node peerId for signature.')
+    }
     const signature = await getSignature(
       consumer,
       nonce,
-      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN
+      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN,
+      issuerPeerId
     )
 
     try {
