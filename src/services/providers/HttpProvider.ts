@@ -94,21 +94,6 @@ export class HttpProvider {
     return { consumerAddress, nonce, signature }
   }
 
-  /**
-   * Returns the node's root info document (nodeId, chainIds, providerAddress, nodePublicKey, ...).
-   * @param {string} nodeUri - the provider url
-   * @return {Promise<any>}
-   */
-  private async getNodeInfo(nodeUri: string, authorization?: string): Promise<any> {
-    try {
-      const info = await this.getData(nodeUri, authorization)
-      return await info.json()
-    } catch (e) {
-      LoggerInstance.error('Finding the node info failed:', e)
-      throw new Error('HTTP request failed calling Provider')
-    }
-  }
-
   public async getNodeStatus(nodeUri: string, signal?: AbortSignal): Promise<NodeStatus> {
     const path = this.baseUrl(nodeUri) + '/directCommand'
     try {
@@ -271,8 +256,8 @@ export class HttpProvider {
    * @return {string} The node public key
    */
   private async getNodePublicKey(nodeUri: string): Promise<string> {
-    const nodeInfo = await this.getNodeInfo(nodeUri)
-    return nodeInfo.nodePublicKey
+    const status = await this.getNodeStatus(nodeUri)
+    return status?.publicKey
   }
 
   /**
@@ -1665,16 +1650,6 @@ export class HttpProvider {
       hash: j.hash,
       proof: { validatorAddress: j.publicKey, r: j.r[0], s: j.s[0], v: j.v }
     } as ValidateMetadata
-  }
-
-  private async getData(url: string, authorization?: string): Promise<Response> {
-    return fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-type': 'application/json',
-        Authorization: authorization
-      }
-    })
   }
 
   public async createPersistentStorageBucket(
