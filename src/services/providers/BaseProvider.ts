@@ -230,9 +230,6 @@ function computeEnvironmentSatisfies(
   )
 }
 
-// the cap of waitForIndexer attempts
-const MAX_INDEXER_RETRIES = 500
-
 export class BaseProvider {
   private httpProvider = new HttpProvider()
   // Process-wide: a libp2p node is heavyweight, and every BaseProvider used to
@@ -887,11 +884,6 @@ export class BaseProvider {
     return this.getImpl(nodeUri).validateDdo(nodeUri, ddo, signerOrAuthToken, signal)
   }
 
-  /**
-   * Search the DDOs, the orders or the tags of a node: typed filters, sort and page.
-   * See the "DDO search" section of docs/database.md in oceanprotocol/ocean-node.
-   * @return one page of results and the total of all matches
-   */
   public async query(
     nodeUri: OceanNode,
     request: SearchQuery,
@@ -900,10 +892,7 @@ export class BaseProvider {
     return this.getImpl(nodeUri).query(nodeUri, request, signal)
   }
 
-  /**
-   * Waits until the node has indexed the DDO (or, with `txid`, the update of that
-   * transaction). Returns null after `maxRetries` attempts, 500 at most.
-   */
+  /** Waits for the DDO (or its `txid` update); null after `maxRetries` (max 500). */
   public async waitForIndexer(
     nodeUri: OceanNode,
     did: string,
@@ -912,17 +901,14 @@ export class BaseProvider {
     interval: number = 30000,
     maxRetries: number = 100
   ): Promise<Asset> {
-    const attempts = Math.min(maxRetries, MAX_INDEXER_RETRIES)
-    for (let attempt = 0; attempt < attempts; attempt++) {
+    for (let attempt = 0; attempt < Math.min(maxRetries, 500); attempt++) {
       try {
         const ddo = await this.resolveDdo(nodeUri, did, signal)
         if (ddo) {
           const { indexedMetadata } = DDOManager.getDDOClass(ddo).getAssetFields()
           if (!txid || indexedMetadata?.event?.txid === txid) return ddo as Asset
         }
-      } catch (e) {
-        // not indexed yet: try again
-      }
+      } catch {}
       await sleep(interval)
     }
     return null

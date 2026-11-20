@@ -3385,9 +3385,6 @@ export class P2pProvider {
     )
   }
 
-  /**
-   * Search the DDOs, orders or tags via P2P QUERY command.
-   */
   public async query(
     nodeUri: OceanNode,
     request: SearchQuery,

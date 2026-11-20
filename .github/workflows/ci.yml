@@ -13,8 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # The ocean-node image that Barge starts: the image of oceanprotocol/ocean-node#1601, which
-  # has the database-neutral DDO query of querySearch. Remove when #1601 is released.
+  # ocean-node#1601 image; remove after its release
   NODE_VERSION: pr-1601
 
 jobs:

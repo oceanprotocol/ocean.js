@@ -231,7 +231,6 @@ describe('Publish consume test', async () => {
   }).timeout(80000)
 
   it('Finds the resolved asset with query', async function () {
-    // HTTP POST /api/query, or the P2P query command
     const result = await ProviderInstance.query(config.oceanNodeUri, {
       filter: { ids: [urlAssetId] }
     })
