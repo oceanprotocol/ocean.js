@@ -1,7 +1,6 @@
 import crypto from 'crypto-js'
 import { getAddress, Signer, toBeHex } from 'ethers'
 import {
-  Aquarius,
   DatatokenCreateParams,
   Nft,
   NftCreateData,
@@ -27,8 +26,7 @@ export async function createAssetHelper(
   assetFiles: StorageObject[],
   ddo: DDO,
   providerUrl: string,
-  nftContractAddress: string, // addresses.ERC721Factory,
-  aquariusInstance: Aquarius
+  nftContractAddress: string // addresses.ERC721Factory
 ) {
   const { chainId } = await owner.provider.getNetwork()
   const nft = new Nft(owner, Number(chainId))
@@ -93,7 +91,7 @@ export async function createAssetHelper(
     providerUrl,
     owner
   )
-  const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
+  const validateResult = await ProviderInstance.validateDdo(providerUrl, ddo, owner)
   await nft.setMetadata(
     nftAddress,
     await owner.getAddress(),
@@ -110,8 +108,7 @@ export async function createAssetHelper(
 export async function updateAssetMetadata(
   owner: Signer,
   updatedDdo: DDO,
-  providerUrl: string,
-  aquariusInstance: Aquarius
+  providerUrl: string
 ) {
   const { chainId } = await owner.provider.getNetwork()
   const nft = new Nft(owner, Number(chainId))
@@ -122,7 +119,11 @@ export async function updateAssetMetadata(
     owner
   )
   const encryptedResponse = await providerResponse
-  const validateResult = await aquariusInstance.validate(updatedDdo, owner, providerUrl)
+  const validateResult = await ProviderInstance.validateDdo(
+    providerUrl,
+    updatedDdo,
+    owner
+  )
   const updateDdoTX = await nft.setMetadata(
     updatedDdo.nftAddress,
     await owner.getAddress(),

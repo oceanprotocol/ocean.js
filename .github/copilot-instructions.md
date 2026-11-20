@@ -25,7 +25,7 @@ src/
   @types/       - TypeScript type definitions and interfaces
   config/       - Configuration management
   contracts/    - Contract interactions and ABI definitions
-  services/     - Core services (Aquarius, Provider)
+  services/     - Core services (Provider: the Ocean Node client)
   utils/        - Utility functions and helpers
 
 test/
@@ -116,7 +116,7 @@ npm run create:guidec2d # Extract compute examples from tests
 ## Key Classes & Services
 
 ### Core Services
-- **Aquarius**: Integration with decentralized metadata storage
+- **DDO search**: `ProviderInstance.query` on the Ocean Node index
 - **Provider**: Interaction with data providers for file download/upload
 - **SmartContract**: Base class for contract interactions
 - **Config**: Configuration management for network and contract addresses
@@ -261,7 +261,7 @@ export class MyContract extends SmartContract {
 
 1. **Bundle Size**: Monitor with Microbundle, use tree-shaking where possible
 2. **Async Operations**: Use async/await patterns consistently
-3. **Caching**: Consider caching metadata from Aquarius
+3. **Caching**: Consider caching metadata from Ocean Node
 4. **Batch Operations**: Provide batch functions for repeated operations
 5. **Network Calls**: Minimize redundant provider calls
 
@@ -369,7 +369,7 @@ export interface MyInterface {
 - **@oceanprotocol/contracts**: Smart contract ABIs and deployment addresses
 - **ethers.js**: Blockchain interactions (web3 provider, contract calls)
 - **ddo.js**: DID Document standard handling
-- **Aquarius**: Decentralized metadata indexer (part of [Ocean Node](https://github.com/oceanprotocol/ocean-node))
+- **Ocean Node indexer**: DDO metadata index and search ([Ocean Node](https://github.com/oceanprotocol/ocean-node))
 - **Provider**: File management and compute job orchestration (part of [Ocean Node](https://github.com/oceanprotocol/ocean-node))
 
 ## Error Handling Patterns
@@ -394,7 +394,7 @@ try {
 
 - Use `const` and avoid unnecessary reassignments
 - Leverage async/await over promise chains for readability
-- Consider caching repeated Aquarius queries
+- Consider caching repeated node queries
 - Batch blockchain calls when possible
 - Profile bundle size: `npm run build --analyze` (if supported)
 - Minimize external dependencies unless essential

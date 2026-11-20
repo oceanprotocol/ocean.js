@@ -112,8 +112,8 @@ As a prerequisite for this flow, publish flow needs to be executed before.
 const fixedRate = new FixedRateExchange(freAddress, consumerAccount, Number(chainId))
 await fixedRate.buyDatatokens(freId, '1', '2')
 
-const resolvedDDO = await aquarius.waitForIndexer(fixedDDO.id)
-assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
+const resolvedDDO = await ProviderInstance.waitForIndexer(config.oceanNodeUri, fixedDDO.id)
+assert(resolvedDDO, 'Cannot fetch DDO from the node')
 
 // Initialize - obtain proof for ordering assets
 

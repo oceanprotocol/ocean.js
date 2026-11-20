@@ -12,6 +12,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  # ocean-node#1601 image; remove after its release
+  NODE_VERSION: pr-1601
+
 jobs:
   lint:
     runs-on: ubuntu-latest

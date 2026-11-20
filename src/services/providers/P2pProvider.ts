@@ -68,7 +68,9 @@ import {
   SignerOrAuthTokenOrSignature,
   CompleteSignature,
   EscrowEventRecord,
-  EscrowEventsFilter
+  EscrowEventsFilter,
+  SearchQuery,
+  QueryResult
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS, NodeLogEntry } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -3378,6 +3380,20 @@ export class P2pProvider {
       nodeUri,
       PROTOCOL_COMMANDS.GET_DDO,
       { id: did },
+      null,
+      signal
+    )
+  }
+
+  public async query(
+    nodeUri: OceanNode,
+    request: SearchQuery,
+    signal?: AbortSignal
+  ): Promise<QueryResult> {
+    return this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.QUERY,
+      { query: request },
       null,
       signal
     )
