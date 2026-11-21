@@ -1290,7 +1290,13 @@ export class HttpProvider {
       })
       if (response?.ok) {
         const params = await response.json()
-        if (params && (params.providerAddress || params.providerAddresses)) return true
+        // Post #1622 the root endpoint returns the status shape, whose node ETH address
+        // is `address`; older nodes used `providerAddress`/`providerAddresses`.
+        if (
+          params &&
+          (params.address || params.providerAddress || params.providerAddresses)
+        )
+          return true
       }
       return false
     } catch (error) {
