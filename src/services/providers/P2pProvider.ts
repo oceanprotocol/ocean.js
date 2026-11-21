@@ -2018,7 +2018,10 @@ export class P2pProvider {
 
   private async getNodePublicKey(nodeUri: OceanNode): Promise<string> {
     const status = await this.getNodeStatus(nodeUri)
-    return status?.publicKey
+    if (!status?.publicKey) {
+      throw new Error('Node status did not include a publicKey; cannot encrypt payload.')
+    }
+    return status.publicKey
   }
 
   protected getAuthorization(s: SignerOrAuthTokenOrSignature) {
