@@ -95,19 +95,22 @@ export class HttpProvider {
   }
 
   public async getNodeStatus(nodeUri: string, signal?: AbortSignal): Promise<NodeStatus> {
-    const path = this.baseUrl(nodeUri) + '/directCommand'
+    // The root endpoint is the HTTP alias of the `status` command (ocean-node #1622):
+    // GET / returns the full node status object (id, publicKey, address, provider[], ...).
+    const path = this.baseUrl(nodeUri) + '/'
     try {
       const response = await fetch(path, {
-        method: 'POST',
+        method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: PROTOCOL_COMMANDS.STATUS }),
         signal
       })
-      if (response?.ok) return response.json()
-      return null
+      if (!response?.ok) {
+        throw new Error(`Node status request failed with HTTP ${response?.status}`)
+      }
+      return response.json()
     } catch (e) {
       LoggerInstance.error('getNodeStatus failed:', e)
-      return null
+      throw e
     }
   }
 
@@ -257,7 +260,10 @@ export class HttpProvider {
    */
   private async getNodePublicKey(nodeUri: string): Promise<string> {
     const status = await this.getNodeStatus(nodeUri)
-    return status?.publicKey
+    if (!status?.publicKey) {
+      throw new Error('Node status did not include a publicKey; cannot encrypt payload.')
+    }
+    return status.publicKey
   }
 
   /**
