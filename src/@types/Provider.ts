@@ -91,6 +91,12 @@ export interface NodeStatus {
    * only subsidizes a job whose image matches; `{}` / absent = unrestricted. Absent on older nodes.
    */
   subsidyProviderAllowedImages?: Record<string, string[]>
+  /**
+   * Seconds reserved to claim an escrow payment (the node's `ESCROW_CLAIM_TIMEOUT`, default 3600).
+   * Added to a job's `maxJobDuration` when locking escrow funds, so the caller can tell how long
+   * funds stay locked beyond the job's runtime. Absent on older nodes.
+   */
+  claimDurationTimeout?: number
   /** Maintenance (drain) mode. Absent on nodes that predate the feature. */
   maintenance?: NodeStatusMaintenance
   supportedStorage: Record<string, boolean>
