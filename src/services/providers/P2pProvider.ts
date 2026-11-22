@@ -70,13 +70,21 @@ import {
   EscrowEventRecord,
   EscrowEventsFilter
 } from '../../@types/index.js'
-import { PROTOCOL_COMMANDS, NodeLogEntry } from '../../@types/Provider.js'
+import {
+  PROTOCOL_COMMANDS,
+  NodeLogEntry,
+  NodeAdminJobStatus,
+  IndexingThreadAction,
+  CollectFeesParams,
+  CollectFeesResult
+} from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import {
   getConsumerAddress,
   getSignature,
   getAuthorization,
-  isAgentSignature
+  isAgentSignature,
+  assertAdminSigner
 } from './BaseProvider.js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
 import { assertServiceResultTarget } from './serviceResult.js'
@@ -3601,6 +3609,221 @@ export class P2pProvider {
   }
 
   /**
+   * Sends a signed (or, for read-only commands, token-authenticated) admin command over P2P.
+   * A node rejection is already thrown by sendP2pCommand as a P2pError with `httpStatus`.
+   * Over P2P, a transport error after the command was sent can mean the node has already
+   * stopped (`stopNode`).
+   *
+   * @param allowAuthToken - false (default) for mutating admin commands: a string auth token is
+   *   rejected up front. true for the read-only commands (FETCH_CONFIG, GET_LOGS).
+   */
+  private async sendAdminCommand(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    command: string,
+    params: Record<string, any>,
+    signal?: AbortSignal,
+    allowAuthToken = false
+  ): Promise<any> {
+    if (!allowAuthToken) assertAdminSigner(signerOrAuthToken, command)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      command,
+      signal
+    )
+    // sendP2pCommand already folds `authorization: getAuthorization(signerOrAuthToken)` into the
+    // payload, so a read-only token is carried automatically; passing it as the 4th arg is enough.
+    const reply = await this.sendP2pCommand(
+      nodeUri,
+      command,
+      { ...params, address: consumerAddress, nonce, signature },
+      signerOrAuthToken,
+      signal
+    )
+    // A non-JSON body ("OK", "EXIT OK") comes back as raw bytes.
+    return reply instanceof Uint8Array ? new TextDecoder().decode(reply) : reply
+  }
+
+  /** Admin: stops the node process (mutating, signer only). The node exits about 2 seconds after replying. */
+  public async stopNode(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    signal?: AbortSignal
+  ): Promise<void> {
+    await this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.STOP_NODE,
+      {},
+      signal
+    )
+  }
+
+  /** Admin: stops a compute job of any owner. `jobId` is `<clusterHash>-<jobId>` (mutating, signer only). */
+  public async adminStopJob(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    jobId: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.STOP_JOB,
+      { jobId },
+      signal
+    )
+  }
+
+  /** Admin: reindexes one transaction (mutating, signer only). */
+  public async reindexTx(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    chainId: number,
+    txId: string,
+    signal?: AbortSignal
+  ): Promise<NodeAdminJobStatus> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.REINDEX_TX,
+      { chainId, txId },
+      signal
+    )
+  }
+
+  /** Admin: reindexes a chain, optionally from `block` (mutating, signer only). */
+  public async reindexChain(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    chainId: number,
+    block?: number,
+    signal?: AbortSignal
+  ): Promise<NodeAdminJobStatus> {
+    const params: Record<string, any> = { chainId }
+    if (block !== undefined && block !== null) params.block = block
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.REINDEX_CHAIN,
+      params,
+      signal
+    )
+  }
+
+  /** Admin: starts or stops the indexing thread, optionally for one chain (mutating, signer only). */
+  public async handleIndexingThread(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    action: IndexingThreadAction,
+    chainId?: number,
+    signal?: AbortSignal
+  ): Promise<void> {
+    const params: Record<string, any> = { action }
+    if (chainId !== undefined && chainId !== null) params.chainId = chainId
+    await this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.HANDLE_INDEXING_THREAD,
+      params,
+      signal
+    )
+  }
+
+  /** Admin: transfers collected fees; omitting `tokenAmount` sweeps the balance (mutating, signer only). */
+  public async collectFees(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    p: CollectFeesParams,
+    signal?: AbortSignal
+  ): Promise<CollectFeesResult> {
+    const params: Record<string, any> = {
+      chainId: p.chainId,
+      tokenAddress: p.tokenAddress,
+      destinationAddress: p.destinationAddress
+    }
+    if (p.tokenAmount !== undefined && p.tokenAmount !== null) {
+      params.tokenAmount = p.tokenAmount
+    }
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.COLLECT_FEES,
+      params,
+      signal
+    )
+  }
+
+  /** Admin: fetches one log entry by id (read-only: accepts a signer or a scoped auth token). */
+  public async getNodeLog(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    logId: string,
+    signal?: AbortSignal
+  ): Promise<NodeLogEntry> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.GET_LOGS,
+      { logId },
+      signal,
+      true
+    )
+  }
+
+  /** Admin: fetches the node config (read-only: accepts a signer or a scoped auth token). */
+  public async getNodeConfig(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    signal?: AbortSignal
+  ): Promise<Record<string, any>> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.FETCH_CONFIG,
+      {},
+      signal,
+      true
+    )
+  }
+
+  /** Admin: shallow-merges `config` into the node config (mutating, signer only). */
+  public async setNodeConfig(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    config: Record<string, any>,
+    signal?: AbortSignal
+  ): Promise<Record<string, any>> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PUSH_CONFIG,
+      { config },
+      signal
+    )
+  }
+
+  /** Public, unsigned: returns the node's detailed status. Rethrows on failure. */
+  public async getNodeDetailedStatus(
+    nodeUri: OceanNode,
+    signal?: AbortSignal
+  ): Promise<NodeStatus> {
+    try {
+      return await this.sendP2pCommand(
+        nodeUri,
+        PROTOCOL_COMMANDS.DETAILED_STATUS,
+        {},
+        null,
+        signal
+      )
+    } catch (e) {
+      LoggerInstance.error('P2P getNodeDetailedStatus (DETAILED_STATUS) failed:', e)
+      throw e
+    }
+  }
+
+  /**
    * Enables or disables the node's maintenance (drain) mode via P2P. Admin only.
    *
    * While enabled the node rejects new `computeStart`, `freeComputeStart`,
@@ -3680,6 +3903,7 @@ export class P2pProvider {
   /**
    * Fetch node configuration via P2P. Accepts a pre-signed payload —
    * the caller is responsible for nonce retrieval and signing.
+   * @deprecated Use getNodeConfig
    */
   public async fetchConfig(
     nodeUri: OceanNode,
@@ -3691,6 +3915,7 @@ export class P2pProvider {
   /**
    * Push node configuration via P2P. Accepts a pre-signed payload —
    * the caller is responsible for nonce retrieval and signing.
+   * @deprecated Use setNodeConfig
    */
   public async pushConfig(
     nodeUri: OceanNode,

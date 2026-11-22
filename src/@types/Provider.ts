@@ -93,6 +93,15 @@ export interface NodeStatus {
   subsidyProviderAllowedImages?: Record<string, string[]>
   /** Maintenance (drain) mode. Absent on nodes that predate the feature. */
   maintenance?: NodeStatusMaintenance
+  /** Detailed status only (`getNodeDetailedStatus`): configured C2D clusters. */
+  c2dClusters?: any[]
+  /** Detailed status only (`getNodeDetailedStatus`): schemas the node supports. */
+  supportedSchemas?: any
+  /**
+   * Auth-token policy advertised by the node (`maxTokenLifetime`, `crossNode`,
+   * `challengeSupported`, ...). Absent on nodes that predate scoped auth tokens.
+   */
+  authTokenPolicy?: any
   supportedStorage: Record<string, boolean>
   platform: {
     cpus: number
@@ -256,6 +265,7 @@ export const PROTOCOL_COMMANDS = {
   COMPUTE_GET_RESULT: 'getComputeResult',
   COMPUTE_INITIALIZE: 'initializeCompute',
   STOP_NODE: 'stopNode',
+  STOP_JOB: 'stopJob',
   REINDEX_TX: 'reindexTx',
   REINDEX_CHAIN: 'reindexChain',
   HANDLE_INDEXING_THREAD: 'handleIndexingThread',
@@ -303,6 +313,31 @@ export interface NodeLogsParams {
   moduleName?: string
   level?: string
   page?: number
+}
+
+export type IndexingThreadAction = 'START_THREAD' | 'STOP_THREAD'
+
+/** Job descriptor returned by the node's reindexTx / reindexChain admin commands. */
+export interface NodeAdminJobStatus {
+  command: string
+  timestamp: string
+  jobId: string
+  status: string
+  hash: string
+}
+
+export interface CollectFeesParams {
+  chainId: number
+  /** ERC20 address, or the zero address for the chain's native token. */
+  tokenAddress: string
+  destinationAddress: string
+  /** Human units (scaled by the token's decimals on the node). Omit to sweep the whole balance. */
+  tokenAmount?: string | number
+}
+
+export interface CollectFeesResult {
+  tx: string
+  message: string
 }
 
 export interface NodeLogEntry {

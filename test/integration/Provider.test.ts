@@ -4,9 +4,10 @@ import {
   Config,
   ProviderInstance,
   isP2pUri,
-  isMaintenanceError
+  isMaintenanceError,
+  LoggerInstance
 } from '../../src/index.js'
-import { Signer } from 'ethers'
+import { Signer, Wallet, ZeroAddress } from 'ethers'
 import { FileInfo } from '../../src/@types/index.js'
 
 describe('Provider tests', async () => {
@@ -417,5 +418,209 @@ describe('Provider maintenance mode tests', function () {
     assert(res.maintenance === false)
     const status = await ProviderInstance.getNodeStatus(providerUrl)
     assert(status.maintenance?.enabled === false)
+  })
+})
+
+describe('Provider admin commands tests', function () {
+  this.timeout(120000)
+  // The well-known Barge key for the address in the node's ALLOWED_ADMINS.
+  const BARGE_ADMIN_KEY =
+    '0xc594c6e5def4bab63ac29eed19a134c130388f74f019bc74b8f4389df2837a58'
+  let adminSigner: Signer
+  let providerUrl: string
+  let status: any
+  let isAdmin = false
+
+  before(async function () {
+    const signer = (await provider.getSigner(0)) as Signer
+    providerUrl = (await getTestConfig(signer))?.oceanNodeUri
+    status = await ProviderInstance.getNodeStatus(providerUrl)
+    const admins: string[] = (status?.allowedAdmins?.addresses || []).map((a: string) =>
+      a.toLowerCase()
+    )
+    const signerAddress = (await signer.getAddress()).toLowerCase()
+    if (admins.includes(signerAddress)) {
+      adminSigner = signer
+      isAdmin = true
+    } else {
+      const bargeAdmin = new Wallet(BARGE_ADMIN_KEY, provider)
+      if (admins.includes(bargeAdmin.address.toLowerCase())) {
+        adminSigner = bargeAdmin
+        isAdmin = true
+      }
+    }
+  })
+
+  beforeEach(function () {
+    if (!isAdmin) this.skip()
+  })
+
+  after(async () => {
+    // never leave the shared node's indexer stopped (mocha bail is on)
+    if (isAdmin) {
+      try {
+        await ProviderInstance.handleIndexingThread(
+          providerUrl,
+          adminSigner,
+          'START_THREAD',
+          8996
+        )
+      } catch (e) {
+        // surface it: a swallowed failure here leaves the shared indexer stopped for later files
+        LoggerInstance.error(`admin after-hook: failed to restart indexer: ${e}`)
+      }
+    }
+  })
+
+  it('getNodeDetailedStatus returns id and maintenance disabled', async () => {
+    const detailed = await ProviderInstance.getNodeDetailedStatus(providerUrl)
+    assert(detailed, 'No detailed status returned')
+    assert(detailed.id, 'Detailed status missing id')
+    assert(detailed.maintenance?.enabled === false, 'maintenance should be disabled')
+  })
+
+  it('getNodeConfig returns an object with a masked private key', async () => {
+    const config = await ProviderInstance.getNodeConfig(providerUrl, adminSigner)
+    assert(config && typeof config === 'object', 'config should be an object')
+    assert(config.keys, 'config should include a keys block')
+    const pk = config.keys.privateKey
+    // the node returns a masked placeholder, never the real 0x-prefixed key
+    assert(pk !== undefined, 'config.keys.privateKey should be present (masked)')
+    assert(
+      !String(pk).startsWith('0x'),
+      'private key should be masked, not the raw 0x key'
+    )
+  })
+
+  it('setNodeConfig re-sends an existing harmless key unchanged', async function () {
+    const config = await ProviderInstance.getNodeConfig(providerUrl, adminSigner)
+    const forbidden = ['keys', 'supportedNetworks', 'allowedAdmins', 'dbConfig']
+    const candidates = Object.keys(config).filter(
+      (k) =>
+        !forbidden.includes(k) &&
+        (typeof config[k] === 'boolean' || typeof config[k] === 'number')
+    )
+    const key = candidates.includes('unsafeURLs') ? 'unsafeURLs' : candidates[0]
+    if (!key) this.skip()
+    const res = await ProviderInstance.setNodeConfig(providerUrl, adminSigner, {
+      [key]: config[key]
+    })
+    assert(res && typeof res === 'object', 'setNodeConfig should return an object')
+  })
+
+  it('reindexTx returns a job descriptor', async function () {
+    let txHash: string | undefined
+    let blockNumber = await provider.getBlockNumber()
+    while (!txHash && blockNumber >= 0) {
+      const block = await provider.getBlock(blockNumber, false)
+      if (block?.transactions?.length) txHash = block.transactions[0]
+      blockNumber--
+    }
+    if (!txHash) this.skip()
+    const res = await ProviderInstance.reindexTx(providerUrl, adminSigner, 8996, txHash)
+    assert(typeof res.jobId === 'string', 'reindexTx should return a string jobId')
+  })
+
+  it('handleIndexingThread stops and restarts the indexer', async () => {
+    await ProviderInstance.handleIndexingThread(
+      providerUrl,
+      adminSigner,
+      'STOP_THREAD',
+      8996
+    )
+    await ProviderInstance.handleIndexingThread(
+      providerUrl,
+      adminSigner,
+      'START_THREAD',
+      8996
+    )
+  })
+
+  it('collectFees returns a transaction hash', async function () {
+    const destination = await (await provider.getSigner(1)).getAddress()
+    let res
+    try {
+      res = await ProviderInstance.collectFees(providerUrl, adminSigner, {
+        chainId: 8996,
+        tokenAddress: ZeroAddress,
+        destinationAddress: destination,
+        tokenAmount: '0.0001'
+      })
+    } catch (e: any) {
+      if (/balance/i.test(e?.message || '')) this.skip()
+      throw e
+    }
+    assert(/^0x[0-9a-f]{64}$/i.test(res.tx), 'collectFees should return a tx hash')
+  })
+
+  it('a non-admin is rejected with HTTP 400', async () => {
+    const stranger = Wallet.createRandom()
+    let thrown: any
+    try {
+      await ProviderInstance.getNodeConfig(providerUrl, stranger)
+    } catch (e) {
+      thrown = e
+    }
+    assert(thrown !== undefined, 'non-admin getNodeConfig should be rejected')
+    assert(thrown.httpStatus === 400, `expected httpStatus 400, got ${thrown.httpStatus}`)
+  })
+
+  it('getNodeLog rejects for an unknown log id', async () => {
+    let thrown: any
+    try {
+      await ProviderInstance.getNodeLog(providerUrl, adminSigner, 'does-not-exist')
+    } catch (e) {
+      thrown = e
+    }
+    assert(thrown !== undefined, 'getNodeLog should reject for an unknown id')
+  })
+
+  describe('read-only auth tokens', function () {
+    let token: string
+
+    before(async function () {
+      // Needs a node release with scoped auth tokens (ocean-node #1616).
+      if (!isAdmin || !status?.authTokenPolicy) this.skip()
+      token = await ProviderInstance.generateAuthToken(adminSigner, providerUrl)
+    })
+
+    it('getNodeConfig accepts the token', async () => {
+      const config = await ProviderInstance.getNodeConfig(providerUrl, token)
+      assert(config && typeof config === 'object', 'config should be an object')
+    })
+
+    it('getNodeLog accepts the token (read-only admin, unknown id still rejects)', async () => {
+      // An unscoped admin token is accepted for GET_LOGS; the node then rejects the unknown id,
+      // proving the token authenticated (a token-rejection would surface before the lookup).
+      let thrown: any
+      try {
+        await ProviderInstance.getNodeLog(providerUrl, token, 'does-not-exist')
+      } catch (e) {
+        thrown = e
+      }
+      assert(thrown !== undefined, 'getNodeLog should reject an unknown id')
+      assert(
+        !String(thrown.message).includes('requires a signer'),
+        'the token must be accepted, not rejected client-side'
+      )
+    })
+
+    // The lib's generateAuthToken cannot request a `scope`, so a token limited to `getLogs`
+    // cannot be minted here; the out-of-scope rejection is left pending until it can.
+    it.skip('a token scoped to getLogs only is rejected by getNodeConfig', async () => {})
+
+    it('a mutating call with the token is rejected client-side', async () => {
+      let thrown: any
+      try {
+        await ProviderInstance.setNodeConfig(providerUrl, token, {})
+      } catch (e) {
+        thrown = e
+      }
+      assert(thrown !== undefined, 'setNodeConfig with a token should be rejected')
+      assert(
+        String(thrown.message).includes('requires a signer'),
+        `unexpected error: ${thrown.message}`
+      )
+    })
   })
 })
