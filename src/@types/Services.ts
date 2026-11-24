@@ -138,6 +138,47 @@ export interface ServiceOutputArchive {
   containerId: string // the container it was taken from
 }
 
+// Whether a service can serve requests, as opposed to merely having a running container.
+export type ServiceReadinessState =
+  | 'waiting' // not answering as expected yet — the normal warm-up window
+  | 'ready' // answered the node's readiness request
+  | 'failing' // it was ready and stopped answering
+  | 'unknown' // answered only with an auth challenge, which says nothing about the workload behind it
+
+export interface ServiceReadiness {
+  state: ServiceReadinessState
+  engine: string // which probe profile decided this ('vllm', 'llamacpp', 'comfyui', 'generic')
+  readySince?: number // Unix ms of the first successful check of the current container
+  lastCheckedAt?: number // Unix ms; owner-only: stripped from SERVICE_LIST
+  consecutiveFailures?: number // owner-only: stripped from SERVICE_LIST
+  httpStatus?: number // last response status; owner-only: stripped from SERVICE_LIST
+  lastError?: string // owner-only: stripped from SERVICE_LIST
+  probedUrl?: string // owner-only: stripped from SERVICE_LIST
+}
+
+// Byte progress of the image pull, aggregated from the Docker daemon's per-layer counts.
+export interface ServiceImagePullProgress {
+  phase: 'downloading' | 'extracting' | 'complete'
+  downloadedBytes: number
+  totalBytes: number
+  percent: number
+  layersTotal: number
+  layersDone: number
+  updatedAt: number // Unix ms
+}
+
+// How much of its model a service has downloaded at startup.
+export interface ServiceModelDownload {
+  modelId?: string // the repo being fetched, when it is a Hub id; stripped from SERVICE_LIST
+  downloadedBytes: number
+  totalBytes?: number
+  percent?: number
+  filesComplete: number
+  filesInFlight: number
+  filesTotal?: number // when the service lists its downloads up front
+  updatedAt: number // Unix ms
+}
+
 // As returned by the node (userData is always stripped from responses).
 export interface ServiceJob {
   serviceId: string // unique id for a running service — distinct from a compute jobId
@@ -179,6 +220,12 @@ export interface ServiceJob {
   // Archives of /data/outputs, one per removed container — only for services without an
   // outputBucketId (their results are in the bucket). Owner-scoped: SERVICE_LIST strips them.
   outputArchives?: ServiceOutputArchive[]
+  // Whether the workload answers yet. `Running` only means the container started; a model
+  // server can take minutes more. Absent when the node has nothing to probe (no exposed
+  // port) or predates readiness reporting.
+  readiness?: ServiceReadiness
+  imagePull?: ServiceImagePullProgress
+  modelDownload?: ServiceModelDownload
 }
 
 // Returned by SERVICE_LIST, which is authenticated but NOT owner-scoped (any consumer
