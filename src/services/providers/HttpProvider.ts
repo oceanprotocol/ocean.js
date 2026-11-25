@@ -2218,7 +2218,8 @@ export class HttpProvider {
       userData,
       dockerCmd,
       dockerEntrypoint,
-      metadata
+      metadata,
+      secureTls
     } = params ?? {}
     const route = this.baseUrl(nodeUri) + '/api/services/serviceRestart'
     const authPayload = await this.getSignedCommandParams(
@@ -2247,7 +2248,8 @@ export class HttpProvider {
         ...(additionalDockerFiles !== undefined ? { additionalDockerFiles } : {}),
         ...(dockerCmd !== undefined ? { dockerCmd } : {}),
         ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {}),
-        ...(metadata !== undefined ? { metadata } : {})
+        ...(metadata !== undefined ? { metadata } : {}),
+        ...(secureTls !== undefined ? { secureTls } : {})
       }),
       signal
     })
