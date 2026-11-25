@@ -434,6 +434,51 @@ describe('Service on Demand flow tests', () => {
     expect(after?.metadata).to.deep.equal(restartMetadata)
   })
 
+  it('restart with an out-of-range pinned `ports` host port is rejected, service stays Running', async function () {
+    if (skipLifecycle || !serviceId) this.skip()
+    this.timeout(60000)
+    const before = (
+      await ProviderInstance.getServiceStatus(providerUrl, consumerAccount, serviceId)
+    ).find((j) => j.serviceId === serviceId)
+    assert(before?.endpoints?.[0], 'expected the running service to have an endpoint')
+    const containerPort = before.endpoints[0].containerPort
+    const oldContainerId = before.containerId
+
+    // DISCRIMINATING check that `ports` actually reaches the node: host port 1 is below the
+    // node's hostPortRange floor (schema enforces >=1024), so the node MUST reject the restart.
+    // If the SDK silently dropped `ports`, this would instead be a no-op REUSE restart that
+    // succeeds — so a rejection proves the field was forwarded. The restart is rejected up front
+    // (before teardown), so the service keeps running on its original container/port untouched.
+    let restartError: Error | undefined
+    try {
+      await ProviderInstance.serviceRestart(
+        providerUrl,
+        consumerAccount,
+        serviceId,
+        { ports: [{ containerPort, hostPort: 1 }] },
+        opSignal()
+      )
+    } catch (e) {
+      restartError = e as Error
+    }
+    // The restart MUST fail with the node's host-port range rejection specifically. Asserting on
+    // the error message (not merely that *something* threw) means a nonce-retrieval or
+    // request-delivery failure — which throws a different message — fails this test instead of
+    // masquerading as the expected port-range rejection.
+    assert(restartError, 'node should reject an out-of-range pinned host port')
+    expect(
+      restartError.message,
+      `expected a host-port range rejection, got: ${restartError?.message}`
+    ).to.match(/host port|range/i)
+
+    const after = (
+      await ProviderInstance.getServiceStatus(providerUrl, consumerAccount, serviceId)
+    ).find((j) => j.serviceId === serviceId)
+    expect(after?.status).to.equal(ServiceStatusNumber.Running)
+    expect(after?.containerId).to.equal(oldContainerId) // untouched: no teardown happened
+    expect(after?.endpoints[0].hostPort).to.equal(hostPort)
+  })
+
   it('stops the service → Stopped', async function () {
     if (skipLifecycle || !serviceId) this.skip()
     this.timeout(120000)

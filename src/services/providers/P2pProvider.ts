@@ -4054,7 +4054,8 @@ export class P2pProvider {
       userData,
       dockerCmd,
       dockerEntrypoint,
-      metadata
+      metadata,
+      ports
     } = params ?? {}
     const authPayload = await this.getSignedCommandParams(
       nodeUri,
@@ -4078,7 +4079,10 @@ export class P2pProvider {
         ...(additionalDockerFiles !== undefined ? { additionalDockerFiles } : {}),
         ...(dockerCmd !== undefined ? { dockerCmd } : {}),
         ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {}),
-        ...(metadata !== undefined ? { metadata } : {})
+        ...(metadata !== undefined ? { metadata } : {}),
+        // Port change — independent of REUSE/RESPEC; omitted ⇒ keep current ports. The node
+        // reads only `ports` on restart (never the legacy `exposedPorts`).
+        ...(ports !== undefined ? { ports } : {})
       },
       signerOrAuthToken,
       signal

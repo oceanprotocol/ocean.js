@@ -56,4 +56,86 @@ describe('Service on Demand client wiring', () => {
     )
     expect(decrypted).to.deep.equal(userData)
   })
+
+  describe('ports forwarding (serviceStart / serviceRestart request body)', () => {
+    // An "agent signature" token short-circuits getSignedCommandParams with NO network call,
+    // and omitting userData skips the node-public-key fetch — so stubbing global.fetch alone
+    // captures the exact request body the provider builds, offline.
+    const NODE = 'http://localhost:8000'
+    const token = {
+      consumerAddress: '0x0000000000000000000000000000000000000aBc',
+      nonce: '1',
+      signature: '0xsig'
+    } as any
+    let origFetch: typeof globalThis.fetch
+    let captured: any
+
+    beforeEach(() => {
+      origFetch = globalThis.fetch
+      captured = undefined
+      globalThis.fetch = (async (_url: string, init: any) => {
+        captured = JSON.parse(init.body)
+        return {
+          ok: true,
+          json: async () => [{ serviceId: 'svc-1' }],
+          text: async () => ''
+        } as any
+      }) as any
+    })
+    afterEach(() => {
+      globalThis.fetch = origFetch
+    })
+
+    it('serviceStart forwards `ports` (and still forwards legacy `exposedPorts`)', async () => {
+      // No `as any`: a well-typed ServiceStartParams, so this also pins that `ports` is a valid
+      // field on the public type (tsx does not type-check, but `npm run build` does).
+      await ProviderInstance.serviceStart(NODE, token, {
+        environment: 'env-1',
+        image: 'nginx',
+        duration: 3600,
+        payment: { chainId: 8996, token: '0xtoken' },
+        exposedPorts: [9090],
+        ports: [{ containerPort: 8080, hostPort: 30010 }, { containerPort: 8081 }]
+      })
+      expect(captured.ports).to.deep.equal([
+        { containerPort: 8080, hostPort: 30010 },
+        { containerPort: 8081 }
+      ])
+      expect(captured.exposedPorts).to.deep.equal([9090]) // legacy field still passes through
+    })
+
+    it('serviceRestart forwards `ports` when supplied (alongside other fields)', async () => {
+      await ProviderInstance.serviceRestart(NODE, token, 'svc-1', {
+        ports: [{ containerPort: 8080, hostPort: 30011 }],
+        metadata: { run: 'v2' },
+        dockerCmd: ['nginx', '-g', 'daemon off;']
+      })
+      expect(captured.ports).to.deep.equal([{ containerPort: 8080, hostPort: 30011 }])
+      // the new spread must not disturb its neighbours
+      expect(captured.metadata).to.deep.equal({ run: 'v2' })
+      expect(captured.dockerCmd).to.deep.equal(['nginx', '-g', 'daemon off;'])
+    })
+
+    it('serviceRestart forwards an explicit empty `ports: []` (replace-with-none, not omit)', async () => {
+      // Contract: `[] !== undefined`, so it IS sent — the node treats it as "no ports", distinct
+      // from omitting `ports` (keep current). Guards against a truthiness-based simplification.
+      await ProviderInstance.serviceRestart(NODE, token, 'svc-1', { ports: [] })
+      expect(captured.ports).to.deep.equal([])
+    })
+
+    it('serviceRestart omits `ports` when not supplied (REUSE keeps current ports)', async () => {
+      await ProviderInstance.serviceRestart(NODE, token, 'svc-1', {})
+      expect(captured).to.not.have.property('ports')
+    })
+
+    it('serviceRestart never forwards the legacy `exposedPorts` (node ignores it on restart)', async () => {
+      // `as any`: `exposedPorts` is intentionally OFF-type for ServiceRestartParams — the SDK
+      // must drop it even if a caller forces it through.
+      await ProviderInstance.serviceRestart(NODE, token, 'svc-1', {
+        exposedPorts: [9090]
+      } as any)
+      expect(captured).to.not.have.property('exposedPorts')
+      expect(captured).to.not.have.property('ports')
+    })
+  })
 })
