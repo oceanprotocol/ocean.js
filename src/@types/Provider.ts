@@ -77,6 +77,10 @@ export interface NodeStatus {
   http: boolean
   p2p: boolean
   provider: NodeStatusProvider[]
+  /**
+   * Per-chain last-indexed-block info. Populated by DETAILED status only (the node reads it from
+   * its metadata DB per chain); basic status — what `getNodeStatus()` requests — returns `[]`.
+   */
   indexer: NodeStatusIndexer[]
   escrowAddress: Record<string, string>
   /** chainId -> subsidy-provider contract addresses the node applies. Absent on older nodes. */

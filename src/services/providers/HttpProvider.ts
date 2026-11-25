@@ -94,10 +94,16 @@ export class HttpProvider {
     return { consumerAddress, nonce, signature }
   }
 
-  public async getNodeStatus(nodeUri: string, signal?: AbortSignal): Promise<NodeStatus> {
+  public async getNodeStatus(
+    nodeUri: string,
+    signal?: AbortSignal,
+    detailed: boolean = false
+  ): Promise<NodeStatus> {
     // The root endpoint is the HTTP alias of the `status` command (ocean-node #1622):
     // GET / returns the full node status object (id, publicKey, address, provider[], ...).
-    const path = this.baseUrl(nodeUri) + '/'
+    // `?detailed=true` opts into the extended status (indexer + c2dClusters + supportedSchemas);
+    // basic status (the default) returns `indexer: []` and never reads the node's metadata DB.
+    const path = this.baseUrl(nodeUri) + (detailed ? '/?detailed=true' : '/')
     try {
       const response = await fetch(path, {
         method: 'GET',

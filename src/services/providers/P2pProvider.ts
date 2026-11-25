@@ -2479,18 +2479,19 @@ export class P2pProvider {
    */
   public async getNodeStatus(
     nodeUri: OceanNode,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    detailed: boolean = false
   ): Promise<NodeStatus> {
+    // Over P2P the detailed variant is a distinct command: `detailedStatus` adds
+    // indexer + c2dClusters + supportedSchemas, while `status` returns `indexer: []` and skips
+    // the node's metadata-DB reads. Mirrors ocean-node's StatusHandler / DetailedStatusHandler.
+    const command = detailed
+      ? PROTOCOL_COMMANDS.DETAILED_STATUS
+      : PROTOCOL_COMMANDS.STATUS
     try {
-      return await this.sendP2pCommand(
-        nodeUri,
-        PROTOCOL_COMMANDS.STATUS,
-        {},
-        null,
-        signal
-      )
+      return await this.sendP2pCommand(nodeUri, command, {}, null, signal)
     } catch (e) {
-      LoggerInstance.error('P2P getNodeStatus (STATUS) failed:', e)
+      LoggerInstance.error(`P2P getNodeStatus (${command}) failed:`, e)
       throw e
     }
   }
