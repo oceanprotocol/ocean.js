@@ -246,7 +246,8 @@ export interface ServiceContainerSpec {
   // cap and 400s if oversized). Unlike userData it is NOT encrypted. On serviceRestart it
   // replaces the stored metadata when supplied and does NOT force RESPEC mode.
   metadata?: ComputeJobMetadata
-  // omitted on restart keeps the stored list, [] turns TLS off
+  // [] turns TLS off. Omitted on restart keeps the stored list, unless the node's config
+  // no longer allows TLS: then the service restarts without TLS
   secureTls?: number[]
 }
 
