@@ -1,3 +1,4 @@
+import { peerIdFromString } from '@libp2p/peer-id'
 import { AuthTokenOptions, UNRESTRICTED_AUDIENCE } from '../@types/Provider.js'
 import { buildCreateAuthTokenSignatureMessage } from './SignatureUtils.js'
 import { COMMANDS } from './CommandCatalog.js'
@@ -79,7 +80,20 @@ export function prepareAuthTokenRequest(args: {
     if (rawAudience.length > MAX_AUDIENCE_ENTRIES) {
       throw new Error(`audience exceeds the maximum of ${MAX_AUDIENCE_ENTRIES} entries`)
     }
-    audience = rawAudience
+    // Canonicalize each audience entry to its base58 peerId string. The node validates the entry at
+    // mint time but compares the STORED string against its own base58 peerId at USE time — so an
+    // entry supplied in another valid encoding (e.g. a base32 CIDv1) mints a token that the intended
+    // node then rejects. Normalizing here (in both the signed message and the body, which both derive
+    // from this array) keeps the audience in the exact form the node matches against. Entries that
+    // don't parse as a peerId are passed through unchanged: the node rejects a genuinely malformed
+    // peerId at mint just as it does today, and this keeps the shared golden-vector contract intact.
+    audience = rawAudience.map((entry) => {
+      try {
+        return peerIdFromString(entry).toString()
+      } catch {
+        return entry
+      }
+    })
   } else {
     // default: node-scoped to the verified issuer (secure by default)
     audience = [issuerPeerId]
