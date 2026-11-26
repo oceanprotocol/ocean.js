@@ -79,6 +79,22 @@ export interface ComputeEnvFeatures {
   services?: boolean // false → SERVICE_START rejected; env not service-eligible
 }
 
+// Daemon-level Service-on-Demand port discovery, surfaced on every environment that belongs to
+// the same Docker engine. Ports are a property of the HOST the Docker socket runs on, not of a
+// single environment, so every env on one daemon carries an IDENTICAL copy of this block (the
+// `usedHostPorts` union spans the whole daemon). A client uses it to pick a free host port to
+// PIN on serviceStart / serviceRestart (see `ServicePortRequest`): choose any value inside
+// `hostPortRange` that is not in `usedHostPorts`. It is a best-effort snapshot — a port can be
+// claimed between this read and the start — so the authoritative, charge-safe guarantee stays
+// the node's start-handler reservation. Absent on older nodes and on daemons without a
+// Service-on-Demand config. Mirrors ocean-node's ComputeEnvironmentServiceOnDemand.
+export interface ComputeEnvironmentServiceOnDemand {
+  nodeHost: string // host/IP clients use to reach forwarded service ports
+  hostPortRange: [number, number] // inclusive [start, end] a pinned host port must fall within
+  usedHostPorts: number[] // host ports in range already reserved or bound, daemon-wide, ascending
+  maxPortsPerService: number // max ports a single serviceStart / serviceRestart may declare
+}
+
 export interface ComputeEnvironment {
   id: string
   description?: string
@@ -103,6 +119,10 @@ export interface ComputeEnvironment {
   resources?: ComputeResource[]
   free?: ComputeEnvironmentFreeOptions
   platform?: RunningPlatform
+  // Daemon-level service port discovery (range + in-use host ports), stamped identically on
+  // every env of the daemon by the node at getComputeEnvironments() time. Absent when the daemon
+  // has no Service-on-Demand config. See ComputeEnvironmentServiceOnDemand.
+  serviceOnDemand?: ComputeEnvironmentServiceOnDemand
 }
 
 export interface ComputeResult {

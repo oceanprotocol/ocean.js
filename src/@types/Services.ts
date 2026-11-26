@@ -161,6 +161,9 @@ export interface ServiceJob {
   expiresAt: number // Unix ms timestamp
   duration: number // requested seconds
   exposedPorts: number[]
+  // Pinned host ports the caller requested, keyed by containerPort (string). Only pinned
+  // entries appear; auto-allocated ports are absent. Resolved host ports live in `endpoints`.
+  requestedHostPorts?: Record<string, number>
   endpoints: ServiceJobEndpoint[]
   resources: any[] // ComputeResourceRequestWithPrice[] on the node
   payment: ServiceJobPayment // initial start payment
@@ -228,6 +231,15 @@ export interface ServicePayment {
 // so a plaintext secret can never be forwarded unencrypted.
 export type ServiceUserData = Record<string, unknown>
 
+// A port the service exposes. `hostPort` omitted ⇒ the node auto-allocates a host port from
+// its hostPortRange (legacy behaviour). `hostPort` set ⇒ pin that specific host port; the node
+// rejects the command if it is outside hostPortRange or not free. Mirrors ocean-node's
+// ServicePortRequest.
+export interface ServicePortRequest {
+  containerPort: number // 1..65535
+  hostPort?: number // 1..65535; omitted = auto-allocate
+}
+
 // The container specification shared by serviceStart and serviceRestart. Every field is
 // optional here; the consuming type decides which are required (serviceStart re-declares
 // `image` as mandatory). `userData` is always ECIES-encrypted to the node before sending.
@@ -244,6 +256,11 @@ export interface ServiceContainerSpec {
   // cap and 400s if oversized). Unlike userData it is NOT encrypted. On serviceRestart it
   // replaces the stored metadata when supplied and does NOT force RESPEC mode.
   metadata?: ComputeJobMetadata
+  // Exposed ports, optionally with a PINNED host port per entry (`hostPort` omitted =
+  // auto-allocate). Independent of the RESPEC rule, like `metadata`. On serviceStart `ports`
+  // supersedes the legacy `exposedPorts` when both are sent; on serviceRestart the node reads
+  // ONLY `ports` (never `exposedPorts`) and an omitted `ports` keeps the service's current ports.
+  ports?: ServicePortRequest[]
 }
 
 // Optional container-spec overrides for serviceRestart. The node treats the restart

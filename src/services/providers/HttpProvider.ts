@@ -2218,7 +2218,8 @@ export class HttpProvider {
       userData,
       dockerCmd,
       dockerEntrypoint,
-      metadata
+      metadata,
+      ports
     } = params ?? {}
     const route = this.baseUrl(nodeUri) + '/api/services/serviceRestart'
     const authPayload = await this.getSignedCommandParams(
@@ -2247,7 +2248,10 @@ export class HttpProvider {
         ...(additionalDockerFiles !== undefined ? { additionalDockerFiles } : {}),
         ...(dockerCmd !== undefined ? { dockerCmd } : {}),
         ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {}),
-        ...(metadata !== undefined ? { metadata } : {})
+        ...(metadata !== undefined ? { metadata } : {}),
+        // Port change — independent of REUSE/RESPEC; omitted ⇒ keep current ports. The node
+        // reads only `ports` on restart (never the legacy `exposedPorts`).
+        ...(ports !== undefined ? { ports } : {})
       }),
       signal
     })
