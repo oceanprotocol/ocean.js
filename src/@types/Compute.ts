@@ -72,11 +72,12 @@ export interface ComputeEnvironmentFreeOptions {
   maxJobs?: number // maximum number of simultaneous free jobs
   resources?: ComputeResource[]
 }
-// Per-environment capability flags. Both default to true node-side; only an
-// explicit false disables a capability. `services` gates Service-on-Demand.
+// Per-environment capability flags. computeJobs and services default to true node-side;
+// only an explicit false disables them. `services` gates Service-on-Demand.
 export interface ComputeEnvFeatures {
   computeJobs?: boolean // false → COMPUTE_START + FREE_COMPUTE_START rejected
   services?: boolean // false → SERVICE_START rejected; env not service-eligible
+  secureTls?: boolean // true → service ports can be served over HTTPS; absent → unsupported
 }
 
 export interface ComputeEnvironment {

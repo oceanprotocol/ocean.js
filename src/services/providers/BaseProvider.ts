@@ -984,11 +984,20 @@ export class BaseProvider {
     )
   }
 
+  /**
+   * @param detailed when true, requests the node's DETAILED status (adds `indexer`,
+   * `c2dClusters`, `supportedSchemas`). Basic status (the default) stays cheap and returns
+   * `indexer: []`. Mirrors ocean-node's `status` vs `detailedStatus` split.
+   */
   public async getNodeStatus(
     nodeUri: OceanNode,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    detailed: boolean = false
   ): Promise<NodeStatus> {
-    return this.getImpl(nodeUri).getNodeStatus(nodeUri, signal)
+    // The impl signature is (nodeUri, signal, clientChallenge?, detailed). The public facade never
+    // issues an OJ-03 challenge (only generateAuthToken does, directly on the impl), so clientChallenge
+    // is omitted here and `detailed` is forwarded in the 4th slot.
+    return this.getImpl(nodeUri).getNodeStatus(nodeUri, signal, undefined, detailed)
   }
 
   public async getNodeJobs(

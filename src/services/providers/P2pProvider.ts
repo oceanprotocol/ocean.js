@@ -2064,7 +2064,10 @@ export class P2pProvider {
 
   private async getNodePublicKey(nodeUri: OceanNode): Promise<string> {
     const status = await this.getNodeStatus(nodeUri)
-    return status?.publicKey
+    if (!status?.publicKey) {
+      throw new Error('Node status did not include a publicKey; cannot encrypt payload.')
+    }
+    return status.publicKey
   }
 
   protected getAuthorization(s: SignerOrAuthTokenOrSignature) {
@@ -2524,18 +2527,27 @@ export class P2pProvider {
     nodeUri: OceanNode,
     signal?: AbortSignal,
     // OJ-03 (plan §9.1): the same challenge-response is used on P2P too.
-    clientChallenge?: string
+    clientChallenge?: string,
+    detailed: boolean = false
   ): Promise<NodeStatus> {
+    // Over P2P the detailed variant is a distinct command: `detailedStatus` adds
+    // indexer + c2dClusters + supportedSchemas, while `status` returns `indexer: []` and skips
+    // the node's metadata-DB reads. Mirrors ocean-node's StatusHandler / DetailedStatusHandler.
+    const command = detailed
+      ? PROTOCOL_COMMANDS.DETAILED_STATUS
+      : PROTOCOL_COMMANDS.STATUS
     try {
+      // `command` carries the detailed/basic choice; `clientChallenge` (OJ-03) rides the body when
+      // present. The two are orthogonal, so the merged call keeps both.
       return await this.sendP2pCommand(
         nodeUri,
-        PROTOCOL_COMMANDS.STATUS,
+        command,
         clientChallenge ? { clientChallenge } : {},
         null,
         signal
       )
     } catch (e) {
-      LoggerInstance.error('P2P getNodeStatus (STATUS) failed:', e)
+      LoggerInstance.error(`P2P getNodeStatus (${command}) failed:`, e)
       throw e
     }
   }
@@ -4131,7 +4143,8 @@ export class P2pProvider {
       userData,
       dockerCmd,
       dockerEntrypoint,
-      metadata
+      metadata,
+      secureTls
     } = params ?? {}
     const authPayload = await this.getSignedCommandParams(
       nodeUri,
@@ -4155,7 +4168,8 @@ export class P2pProvider {
         ...(additionalDockerFiles !== undefined ? { additionalDockerFiles } : {}),
         ...(dockerCmd !== undefined ? { dockerCmd } : {}),
         ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {}),
-        ...(metadata !== undefined ? { metadata } : {})
+        ...(metadata !== undefined ? { metadata } : {}),
+        ...(secureTls !== undefined ? { secureTls } : {})
       },
       signerOrAuthToken,
       signal

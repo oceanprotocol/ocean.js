@@ -104,6 +104,10 @@ export interface NodeStatus {
   /** Node auth-token policy (plan §17.2). Absent on nodes that predate scoped tokens. */
   authTokenPolicy?: AuthTokenPolicy
   provider: NodeStatusProvider[]
+  /**
+   * Per-chain last-indexed-block info. Populated by DETAILED status only (the node reads it from
+   * its metadata DB per chain); basic status — what `getNodeStatus()` requests — returns `[]`.
+   */
   indexer: NodeStatusIndexer[]
   escrowAddress: Record<string, string>
   /** chainId -> subsidy-provider contract addresses the node applies. Absent on older nodes. */
@@ -118,6 +122,12 @@ export interface NodeStatus {
    * only subsidizes a job whose image matches; `{}` / absent = unrestricted. Absent on older nodes.
    */
   subsidyProviderAllowedImages?: Record<string, string[]>
+  /**
+   * Seconds reserved to claim an escrow payment (the node's `ESCROW_CLAIM_TIMEOUT`, default 3600).
+   * Added to a job's `maxJobDuration` when locking escrow funds, so the caller can tell how long
+   * funds stay locked beyond the job's runtime. Absent on older nodes.
+   */
+  claimDurationTimeout?: number
   /** Maintenance (drain) mode. Absent on nodes that predate the feature. */
   maintenance?: NodeStatusMaintenance
   supportedStorage: Record<string, boolean>
