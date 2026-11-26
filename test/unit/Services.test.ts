@@ -2,6 +2,10 @@ import { assert, expect } from 'chai'
 import { PrivateKey, decrypt } from 'eciesjs'
 import { ProviderInstance, PROTOCOL_COMMANDS } from '../../src/index.js'
 import { ServiceStatusNumber } from '../../src/@types/index.js'
+import type {
+  ComputeEnvironment,
+  ComputeEnvironmentServiceOnDemand
+} from '../../src/@types/index.js'
 import { eciesencrypt } from '../../src/utils/eciesencrypt.js'
 
 describe('Service on Demand client wiring', () => {
@@ -55,6 +59,47 @@ describe('Service on Demand client wiring', () => {
       new TextDecoder().decode(decrypt(nodeKey.secret, Buffer.from(encryptedHex, 'hex')))
     )
     expect(decrypted).to.deep.equal(userData)
+  })
+
+  it('ComputeEnvironment.serviceOnDemand mirrors the node discovery block', () => {
+    // The node (getComputeEnvironments) stamps a per-daemon `serviceOnDemand` block on each env
+    // so a client can pin a free host port. This is a pure, additive type: HttpProvider returns
+    // the parsed JSON verbatim, so the field must type-check and read back unchanged.
+    const serviceOnDemand: ComputeEnvironmentServiceOnDemand = {
+      nodeHost: 'node1.example.com',
+      hostPortRange: [30000, 32767],
+      usedHostPorts: [30000, 30500],
+      maxPortsPerService: 64
+    }
+    const env: ComputeEnvironment = {
+      id: 'env-1',
+      consumerAddress: '0x0000000000000000000000000000000000000000',
+      runningJobs: 0,
+      fees: {},
+      serviceOnDemand
+    }
+    // A client picks a port by choosing any value in hostPortRange NOT in usedHostPorts.
+    const [start, end] = env.serviceOnDemand!.hostPortRange
+    const free = []
+    for (let p = start; p <= start + 2; p++)
+      if (!env.serviceOnDemand!.usedHostPorts.includes(p)) free.push(p)
+    expect(start).to.equal(30000)
+    expect(end).to.equal(32767)
+    expect(env.serviceOnDemand!.usedHostPorts).to.deep.equal([30000, 30500])
+    expect(env.serviceOnDemand!.maxPortsPerService).to.equal(64)
+    expect(free).to.deep.equal([30001, 30002]) // 30000 is used
+  })
+
+  it('ComputeEnvironment.serviceOnDemand is optional (absent on older nodes)', () => {
+    // Older nodes and daemons without a Service-on-Demand config omit the block entirely;
+    // the field is optional so those responses still type-check.
+    const env: ComputeEnvironment = {
+      id: 'env-1',
+      consumerAddress: '0x0000000000000000000000000000000000000000',
+      runningJobs: 0,
+      fees: {}
+    }
+    expect(env.serviceOnDemand).to.equal(undefined)
   })
 
   describe('ports forwarding (serviceStart / serviceRestart request body)', () => {
