@@ -833,8 +833,11 @@ export class BaseProvider {
    * `validUntil`** (epoch ms) in `options` — an old no-arg `generateAuthToken(consumer, nodeUri)`
    * call throws. It also verifies the node's identity (OJ-03) before signing. Scope a token with
    * `{ audience, scope, validUntil }`, or pass `{ audience: 'any', validUntil }` for an unrestricted
-   * token. For backward compatibility an `AbortSignal` may be passed as the 3rd argument instead of
-   * `options`; otherwise `options` is 3rd and the `AbortSignal` is 4th.
+   * token. To mint WITH cancellation, pass `options` 3rd and the `AbortSignal` 4th —
+   * `generateAuthToken(consumer, nodeUri, { validUntil }, signal)`. A bare `AbortSignal` is still
+   * accepted as the 3rd argument for backward compatibility (disambiguated by
+   * `normalizeAuthTokenArgs`), but on its own it supplies no `validUntil`, so that signal-only form
+   * can no longer mint a v2 token — it throws.
    */
   public async generateAuthToken(
     consumer: Signer,
