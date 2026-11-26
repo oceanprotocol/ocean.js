@@ -10,6 +10,12 @@ export function decodeJwt(token: string): JwtPayload {
     if (!decoded || typeof decoded !== 'object') {
       throw new Error('Invalid JWT payload')
     }
+    // `address` is required on every token (JwtPayload declares it non-optional) and is read directly
+    // by callers (getConsumerAddress). Reject a payload whose address is not a string rather than
+    // letting `undefined` flow downstream. Signature verification stays the node's job.
+    if (typeof (decoded as JwtPayload).address !== 'string') {
+      throw new Error('Invalid JWT payload')
+    }
     return decoded as JwtPayload
   } catch {
     throw new Error('Error decoding JWT')

@@ -3387,7 +3387,9 @@ export class P2pProvider {
     // return that node's signature, making us sign a token for a peerId we did not mean to trust.
     // Compare parsed peerIds so base58/CIDv1 encodings still match.
     const targetPeerId = this.extractTargetPeerId(nodeUri)
-    if (targetPeerId && !opts?.allowUnverifiedIssuer) {
+    // Only an explicit `true` bypasses the target match — mirrors resolveVerifiedIssuer, so a stray
+    // truthy value (e.g. a non-empty string) can never silently disable the relay-protection check.
+    if (targetPeerId && opts?.allowUnverifiedIssuer !== true) {
       let sameTarget: boolean
       try {
         sameTarget = peerIdFromString(targetPeerId).equals(peerIdFromString(issuerPeerId))

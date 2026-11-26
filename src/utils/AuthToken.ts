@@ -63,8 +63,10 @@ export function prepareAuthTokenRequest(args: {
   // ── audience resolution
   let audience: string[] | undefined
   if (rawAudience === UNRESTRICTED_AUDIENCE) {
-    // explicit opt-out → unrestricted (omit the field). Warn: reusable network-wide bearer.
-    LoggerInstance.warn(
+    // explicit opt-out → unrestricted (omit the field). Minting a reusable network-wide bearer is
+    // security-relevant, so surface it at the DEFAULT log level: LoggerInstance defaults to
+    // LogLevel.Error, at which `.warn` is swallowed — use `.error` so the notice is actually seen.
+    LoggerInstance.error(
       'generateAuthToken: minting an UNRESTRICTED auth token (usable at any node). Prefer a node-scoped or multi-node audience.'
     )
     audience = undefined
