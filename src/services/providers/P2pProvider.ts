@@ -3522,10 +3522,17 @@ export class P2pProvider {
   ): Promise<{ success: boolean }> {
     const consumerAddress = await consumer.getAddress()
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
+    // The node binds EVERY signed command's message to its own peerId (OJ-03), not just
+    // createAuthToken. Resolve + verify the issuer peerId and include it in the signed message,
+    // or the node reconstructs `address+nonce+command+peerId` and rejects our empty-peerId signature.
+    const clientChallenge = generateClientChallenge()
+    const status = await this.getNodeStatus(nodeUri, signal, clientChallenge)
+    const issuerPeerId = await resolveVerifiedIssuer(status, clientChallenge)
     const signature = await getSignature(
       consumer,
       nonce,
-      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN
+      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN,
+      issuerPeerId
     )
     return this.sendP2pCommand(
       nodeUri,
