@@ -97,6 +97,7 @@ export interface ServiceJobEndpoint {
   containerPort: number
   hostPort: number
   url: string // e.g. "http://<nodeHost>:31042"
+  tls?: boolean // served over HTTPS
 }
 
 export enum ServiceStatusNumber {
@@ -179,6 +180,7 @@ export interface ServiceJob {
   // Archives of /data/outputs, one per removed container — only for services without an
   // outputBucketId (their results are in the bucket). Owner-scoped: SERVICE_LIST strips them.
   outputArchives?: ServiceOutputArchive[]
+  secureTls?: number[] // container ports served over HTTPS
 }
 
 // Returned by SERVICE_LIST, which is authenticated but NOT owner-scoped (any consumer
@@ -244,6 +246,9 @@ export interface ServiceContainerSpec {
   // cap and 400s if oversized). Unlike userData it is NOT encrypted. On serviceRestart it
   // replaces the stored metadata when supplied and does NOT force RESPEC mode.
   metadata?: ComputeJobMetadata
+  // [] turns TLS off. Omitted on restart keeps the stored list, unless the node's config
+  // no longer allows TLS: then the service restarts without TLS
+  secureTls?: number[]
 }
 
 // Optional container-spec overrides for serviceRestart. The node treats the restart

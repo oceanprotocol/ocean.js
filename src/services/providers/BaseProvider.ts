@@ -47,10 +47,20 @@ import {
   NodeP2P,
   CompleteSignature,
   SignerOrAuthTokenOrSignature,
+  AuthTokenOptions,
+  AuthTokenPolicy,
   EscrowEventRecord,
-  EscrowEventsFilter
+  EscrowEventsFilter,
+  SearchQuery,
+  QueryResult
 } from '../../@types/index.js'
-import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
+import {
+  DDOManager,
+  type Asset,
+  type DDO,
+  type ValidateMetadata
+} from '@oceanprotocol/ddo-js'
+import { sleep } from '../../utils/General.js'
 import fetch from 'cross-fetch'
 import { LoggerInstance } from '../../utils/Logger.js'
 import { decodeJwt } from '../../utils/Jwt.js'
@@ -824,12 +834,43 @@ export class BaseProvider {
     )
   }
 
+  /**
+   * Mint a JWT auth token.
+   *
+   * BREAKING (v10): this now mints a **node-scoped v2 token** and **requires an explicit
+   * `validUntil`** (epoch ms) in `options` — an old no-arg `generateAuthToken(consumer, nodeUri)`
+   * call throws. It also verifies the node's identity (OJ-03) before signing. Scope a token with
+   * `{ audience, scope, validUntil }`, or pass `{ audience: 'any', validUntil }` for an unrestricted
+   * token. To mint WITH cancellation, pass `options` 3rd and the `AbortSignal` 4th —
+   * `generateAuthToken(consumer, nodeUri, { validUntil }, signal)`. A bare `AbortSignal` is still
+   * accepted as the 3rd argument for backward compatibility (disambiguated by
+   * `normalizeAuthTokenArgs`), but on its own it supplies no `validUntil`, so that signal-only form
+   * can no longer mint a v2 token — it throws.
+   */
   public async generateAuthToken(
     consumer: Signer,
     nodeUri: OceanNode,
+    options?: AuthTokenOptions | AbortSignal,
     signal?: AbortSignal
   ): Promise<string> {
-    return this.getImpl(nodeUri).generateAuthToken(consumer, nodeUri, signal)
+    return this.getImpl(nodeUri).generateAuthToken(consumer, nodeUri, options, signal)
+  }
+
+  /**
+   * Read the node's auth-token policy (plan §10.3) so apps/UIs can show what the node
+   * requires/accepts (max lifetime, cross-node federation, revocation posture) before minting or
+   * presenting a token. Throws when the node is unreachable (status is null); returns `undefined`
+   * only when the node responded but predates scoped tokens (no `authTokenPolicy`).
+   */
+  public async getNodeAuthTokenPolicy(
+    nodeUri: OceanNode,
+    signal?: AbortSignal
+  ): Promise<AuthTokenPolicy | undefined> {
+    const status = await this.getImpl(nodeUri).getNodeStatus(nodeUri, signal)
+    if (!status) {
+      throw new Error('Could not reach node to read its auth-token policy')
+    }
+    return status.authTokenPolicy
   }
 
   public async generateSignedAuthToken(
@@ -862,9 +903,10 @@ export class BaseProvider {
   public async resolveDdo(
     nodeUri: OceanNode,
     did: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<any> {
-    return this.getImpl(nodeUri).resolveDdo(nodeUri, did, signal)
+    return this.getImpl(nodeUri).resolveDdo(nodeUri, did, signal, authorization)
   }
 
   public async validateDdo(
@@ -874,6 +916,38 @@ export class BaseProvider {
     signal?: AbortSignal
   ): Promise<ValidateMetadata> {
     return this.getImpl(nodeUri).validateDdo(nodeUri, ddo, signerOrAuthToken, signal)
+  }
+
+  public async query(
+    nodeUri: OceanNode,
+    request: SearchQuery,
+    signal?: AbortSignal,
+    authorization?: string
+  ): Promise<QueryResult> {
+    return this.getImpl(nodeUri).query(nodeUri, request, signal, authorization)
+  }
+
+  /** Waits for the DDO (or its `txid` update); null after `maxRetries` (max 500). */
+  public async waitForIndexer(
+    nodeUri: OceanNode,
+    did: string,
+    txid?: string,
+    signal?: AbortSignal,
+    interval: number = 30000,
+    maxRetries: number = 100,
+    authorization?: string
+  ): Promise<Asset> {
+    for (let attempt = 0; attempt < Math.min(maxRetries, 500); attempt++) {
+      try {
+        const ddo = await this.resolveDdo(nodeUri, did, signal, authorization)
+        if (ddo?.version) {
+          const { indexedMetadata } = DDOManager.getDDOClass(ddo).getAssetFields()
+          if (!txid || indexedMetadata?.event?.txid === txid) return ddo as Asset
+        }
+      } catch {}
+      await sleep(interval)
+    }
+    return null
   }
 
   public async isValidProvider(url: OceanNode, signal?: AbortSignal): Promise<boolean> {
@@ -951,11 +1025,20 @@ export class BaseProvider {
     )
   }
 
+  /**
+   * @param detailed when true, requests the node's DETAILED status (adds `indexer`,
+   * `c2dClusters`, `supportedSchemas`). Basic status (the default) stays cheap and returns
+   * `indexer: []`. Mirrors ocean-node's `status` vs `detailedStatus` split.
+   */
   public async getNodeStatus(
     nodeUri: OceanNode,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    detailed: boolean = false
   ): Promise<NodeStatus> {
-    return this.getImpl(nodeUri).getNodeStatus(nodeUri, signal)
+    // The impl signature is (nodeUri, signal, clientChallenge?, detailed). The public facade never
+    // issues an OJ-03 challenge (only generateAuthToken does, directly on the impl), so clientChallenge
+    // is omitted here and `detailed` is forwarded in the 4th slot.
+    return this.getImpl(nodeUri).getNodeStatus(nodeUri, signal, undefined, detailed)
   }
 
   public async getNodeJobs(

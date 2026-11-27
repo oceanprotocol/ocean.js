@@ -156,7 +156,7 @@ const file = await downloadFile(download) // works for HTTP (URL) and P2P (buffe
 - **Data NFT** (ERC721): represents ownership of an asset. Its metadata points at the DDO.
 - **Datatoken** (ERC20): the access token. One datatoken (1.0) buys access to one service. Created from a data NFT.
 - **DDO**: the DID document describing the asset (metadata, services, files, credentials). Schema and validation live in [`@oceanprotocol/ddo-js`](https://github.com/oceanprotocol/ddo.js).
-- **Node**: an [Ocean Node](https://github.com/oceanprotocol/ocean-node) that plays three roles for you: **Provider** (encrypts file URLs, signs fees, serves downloads, runs C2D), **Aquarius** (DDO metadata store and search) and **Indexer** (follows the chain and indexes published assets). In the library these are `ProviderInstance` and `Aquarius`, both pointed at the same node.
+- **Node**: an [Ocean Node](https://github.com/oceanprotocol/ocean-node) that encrypts file URLs, signs fees, serves downloads, runs C2D, stores and searches DDOs, and follows the chain to index published assets. In the library this is `ProviderInstance`, over HTTP or P2P.
 
 ### HTTP vs P2P transport
 
@@ -178,8 +178,8 @@ Each recipe is a pointer plus the key calls. Complete, tested versions are in th
 **Publish** ([CodeExamples.md](CodeExamples.md)). Use `createAsset(...)` from `@oceanprotocol/lib`. It creates the data NFT and datatoken, encrypts the files through the node, builds and registers the DDO, and returns the DID. Then wait for indexing:
 
 ```ts
-const did = await createAsset(name, symbol, signer, files, 1, ddo, true, config.oceanNodeUri, config.oceanTokenAddress, aquarius)
-const asset = await aquarius.waitForIndexer(did)
+const did = await createAsset(name, symbol, signer, files, 1, ddo, true, config.oceanNodeUri, config.oceanTokenAddress)
+const asset = await ProviderInstance.waitForIndexer(config.oceanNodeUri, did)
 ```
 
 **Consume** ([CodeExamples.md](CodeExamples.md)). `ProviderInstance.initialize(...)` to get provider fees, `datatoken.startOrder(...)` (or `orderAsset`), then `ProviderInstance.getDownloadUrl(...)` and `downloadFile(...)` as in the quickstart.
@@ -229,8 +229,9 @@ Accepted network names: `mainnet` (1), `polygon` (137), `base` (8453), `optimism
 **Auth modes.** Node calls that need authentication accept any of:
 
 - a **signer** (an ethers `Signer`): the library fetches a nonce and signs each request;
-- a **JWT auth token** (`string`): create one with `ProviderInstance.generateAuthToken(signer, nodeUri)` and reuse it, avoiding a signature per call; revoke with `invalidateAuthToken`;
-- a **precomputed signature** object (`{ consumerAddress, nonce, signature }`): for agents or wallets that sign out of process. `generateSignedAuthToken` mints a token from such a signature (P2P only; on HTTP use `generateAuthToken(signer, nodeUri)`).
+- a **JWT auth token** (`string`): create one with `ProviderInstance.generateAuthToken(signer, nodeUri, { validUntil })` and reuse it, avoiding a signature per call; revoke with `invalidateAuthToken`.
+  - **Breaking change (v10):** `generateAuthToken` now mints a **node-scoped, self-expiring** token by default and **requires an explicit `validUntil`** (epoch ms) — an old no-arg `generateAuthToken(signer, nodeUri)` call now throws. It also verifies the node's identity (OJ-03 challenge-response) before signing. Scope a token further with `{ audience, scope, validUntil }`; pass `{ audience: 'any', validUntil }` for an unrestricted (reusable, network-wide) token. Read the node's policy with `getNodeAuthTokenPolicy(nodeUri)` and enumerate scopable commands with `listScopableCommands()`. The OJ-03 challenge proves the node's **identity**, not channel **confidentiality**: it does not encrypt the minting response or later bearer-token requests, so use **HTTPS** (HTTP transport) or authenticated **Noise** (P2P) for both issuing and using tokens — otherwise a transparent relay can skim the issued token. This matters most for `audience: 'any'`, where the skimmed token is reusable at any node.
+- a **precomputed signature** object (`{ consumerAddress, nonce, signature }`): for agents or wallets that sign out of process. `generateSignedAuthToken` mints a token from such a signature (P2P only; on HTTP use `generateAuthToken(signer, nodeUri, { validUntil })`).
 
 **Sapphire / confidential EVM.** On `oasis_sapphire` and `oasis_sapphire_testnet` the config sets `sdk: 'oasis'`. Contract calls are wrapped with the Sapphire ethers shim and datatokens use the confidential **Template 4** (`Datatoken4`). Use `useOasisSDK(network)` to check programmatically.
 
@@ -239,7 +240,7 @@ Accepted network names: `mainnet` (1), `polygon` (137), `base` (8453), `optimism
 There is no single `Ocean` object. The library is a set of small, composable pieces exported from one barrel (`src/index.ts`: types, config, contracts, services, utils):
 
 - **Contract wrappers** (`src/contracts`): `NftFactory`, `Nft`, `Datatoken` (+ `Datatoken4`), `FixedRateExchange`, `Dispenser`, `Router`, `EscrowContract`, `AccessListContract`, `AccesslistFactory`, `EnterpriseFeeCollectorContract`.
-- **Node services** (`src/services`): `ProviderInstance` (a ready-made `BaseProvider`, routing HTTP/P2P) and `Aquarius`.
+- **Node services** (`src/services`): `ProviderInstance` (a ready-made `BaseProvider`, routing HTTP/P2P).
 - **Flows** (`src/utils`): `createAsset`, `orderAsset`, and helpers for approvals, DDO handling and signatures.
 
 Every state-changing contract method comes in two forms:
@@ -253,7 +254,7 @@ Every state-changing contract method comes in two forms:
 - **Wrong chain.** `orderAsset` throws if the DDO's `chainId` differs from the signer's network. Make sure `ConfigHelper.getConfig(chainId)` and the signer's RPC point at the same chain as the asset.
 - **Transaction reverted / insufficient balance.** Reverts surface as ethers errors. Check native-token balance for gas and base-token / datatoken balance and approvals (`approve`, `approveWei`) before ordering. Use the `estimateGas` flag to fail early.
 - **Stale nonces.** If you send several transactions from one signer in parallel, serialize them or manage nonces yourself; prefer `await tx.wait()` between dependent steps.
-- **Indexer lag.** A freshly published asset is not resolvable until the node indexes it. Use `aquarius.waitForIndexer(did)` (it polls, `interval` defaults to 30 s) before resolving or ordering.
+- **Indexer lag.** A freshly published asset is not resolvable until the node indexes it. Use `ProviderInstance.waitForIndexer(nodeUri, did)` (it polls, `interval` defaults to 30 s) before resolving or ordering.
 - **Provider errors.** Node-side validation failures for compute and downloads are mapped to readable messages (see `src/utils/ProviderErrors.ts`).
 - **Browser bundles.** `fs` is stubbed out; `ADDRESS_FILE` and the `NODE_ENDPOINT` env override are Node-only.
 

@@ -42,11 +42,19 @@ import {
   SignerOrAuthTokenOrSignature,
   CompleteSignature,
   EscrowEventRecord,
-  EscrowEventsFilter
+  EscrowEventsFilter,
+  SearchQuery,
+  QueryResult
 } from '../../@types/index.js'
-import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
+import { PROTOCOL_COMMANDS, AuthTokenOptions } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
+import { signRequest } from '../../utils/SignatureUtils.js'
+import { prepareAuthTokenRequest, normalizeAuthTokenArgs } from '../../utils/AuthToken.js'
+import {
+  generateClientChallenge,
+  resolveVerifiedIssuer
+} from '../../utils/NodeIdentity.js'
 import { responseBodyToAsyncIterable } from '../../utils/bytes.js'
 import { assertServiceResultTarget } from './serviceResult.js'
 import {
@@ -65,6 +73,15 @@ export class HttpProvider {
   // Strips any trailing slash(es) from nodeUri so a route can just be appended to it.
   private baseUrl(nodeUri: string): string {
     return nodeUri.replace(/\/+$/, '')
+  }
+
+  // `getNodeStatus` swallows a fetch AbortError into a null id, so when the signal has
+  // already fired the missing-peerId branch would otherwise mask the cancellation behind
+  // a generic error. Re-derive the abort from the signal and surface its reason instead.
+  private throwIfAborted(signal?: AbortSignal): void {
+    if (signal?.aborted) {
+      throw signal.reason ?? new Error('The operation was aborted.')
+    }
   }
 
   private async getSignedCommandParams(
@@ -89,40 +106,50 @@ export class HttpProvider {
     }
     const consumerAddress = await getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signature = await getSignature(signerOrAuthToken, nonce, command)
+    // Bind the target node's peerId into the signed message (anti-replay): a signature made for
+    // one node cannot be replayed against another. The node verifies every command this way.
+    const issuerPeerId = (await this.getNodeStatus(nodeUri, signal))?.id
+    if (!issuerPeerId) {
+      this.throwIfAborted(signal)
+      throw new Error('Could not resolve node peerId for signature.')
+    }
+    const signature = await getSignature(signerOrAuthToken, nonce, command, issuerPeerId)
     if (!signature) throw new Error(`Could not sign ${command} request.`)
     return { consumerAddress, nonce, signature }
   }
 
-  /**
-   * Returns the node's root info document (nodeId, chainIds, providerAddress, nodePublicKey, ...).
-   * @param {string} nodeUri - the provider url
-   * @return {Promise<any>}
-   */
-  private async getNodeInfo(nodeUri: string, authorization?: string): Promise<any> {
-    try {
-      const info = await this.getData(nodeUri, authorization)
-      return await info.json()
-    } catch (e) {
-      LoggerInstance.error('Finding the node info failed:', e)
-      throw new Error('HTTP request failed calling Provider')
-    }
-  }
-
-  public async getNodeStatus(nodeUri: string, signal?: AbortSignal): Promise<NodeStatus> {
-    const path = this.baseUrl(nodeUri) + '/directCommand'
+  public async getNodeStatus(
+    nodeUri: string,
+    signal?: AbortSignal,
+    // OJ-03 (plan §8.1): when provided, the node answers with `signedChallenge` proving it controls
+    // its peerId. Backward compatible — omitted ⇒ today's response.
+    clientChallenge?: string,
+    detailed: boolean = false
+  ): Promise<NodeStatus> {
+    // The root endpoint is the HTTP alias of the `status` command (ocean-node #1622):
+    // GET / returns the full node status object (id, publicKey, address, provider[], ...).
+    // `?detailed=true` opts into the extended status (indexer + c2dClusters + supportedSchemas);
+    // basic status (the default) returns `indexer: []` and never reads the node's metadata DB.
+    // `?clientChallenge=…` opts into the OJ-03 identity proof — status moved to a GET (no body),
+    // so the challenge that used to ride the POST body is now a query param.
+    const params = new URLSearchParams()
+    if (detailed) params.set('detailed', 'true')
+    if (clientChallenge) params.set('clientChallenge', clientChallenge)
+    const query = params.toString()
+    const path = this.baseUrl(nodeUri) + '/' + (query ? `?${query}` : '')
     try {
       const response = await fetch(path, {
-        method: 'POST',
+        method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: PROTOCOL_COMMANDS.STATUS }),
         signal
       })
-      if (response?.ok) return response.json()
-      return null
+      if (!response?.ok) {
+        throw new Error(`Node status request failed with HTTP ${response?.status}`)
+      }
+      return response.json()
     } catch (e) {
       LoggerInstance.error('getNodeStatus failed:', e)
-      return null
+      throw e
     }
   }
 
@@ -271,8 +298,11 @@ export class HttpProvider {
    * @return {string} The node public key
    */
   private async getNodePublicKey(nodeUri: string): Promise<string> {
-    const nodeInfo = await this.getNodeInfo(nodeUri)
-    return nodeInfo.nodePublicKey
+    const status = await this.getNodeStatus(nodeUri)
+    if (!status?.publicKey) {
+      throw new Error('Node status did not include a publicKey; cannot encrypt payload.')
+    }
+    return status.publicKey
   }
 
   /**
@@ -1185,40 +1215,58 @@ export class HttpProvider {
     return responseBodyToAsyncIterable(response.body)
   }
 
-  /** Generates an auth token
+  /** Generates an auth token.
+   *
+   * By default (plan §10.1) this now mints a **node-scoped v2 token** proving the issuer identity
+   * first (OJ-03) and requiring an explicit `validUntil`. BREAKING: a call with no `options` (or
+   * only a `signal`) now throws unless `validUntil` is supplied in `options`. Pass
+   * `{ audience: 'any', validUntil }` to mint an unrestricted token (old behaviour).
+   *
    * @param {Signer} consumer consumer Signer wallet object
    * @param {string} nodeUri The URI of the provider we want to query
-   * @param {AbortSignal} signal abort signal
+   * @param {AuthTokenOptions} [options] audience / scope / validUntil / allowUnverifiedIssuer.
+   *        For backward compatibility an AbortSignal may be passed here instead.
+   * @param {AbortSignal} [signal] abort signal
    * @return {Promise<string>}
    */
   public async generateAuthToken(
     consumer: Signer,
     nodeUri: string,
+    options?: AuthTokenOptions | AbortSignal,
     signal?: AbortSignal
   ): Promise<string> {
+    // Backward compat: old call sites pass `(consumer, nodeUri, signal)`.
+    const { opts, abortSignal } = normalizeAuthTokenArgs(options, signal)
     const consumerAddress = await consumer.getAddress()
     const url = this.baseUrl(nodeUri) + '/api/services/auth/token'
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
+    const nonce = (
+      (await this.getNonce(nodeUri, consumerAddress, abortSignal)) + 1
+    ).toString()
 
-    const issuerPeerId = (await this.getNodeStatus(nodeUri, signal))?.id
-    if (!issuerPeerId) throw new Error('Could not resolve node peerId for signature.')
-    const signature = await getSignature(
-      consumer,
+    // OJ-03: fetch status WITH a fresh challenge and verify the issuer identity before signing.
+    const clientChallenge = generateClientChallenge()
+    const status = await this.getNodeStatus(nodeUri, abortSignal, clientChallenge)
+    // getNodeStatus swallows a fetch AbortError into a null status; surface the real abort
+    // reason before resolveVerifiedIssuer masks it as a generic verification failure.
+    this.throwIfAborted(abortSignal)
+    const issuerPeerId = await resolveVerifiedIssuer(status, clientChallenge, opts)
+
+    const prepared = prepareAuthTokenRequest({
+      consumerAddress,
       nonce,
-      PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN,
-      issuerPeerId
-    )
+      issuerPeerId,
+      options: opts,
+      maxTokenLifetime: status?.authTokenPolicy?.maxTokenLifetime
+    })
+    // The consumer is always a Signer here, so sign the prepared message directly.
+    const signature = await signRequest(consumer, prepared.message)
 
     try {
       const response = await fetch(url, {
         method: 'POST',
-        body: JSON.stringify({
-          address: consumerAddress,
-          signature,
-          nonce
-        }),
+        body: JSON.stringify({ ...prepared.body, signature }),
         headers: { 'Content-Type': 'application/json' },
-        signal
+        signal: abortSignal
       })
 
       if (!response?.ok) {
@@ -1252,10 +1300,21 @@ export class HttpProvider {
     const url = this.baseUrl(nodeUri) + '/api/services/auth/token/invalidate'
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
 
+    // The node binds EVERY signed command's message to its own peerId (OJ-03), not just
+    // createAuthToken. Resolve + verify the issuer peerId and include it in the signed message,
+    // or the node reconstructs `address+nonce+command+peerId` and rejects our empty-peerId signature.
+    const clientChallenge = generateClientChallenge()
+    const status = await this.getNodeStatus(nodeUri, signal, clientChallenge)
+    // getNodeStatus swallows a fetch AbortError into a null status; surface the real abort
+    // reason before resolveVerifiedIssuer masks it as a generic verification failure.
+    this.throwIfAborted(signal)
+    const issuerPeerId = await resolveVerifiedIssuer(status, clientChallenge)
+
     const signature = await getSignature(
       consumer,
       nonce,
-      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN
+      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN,
+      issuerPeerId
     )
 
     try {
@@ -1299,7 +1358,13 @@ export class HttpProvider {
       })
       if (response?.ok) {
         const params = await response.json()
-        if (params && (params.providerAddress || params.providerAddresses)) return true
+        // Post #1622 the root endpoint returns the status shape, whose node ETH address
+        // is `address`; older nodes used `providerAddress`/`providerAddresses`.
+        if (
+          params &&
+          (params.address || params.providerAddress || params.providerAddresses)
+        )
+          return true
       }
       return false
     } catch (error) {
@@ -1619,12 +1684,16 @@ export class HttpProvider {
   public async resolveDdo(
     nodeUri: string,
     did: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<any> {
-    const path = nodeUri + '/api/aquarius/assets/ddo/' + did
+    const path = this.baseUrl(nodeUri) + '/api/ddo/' + did
     const response = await fetch(path, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authorization ? { Authorization: authorization } : {})
+      },
       signal
     })
     if (response.ok) return response.json()
@@ -1649,7 +1718,7 @@ export class HttpProvider {
     )
 
     const authHeader = this.getAuthorization(signerOrAuthToken)
-    const response = await fetch(`${nodeUri}/api/aquarius/assets/ddo/validate`, {
+    const response = await fetch(`${this.baseUrl(nodeUri)}/api/ddo/validate`, {
       method: 'POST',
       body: JSON.stringify({ ddo, publisherAddress, nonce, signature }),
       headers: {
@@ -1667,14 +1736,25 @@ export class HttpProvider {
     } as ValidateMetadata
   }
 
-  private async getData(url: string, authorization?: string): Promise<Response> {
-    return fetch(url, {
-      method: 'GET',
+  public async query(
+    nodeUri: string,
+    request: SearchQuery,
+    signal?: AbortSignal,
+    authorization?: string
+  ): Promise<QueryResult> {
+    const response = await fetch(`${this.baseUrl(nodeUri)}/api/query`, {
+      method: 'POST',
+      body: JSON.stringify(request),
       headers: {
-        'Content-type': 'application/json',
-        Authorization: authorization
-      }
+        'Content-Type': 'application/json',
+        ...(authorization ? { Authorization: authorization } : {})
+      },
+      signal
     })
+    if (!response.ok) {
+      throw new Error(`Query failed: ${response.status} ${await response.text()}`)
+    }
+    return response.json()
   }
 
   public async createPersistentStorageBucket(
@@ -2218,7 +2298,8 @@ export class HttpProvider {
       userData,
       dockerCmd,
       dockerEntrypoint,
-      metadata
+      metadata,
+      secureTls
     } = params ?? {}
     const route = this.baseUrl(nodeUri) + '/api/services/serviceRestart'
     const authPayload = await this.getSignedCommandParams(
@@ -2247,7 +2328,8 @@ export class HttpProvider {
         ...(additionalDockerFiles !== undefined ? { additionalDockerFiles } : {}),
         ...(dockerCmd !== undefined ? { dockerCmd } : {}),
         ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {}),
-        ...(metadata !== undefined ? { metadata } : {})
+        ...(metadata !== undefined ? { metadata } : {}),
+        ...(secureTls !== undefined ? { secureTls } : {})
       }),
       signal
     })
