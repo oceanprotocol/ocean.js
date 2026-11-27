@@ -96,35 +96,29 @@ export class HttpProvider {
     return { consumerAddress, nonce, signature }
   }
 
-  /**
-   * Returns the node's root info document (nodeId, chainIds, providerAddress, nodePublicKey, ...).
-   * @param {string} nodeUri - the provider url
-   * @return {Promise<any>}
-   */
-  private async getNodeInfo(nodeUri: string, authorization?: string): Promise<any> {
-    try {
-      const info = await this.getData(nodeUri, authorization)
-      return await info.json()
-    } catch (e) {
-      LoggerInstance.error('Finding the node info failed:', e)
-      throw new Error('HTTP request failed calling Provider')
-    }
-  }
-
-  public async getNodeStatus(nodeUri: string, signal?: AbortSignal): Promise<NodeStatus> {
-    const path = this.baseUrl(nodeUri) + '/directCommand'
+  public async getNodeStatus(
+    nodeUri: string,
+    signal?: AbortSignal,
+    detailed: boolean = false
+  ): Promise<NodeStatus> {
+    // The root endpoint is the HTTP alias of the `status` command (ocean-node #1622):
+    // GET / returns the full node status object (id, publicKey, address, provider[], ...).
+    // `?detailed=true` opts into the extended status (indexer + c2dClusters + supportedSchemas);
+    // basic status (the default) returns `indexer: []` and never reads the node's metadata DB.
+    const path = this.baseUrl(nodeUri) + (detailed ? '/?detailed=true' : '/')
     try {
       const response = await fetch(path, {
-        method: 'POST',
+        method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: PROTOCOL_COMMANDS.STATUS }),
         signal
       })
-      if (response?.ok) return response.json()
-      return null
+      if (!response?.ok) {
+        throw new Error(`Node status request failed with HTTP ${response?.status}`)
+      }
+      return response.json()
     } catch (e) {
       LoggerInstance.error('getNodeStatus failed:', e)
-      return null
+      throw e
     }
   }
 
@@ -273,8 +267,11 @@ export class HttpProvider {
    * @return {string} The node public key
    */
   private async getNodePublicKey(nodeUri: string): Promise<string> {
-    const nodeInfo = await this.getNodeInfo(nodeUri)
-    return nodeInfo.nodePublicKey
+    const status = await this.getNodeStatus(nodeUri)
+    if (!status?.publicKey) {
+      throw new Error('Node status did not include a publicKey; cannot encrypt payload.')
+    }
+    return status.publicKey
   }
 
   /**
@@ -1301,7 +1298,13 @@ export class HttpProvider {
       })
       if (response?.ok) {
         const params = await response.json()
-        if (params && (params.providerAddress || params.providerAddresses)) return true
+        // Post #1622 the root endpoint returns the status shape, whose node ETH address
+        // is `address`; older nodes used `providerAddress`/`providerAddresses`.
+        if (
+          params &&
+          (params.address || params.providerAddress || params.providerAddresses)
+        )
+          return true
       }
       return false
     } catch (error) {
@@ -1684,16 +1687,6 @@ export class HttpProvider {
       throw new Error(`Query failed: ${response.status} ${await response.text()}`)
     }
     return response.json()
-  }
-
-  private async getData(url: string, authorization?: string): Promise<Response> {
-    return fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-type': 'application/json',
-        Authorization: authorization
-      }
-    })
   }
 
   public async createPersistentStorageBucket(
@@ -2237,7 +2230,8 @@ export class HttpProvider {
       userData,
       dockerCmd,
       dockerEntrypoint,
-      metadata
+      metadata,
+      secureTls
     } = params ?? {}
     const route = this.baseUrl(nodeUri) + '/api/services/serviceRestart'
     const authPayload = await this.getSignedCommandParams(
@@ -2266,7 +2260,8 @@ export class HttpProvider {
         ...(additionalDockerFiles !== undefined ? { additionalDockerFiles } : {}),
         ...(dockerCmd !== undefined ? { dockerCmd } : {}),
         ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {}),
-        ...(metadata !== undefined ? { metadata } : {})
+        ...(metadata !== undefined ? { metadata } : {}),
+        ...(secureTls !== undefined ? { secureTls } : {})
       }),
       signal
     })

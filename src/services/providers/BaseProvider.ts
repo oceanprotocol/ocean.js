@@ -989,11 +989,17 @@ export class BaseProvider {
     )
   }
 
+  /**
+   * @param detailed when true, requests the node's DETAILED status (adds `indexer`,
+   * `c2dClusters`, `supportedSchemas`). Basic status (the default) stays cheap and returns
+   * `indexer: []`. Mirrors ocean-node's `status` vs `detailedStatus` split.
+   */
   public async getNodeStatus(
     nodeUri: OceanNode,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    detailed: boolean = false
   ): Promise<NodeStatus> {
-    return this.getImpl(nodeUri).getNodeStatus(nodeUri, signal)
+    return this.getImpl(nodeUri).getNodeStatus(nodeUri, signal, detailed)
   }
 
   public async getNodeJobs(

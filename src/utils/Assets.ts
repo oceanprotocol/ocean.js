@@ -1,6 +1,5 @@
 import { ethers, hexlify, Signer, toBeHex, toUtf8Bytes } from 'ethers'
 import { ConfigHelper } from '../../src/config/index.js'
-import SHA256 from 'crypto-js/sha256.js'
 import { NftFactory } from '../contracts/NFTFactory.js'
 import { Nft } from '../contracts/NFT.js'
 import { DatatokenCreateParams, AssetFiles } from '../@types/Datatoken.js'
@@ -14,7 +13,7 @@ import { ProviderInstance } from '../services/Provider.js'
 import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
 import { calculateActiveTemplateIndex } from './Addresses.js'
-import { DDOManager, type DDO } from '@oceanprotocol/ddo-js'
+import { DDOManager, hashSerializedDdo, type DDO } from '@oceanprotocol/ddo-js'
 import { StorageObject } from '../@types/File.js'
 
 export const DEVELOPMENT_CHAIN_ID = 8996
@@ -238,7 +237,7 @@ export async function createAsset(
   } else {
     const stringDDO = JSON.stringify(ddo)
     metadata = hexlify(toUtf8Bytes(stringDDO))
-    metadataHash = '0x' + SHA256(metadata).toString()
+    metadataHash = hashSerializedDdo(stringDDO, 'hex-json-text')
     flags = 0
   }
 
