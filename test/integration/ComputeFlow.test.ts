@@ -4,7 +4,6 @@ import { getTestConfig, getAddresses, provider } from '../config.js'
 import {
   Config,
   ProviderInstance,
-  Aquarius,
   Datatoken,
   EscrowContract,
   sendTx,
@@ -26,8 +25,6 @@ import { DDO } from '@oceanprotocol/ddo-js'
 import BigNumber from 'bignumber.js'
 
 let config: Config
-
-let aquarius: Aquarius
 let datatoken: Datatoken
 let providerUrl: string
 let consumerAccount: Signer
@@ -248,7 +245,6 @@ describe('Compute flow tests', async () => {
     publisherAccount = (await provider.getSigner(0)) as Signer
     consumerAccount = (await provider.getSigner(1)) as Signer
     config = await getTestConfig(publisherAccount)
-    aquarius = new Aquarius(config?.oceanNodeUri)
     providerUrl = config?.oceanNodeUri
     addresses = getAddresses()
     // Barge/dev deploys fresh contracts not present in the bundled address map, so
@@ -313,8 +309,7 @@ describe('Compute flow tests', async () => {
       [assetUrl],
       ddoWith2mTimeout,
       providerUrl,
-      addresses.ERC721Factory,
-      aquarius
+      addresses.ERC721Factory
     )
     ddoWithNoTimeoutId = await createAssetHelper(
       'D1Min',
@@ -323,8 +318,7 @@ describe('Compute flow tests', async () => {
       [assetUrl],
       ddoWithNoTimeout,
       providerUrl,
-      addresses.ERC721Factory,
-      aquarius
+      addresses.ERC721Factory
     )
     algoDdoWith2mTimeoutId = await createAssetHelper(
       'A1Min',
@@ -333,8 +327,7 @@ describe('Compute flow tests', async () => {
       [algoAssetUrl],
       algoDdoWith2mTimeout,
       providerUrl,
-      addresses.ERC721Factory,
-      aquarius
+      addresses.ERC721Factory
     )
 
     algoDdoWithNoTimeoutId = await createAssetHelper(
@@ -344,22 +337,33 @@ describe('Compute flow tests', async () => {
       [algoAssetUrl],
       algoDdoWithNoTimeout,
       providerUrl,
-      addresses.ERC721Factory,
-      aquarius
+      addresses.ERC721Factory
     )
   })
 
   delay(10000)
 
   it('should resolve published datasets and algorithms', async () => {
-    resolvedDdoWith2mTimeout = await aquarius.waitForIndexer(ddoWith2mTimeoutId)
-    assert(resolvedDdoWith2mTimeout, 'Cannot fetch DDO from Aquarius')
-    resolvedDdoWithNoTimeout = await aquarius.waitForIndexer(ddoWithNoTimeoutId)
-    assert(resolvedDdoWithNoTimeout, 'Cannot fetch DDO from Aquarius')
-    resolvedAlgoDdoWith2mTimeout = await aquarius.waitForIndexer(algoDdoWith2mTimeoutId)
-    assert(resolvedAlgoDdoWith2mTimeout, 'Cannot fetch DDO from Aquarius')
-    resolvedAlgoDdoWithNoTimeout = await aquarius.waitForIndexer(algoDdoWithNoTimeoutId)
-    assert(resolvedAlgoDdoWithNoTimeout, 'Cannot fetch DDO from Aquarius')
+    resolvedDdoWith2mTimeout = await ProviderInstance.waitForIndexer(
+      config.oceanNodeUri,
+      ddoWith2mTimeoutId
+    )
+    assert(resolvedDdoWith2mTimeout, 'Cannot fetch DDO from the node')
+    resolvedDdoWithNoTimeout = await ProviderInstance.waitForIndexer(
+      config.oceanNodeUri,
+      ddoWithNoTimeoutId
+    )
+    assert(resolvedDdoWithNoTimeout, 'Cannot fetch DDO from the node')
+    resolvedAlgoDdoWith2mTimeout = await ProviderInstance.waitForIndexer(
+      config.oceanNodeUri,
+      algoDdoWith2mTimeoutId
+    )
+    assert(resolvedAlgoDdoWith2mTimeout, 'Cannot fetch DDO from the node')
+    resolvedAlgoDdoWithNoTimeout = await ProviderInstance.waitForIndexer(
+      config.oceanNodeUri,
+      algoDdoWithNoTimeoutId
+    )
+    assert(resolvedAlgoDdoWithNoTimeout, 'Cannot fetch DDO from the node')
   }).timeout(80000)
 
   it('should send DT to consumer', async () => {

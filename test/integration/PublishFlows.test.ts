@@ -3,7 +3,6 @@ import { getTestConfig, getAddresses, provider } from '../config.js'
 import {
   Config,
   ProviderInstance,
-  Aquarius,
   NftFactory,
   NftCreateData,
   ZERO_ADDRESS,
@@ -33,7 +32,6 @@ function delay(interval: number) {
 describe('Publish tests', async () => {
   let config: Config
   let addresses: any
-  let aquarius: Aquarius
   let providerUrl: any
   let nft: Nft
   let factory: NftFactory
@@ -87,8 +85,6 @@ describe('Publish tests', async () => {
   before(async () => {
     publisherAccount = (await provider.getSigner(0)) as Signer
     config = await getTestConfig(publisherAccount)
-
-    aquarius = new Aquarius(config.oceanNodeUri)
     providerUrl = config.oceanNodeUri
 
     addresses = getAddresses()
@@ -181,10 +177,10 @@ describe('Publish tests', async () => {
   //     SHA256(ethers.utils.getAddress(nftAddress) + config.chainId.toString(10))
 
   //   fixedPricedDID = fixedPriceDdo.id
-  //   const isAssetValid: ValidateMetadata = await aquarius.validate(
+  //   const isAssetValid: ValidateMetadata = await ProviderInstance.validateDdo(
+  //     providerUrl,
   //     fixedPriceDdo,
-  //     publisherAccount,
-  //     providerUrl
+  //     publisherAccount
   //   )
   //   assert(isAssetValid.valid === true, 'Published asset is not valid')
   //   const encryptedResponse = await ProviderInstance.encrypt(
@@ -220,18 +216,17 @@ describe('Publish tests', async () => {
   //     fixedPriceDdo,
   //     true, // encrypted ddo
   //     providerUrl,
-  //     ZERO_ADDRESS, // provider fee token
-  //     aquarius
+  //     ZERO_ADDRESS // provider fee token
   //   )
 
   //   assert(asset !== null, 'Could not publish asset!')
   // })
 
-  // delay(20000) // let's wait for aquarius to index the  assets
+  // delay(20000) // let's wait for the node to index the assets
 
   // it('should resolve the fixed price dataset', async () => {
-  //   const resolvedDDO = await aquarius.waitForIndexer(fixedPricedDID)
-  //   assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
+  //   const resolvedDDO = await ProviderInstance.waitForIndexer(config.oceanNodeUri, fixedPricedDID)
+  //   assert(resolvedDDO, 'Cannot fetch DDO from the node')
   // }).timeout(40000)
 
   // it('should publish a dataset with dispenser (create NFT + Datatoken + dispenser) with no defined MetadataProof', async () => {
@@ -298,10 +293,10 @@ describe('Publish tests', async () => {
   //     SHA256(ethers.utils.getAddress(nftAddress) + config.chainId.toString(10))
   //   dispenserDID = dispenserDdo.id
 
-  //   const isAssetValid: ValidateMetadata = await aquarius.validate(
+  //   const isAssetValid: ValidateMetadata = await ProviderInstance.validateDdo(
+  //     providerUrl,
   //     dispenserDdo,
-  //     publisherAccount,
-  //     providerUrl
+  //     publisherAccount
   //   )
   //   assert(isAssetValid.valid === true, 'Published asset is not valid')
 
@@ -327,7 +322,7 @@ describe('Publish tests', async () => {
   // delay(19000)
 
   // it('should resolve the free dataset', async () => {
-  //   const resolvedDDO = await aquarius.waitForIndexer(dispenserDID)
-  //   assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
+  //   const resolvedDDO = await ProviderInstance.waitForIndexer(config.oceanNodeUri, dispenserDID)
+  //   assert(resolvedDDO, 'Cannot fetch DDO from the node')
   // }).timeout(40000)
 })

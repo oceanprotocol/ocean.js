@@ -629,7 +629,7 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * Creates or update Metadata cached by Aquarius. Also, updates the METADATA_DECRYPTOR key
+   * Creates or update Metadata indexed by Ocean Node. Also, updates the METADATA_DECRYPTOR key
    * @param {String} nftAddress NFT contract address
    * @param {String} address Caller address NFT Owner adress
    * @param {Number} metadataState

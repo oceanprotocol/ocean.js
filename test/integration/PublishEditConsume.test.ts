@@ -7,14 +7,12 @@ import { getTestConfig, getAddresses, provider } from '../config.js'
 import {
   Config,
   ProviderInstance,
-  Aquarius,
   Datatoken,
   downloadFile,
   sendTx,
   transfer,
   amountToUnits,
-  StorageObject,
-  isP2pUri
+  StorageObject
 } from '../../src/index.js'
 import { createAssetHelper, orderAsset, updateAssetMetadata } from './helpers.js'
 import { DDO } from '@oceanprotocol/ddo-js'
@@ -23,8 +21,6 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 let config: Config
-
-let aquarius: Aquarius
 let datatoken: Datatoken
 let providerUrl: string
 let consumerAccount: Signer
@@ -119,7 +115,6 @@ describe('Publish consume test', async () => {
     publisherAccount = (await provider.getSigner(0)) as Signer
     consumerAccount = (await provider.getSigner(1)) as Signer
     config = await getTestConfig(publisherAccount)
-    aquarius = new Aquarius(config?.oceanNodeUri)
     providerUrl = config?.oceanNodeUri
     addresses = getAddresses()
   })
@@ -173,8 +168,7 @@ describe('Publish consume test', async () => {
       [urlFile],
       assetDdo,
       providerUrl,
-      addresses.ERC721Factory,
-      aquarius
+      addresses.ERC721Factory
     )
     assert(urlAssetId, 'Failed to publish url DDO')
   }).timeout(40000)
@@ -187,8 +181,7 @@ describe('Publish consume test', async () => {
       [arweaveFile],
       assetDdo,
       providerUrl,
-      addresses.ERC721Factory,
-      aquarius
+      addresses.ERC721Factory
     )
     assert(arweaveAssetId, 'Failed to arwave publish DDO')
   }).timeout(40000)
@@ -207,47 +200,45 @@ describe('Publish consume test', async () => {
       [ipfsFile],
       assetDdo,
       providerUrl,
-      addresses.ERC721Factory,
-      aquarius
+      addresses.ERC721Factory
     )
     assert(ipfsAssetId, 'Failed to publish ipfs DDO')
   }).timeout(60000)
 
-  delay(20000) // let's wait for aquarius to index the  assets
+  delay(20000) // let's wait for the node to index the assets
 
   it('Resolve published assets', async () => {
-    resolvedUrlAssetDdo = await aquarius.waitForIndexer(urlAssetId)
-    assert(resolvedUrlAssetDdo, 'Cannot fetch url DDO from Aquarius')
+    resolvedUrlAssetDdo = await ProviderInstance.waitForIndexer(
+      config.oceanNodeUri,
+      urlAssetId
+    )
+    assert(resolvedUrlAssetDdo, 'Cannot fetch url DDO from the node')
 
-    resolvedArweaveAssetDdo = await aquarius.waitForIndexer(arweaveAssetId)
-    assert(resolvedArweaveAssetDdo, 'Cannot fetch arwave DDO from Aquarius')
+    resolvedArweaveAssetDdo = await ProviderInstance.waitForIndexer(
+      config.oceanNodeUri,
+      arweaveAssetId
+    )
+    assert(resolvedArweaveAssetDdo, 'Cannot fetch arwave DDO from the node')
 
-    resolvedIpfsAssetDdo = await aquarius.waitForIndexer(ipfsAssetId)
-    assert(resolvedIpfsAssetDdo, 'Cannot fetch ipfs DDO from Aquarius')
+    resolvedIpfsAssetDdo = await ProviderInstance.waitForIndexer(
+      config.oceanNodeUri,
+      ipfsAssetId
+    )
+    assert(resolvedIpfsAssetDdo, 'Cannot fetch ipfs DDO from the node')
 
     // The onchain and graphql asset flows are disabled end to end in this file — publish,
     // resolve, mint, order and download are all commented out — so nothing resolves them.
   }).timeout(80000)
 
-  it('Finds the resolved asset via querySearch', async function () {
-    // querySearch() has no P2P routing (unlike resolve/waitForIndexer/validate) - it only
-    // ever does a raw HTTP POST, so this can't run against a peerId/multiaddr node.
-    if (isP2pUri(config.oceanNodeUri)) this.skip()
-    // Regression guard for the route fix: querySearch() used to POST to
-    // /api/aquarius/assets/query, which the node never registered (always 404). It now posts
-    // to /api/aquarius/assets/metadata/query, so this must actually find the indexed asset.
-    const result = await aquarius.querySearch({
-      query: {
-        bool: {
-          filter: [{ term: { id: urlAssetId } }]
-        }
-      }
+  it('Finds the resolved asset with query', async function () {
+    const result = await ProviderInstance.query(config.oceanNodeUri, {
+      filter: { ids: [urlAssetId] }
     })
-    const flatResults = ([] as any[]).concat(...(Array.isArray(result) ? result : []))
     assert(
-      flatResults.some((doc: any) => doc?.id === urlAssetId),
-      'querySearch should find the just-indexed url asset by DID'
+      result.results.some((doc: any) => doc?.id === urlAssetId),
+      'query should find the just-indexed url asset by DID'
     )
+    assert(result.totalResults >= 1, 'query should count the match')
   }).timeout(30000)
 
   it('Mint datasets datatokens to publisher', async () => {
@@ -445,8 +436,7 @@ describe('Publish consume test', async () => {
     const updateUrlTx = await updateAssetMetadata(
       publisherAccount,
       resolvedUrlAssetDdo,
-      providerUrl,
-      aquarius
+      providerUrl
     )
     assert(updateUrlTx, 'Failed to update url asset metadata')
   }).timeout(40000)
@@ -456,8 +446,7 @@ describe('Publish consume test', async () => {
     const updateArwaveTx = await updateAssetMetadata(
       publisherAccount,
       resolvedArweaveAssetDdo,
-      providerUrl,
-      aquarius
+      providerUrl
     )
     assert(updateArwaveTx, 'Failed to update arwave asset metadata')
     // To be fixed in #1849
@@ -465,20 +454,25 @@ describe('Publish consume test', async () => {
     // const updateIpfsTx = await updateAssetMetadata(
     //   publisherAccount,
     //   resolvedIpfsAssetDdo,
-    //   providerUrl,
-    //   aquarius
+    //   providerUrl
     // )
     // assert(updateIpfsTx, 'Failed to update ipfs asset metadata')
   }).timeout(40000)
 
   it('Should resolve updated datasets', async () => {
-    resolvedUrlAssetDdoAfterUpdate = await aquarius.waitForIndexer(urlAssetId)
-    assert(resolvedUrlAssetDdoAfterUpdate, 'Cannot fetch url DDO from Aquarius')
+    resolvedUrlAssetDdoAfterUpdate = await ProviderInstance.waitForIndexer(
+      config.oceanNodeUri,
+      urlAssetId
+    )
+    assert(resolvedUrlAssetDdoAfterUpdate, 'Cannot fetch url DDO from the node')
 
-    resolvedArweaveAssetDdoAfterUpdate = await aquarius.waitForIndexer(arweaveAssetId)
-    assert(resolvedArweaveAssetDdoAfterUpdate, 'Cannot fetch arwave DDO from Aquarius')
+    resolvedArweaveAssetDdoAfterUpdate = await ProviderInstance.waitForIndexer(
+      config.oceanNodeUri,
+      arweaveAssetId
+    )
+    assert(resolvedArweaveAssetDdoAfterUpdate, 'Cannot fetch arwave DDO from the node')
     // To be fixed in #1849
-    // resolvedIpfsAssetDdoAfterUpdate = await aquarius.waitForAqua(ipfsAssetId)
-    // assert(resolvedIpfsAssetDdoAfterUpdate, 'Cannot fetch ipfs DDO from Aquarius')
+    // resolvedIpfsAssetDdoAfterUpdate = await ProviderInstance.waitForIndexer(config.oceanNodeUri, ipfsAssetId)
+    // assert(resolvedIpfsAssetDdoAfterUpdate, 'Cannot fetch ipfs DDO from the node')
   }).timeout(40000)
 })

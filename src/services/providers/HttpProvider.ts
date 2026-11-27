@@ -42,7 +42,9 @@ import {
   SignerOrAuthTokenOrSignature,
   CompleteSignature,
   EscrowEventRecord,
-  EscrowEventsFilter
+  EscrowEventsFilter,
+  SearchQuery,
+  QueryResult
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -1647,12 +1649,16 @@ export class HttpProvider {
   public async resolveDdo(
     nodeUri: string,
     did: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<any> {
-    const path = nodeUri + '/api/aquarius/assets/ddo/' + did
+    const path = this.baseUrl(nodeUri) + '/api/ddo/' + did
     const response = await fetch(path, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authorization ? { Authorization: authorization } : {})
+      },
       signal
     })
     if (response.ok) return response.json()
@@ -1677,7 +1683,7 @@ export class HttpProvider {
     )
 
     const authHeader = this.getAuthorization(signerOrAuthToken)
-    const response = await fetch(`${nodeUri}/api/aquarius/assets/ddo/validate`, {
+    const response = await fetch(`${this.baseUrl(nodeUri)}/api/ddo/validate`, {
       method: 'POST',
       body: JSON.stringify({ ddo, publisherAddress, nonce, signature }),
       headers: {
@@ -1693,6 +1699,27 @@ export class HttpProvider {
       hash: j.hash,
       proof: { validatorAddress: j.publicKey, r: j.r[0], s: j.s[0], v: j.v }
     } as ValidateMetadata
+  }
+
+  public async query(
+    nodeUri: string,
+    request: SearchQuery,
+    signal?: AbortSignal,
+    authorization?: string
+  ): Promise<QueryResult> {
+    const response = await fetch(`${this.baseUrl(nodeUri)}/api/query`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authorization ? { Authorization: authorization } : {})
+      },
+      signal
+    })
+    if (!response.ok) {
+      throw new Error(`Query failed: ${response.status} ${await response.text()}`)
+    }
+    return response.json()
   }
 
   public async createPersistentStorageBucket(
