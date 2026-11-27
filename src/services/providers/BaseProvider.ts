@@ -47,6 +47,8 @@ import {
   NodeP2P,
   CompleteSignature,
   SignerOrAuthTokenOrSignature,
+  AuthTokenOptions,
+  AuthTokenPolicy,
   EscrowEventRecord,
   EscrowEventsFilter,
   SearchQuery,
@@ -832,12 +834,43 @@ export class BaseProvider {
     )
   }
 
+  /**
+   * Mint a JWT auth token.
+   *
+   * BREAKING (v10): this now mints a **node-scoped v2 token** and **requires an explicit
+   * `validUntil`** (epoch ms) in `options` — an old no-arg `generateAuthToken(consumer, nodeUri)`
+   * call throws. It also verifies the node's identity (OJ-03) before signing. Scope a token with
+   * `{ audience, scope, validUntil }`, or pass `{ audience: 'any', validUntil }` for an unrestricted
+   * token. To mint WITH cancellation, pass `options` 3rd and the `AbortSignal` 4th —
+   * `generateAuthToken(consumer, nodeUri, { validUntil }, signal)`. A bare `AbortSignal` is still
+   * accepted as the 3rd argument for backward compatibility (disambiguated by
+   * `normalizeAuthTokenArgs`), but on its own it supplies no `validUntil`, so that signal-only form
+   * can no longer mint a v2 token — it throws.
+   */
   public async generateAuthToken(
     consumer: Signer,
     nodeUri: OceanNode,
+    options?: AuthTokenOptions | AbortSignal,
     signal?: AbortSignal
   ): Promise<string> {
-    return this.getImpl(nodeUri).generateAuthToken(consumer, nodeUri, signal)
+    return this.getImpl(nodeUri).generateAuthToken(consumer, nodeUri, options, signal)
+  }
+
+  /**
+   * Read the node's auth-token policy (plan §10.3) so apps/UIs can show what the node
+   * requires/accepts (max lifetime, cross-node federation, revocation posture) before minting or
+   * presenting a token. Throws when the node is unreachable (status is null); returns `undefined`
+   * only when the node responded but predates scoped tokens (no `authTokenPolicy`).
+   */
+  public async getNodeAuthTokenPolicy(
+    nodeUri: OceanNode,
+    signal?: AbortSignal
+  ): Promise<AuthTokenPolicy | undefined> {
+    const status = await this.getImpl(nodeUri).getNodeStatus(nodeUri, signal)
+    if (!status) {
+      throw new Error('Could not reach node to read its auth-token policy')
+    }
+    return status.authTokenPolicy
   }
 
   public async generateSignedAuthToken(
@@ -1002,7 +1035,10 @@ export class BaseProvider {
     signal?: AbortSignal,
     detailed: boolean = false
   ): Promise<NodeStatus> {
-    return this.getImpl(nodeUri).getNodeStatus(nodeUri, signal, detailed)
+    // The impl signature is (nodeUri, signal, clientChallenge?, detailed). The public facade never
+    // issues an OJ-03 challenge (only generateAuthToken does, directly on the impl), so clientChallenge
+    // is omitted here and `detailed` is forwarded in the 4th slot.
+    return this.getImpl(nodeUri).getNodeStatus(nodeUri, signal, undefined, detailed)
   }
 
   public async getNodeJobs(
