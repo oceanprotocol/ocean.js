@@ -423,6 +423,9 @@ describe('Node admin commands', () => {
         expect(m.calls[0].body.signature).to.equal(undefined)
         expect(m.calls[0].body.nonce).to.equal(undefined)
         expect(m.calls[0].body.address).to.equal(admin.address)
+        // The `/directCommand` dispatcher authenticates off the body, so the token must ride in
+        // the body as `authorization` (not only the header) or the node demands nonce/signature.
+        expect(m.calls[0].body.authorization).to.equal(jwt)
         expect(m.statusCalls).to.equal(0)
       })
     }

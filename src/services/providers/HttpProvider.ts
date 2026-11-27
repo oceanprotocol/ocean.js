@@ -1614,18 +1614,25 @@ export class HttpProvider {
     )
     // For a signer this is undefined and the body signature authenticates; for a read-only token
     // it is the raw JWT (getAuthorization adds no "Bearer " prefix) and nonce/signature are
-    // undefined. Mirrors downloadNodeLogs.
+    // undefined.
     const authHeader = this.getAuthorization(signerOrAuthToken)
     let response
     try {
       response = await fetch(this.baseUrl(nodeUri) + '/directCommand', {
         method: 'POST',
+        // The `/directCommand` dispatcher authenticates off the parsed request body, so a
+        // read-only token must ride IN the body as `authorization` (exactly as the P2P
+        // transport sends it) — the Authorization header alone is not read for this route, and
+        // the node would otherwise fall through to demanding nonce/address/signature. The
+        // header is kept too for any middleware that reads it. For a signer `authHeader` is
+        // undefined, so nothing is added and the body signature authenticates as before.
         body: JSON.stringify({
           command,
           ...params,
           address: consumerAddress,
           nonce,
-          signature
+          signature,
+          ...(authHeader ? { authorization: authHeader } : {})
         }),
         headers: {
           'Content-Type': 'application/json',
