@@ -43,9 +43,9 @@ function mockFetch(
       return { ok: true, json: async () => ({ nonce }) } as any
     }
     const parsed = init?.body ? JSON.parse(init.body) : undefined
-    // Signing resolves the node peerId via the STATUS directCommand; answer it and do NOT record
-    // it, so the signed request stays the only recorded call.
-    if (parsed?.command === PROTOCOL_COMMANDS.STATUS) {
+    // Signing resolves the node peerId via the root status endpoint (GET /, post #2218);
+    // answer it and do NOT record it, so the signed request stays the only recorded call.
+    if (String(url).replace(/\?.*$/, '').replace(/\/+$/, '') === NODE) {
       return { ok: true, status: 200, json: async () => ({ id: NODE_PEER_ID }) } as any
     }
     calls.push({
@@ -177,12 +177,11 @@ describe('Maintenance mode client support', () => {
     })
 
     it('wraps a network failure in the generic provider error', async () => {
-      globalThis.fetch = (async (url: string, init?: any) => {
+      globalThis.fetch = (async (url: string) => {
         if (String(url).includes('/api/services/nonce')) {
           return { ok: true, json: async () => ({ nonce: 1 }) } as any
         }
-        const parsed = init?.body ? JSON.parse(init.body) : undefined
-        if (parsed?.command === PROTOCOL_COMMANDS.STATUS) {
+        if (String(url).replace(/\?.*$/, '').replace(/\/+$/, '') === NODE) {
           return {
             ok: true,
             status: 200,
@@ -206,8 +205,7 @@ describe('Maintenance mode client support', () => {
         if (String(url).includes('/api/services/nonce')) {
           return { ok: true, json: async () => ({ nonce: 1 }) } as any
         }
-        const parsed = init?.body ? JSON.parse(init.body) : undefined
-        if (parsed?.command === PROTOCOL_COMMANDS.STATUS) {
+        if (String(url).replace(/\?.*$/, '').replace(/\/+$/, '') === NODE) {
           return {
             ok: true,
             status: 200,
