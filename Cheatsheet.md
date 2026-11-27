@@ -417,6 +417,47 @@ console.log(status?.maintenance?.enabled)
 await ProviderInstance.setMaintenance(providerUrl, adminSigner, false)
 ```
 
+### Node administration (admin)
+
+`getNodeDetailedStatus` is public and unsigned — it takes no signer. Every other call here works
+over HTTP and P2P node URIs and takes the admin `Signer` (it signs internally, bound to the target
+node's peerId); that signer must be one of the node's admins. The read-only `getNodeConfig` and
+`getNodeLog` also accept a scoped auth token; every mutating call is signature-only and rejects a
+token client-side (`requires a signer`).
+
+```javascript
+// public, unsigned
+const detailed = await ProviderInstance.getNodeDetailedStatus(providerUrl)
+
+// read-only (signer or scoped auth token)
+const config = await ProviderInstance.getNodeConfig(providerUrl, adminSigner)
+const logEntry = await ProviderInstance.getNodeLog(providerUrl, adminSigner, logId)
+
+// shallow-merges top-level keys into the node config (a `keys` block replaces the keys wholesale)
+await ProviderInstance.setNodeConfig(providerUrl, adminSigner, { unsafeURLs: [] })
+
+// stop any owner's compute job; jobId is `<clusterHash>-<jobId>`
+await ProviderInstance.adminStopJob(providerUrl, adminSigner, jobId)
+
+// reindex one tx, or a chain (omit `block` to start from the deployment block)
+await ProviderInstance.reindexTx(providerUrl, adminSigner, 8996, txHash)
+await ProviderInstance.reindexChain(providerUrl, adminSigner, 8996, 1000)
+
+// start / stop the indexer (omit chainId for every chain)
+await ProviderInstance.handleIndexingThread(providerUrl, adminSigner, 'STOP_THREAD', 8996)
+
+// omitting tokenAmount sweeps the whole balance of the token
+const { tx } = await ProviderInstance.collectFees(providerUrl, adminSigner, {
+  chainId: 8996,
+  tokenAddress: ZERO_ADDRESS,
+  destinationAddress: '0x...',
+  tokenAmount: '0.5'
+})
+
+// the node exits ~2s after replying; it only returns if a supervisor restarts it
+await ProviderInstance.stopNode(providerUrl, adminSigner)
+```
+
 ### Detect a maintenance rejection
 
 A guarded call on a draining node fails with HTTP 503 and `code: 'MAINTENANCE_MODE'`. The

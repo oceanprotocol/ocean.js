@@ -29,6 +29,10 @@ import {
   NodeMetricsSnapshot,
   NodeMetricsHistoryResult,
   NodeLogEntry,
+  NodeAdminJobStatus,
+  IndexingThreadAction,
+  CollectFeesParams,
+  CollectFeesResult,
   PersistentStorageAccessList,
   PersistentStorageBucket,
   PersistentStorageCreateBucketRequest,
@@ -96,6 +100,19 @@ export async function getConsumerAddress(
   if (typeof signerOrAuthToken === 'string') return decodeJwt(signerOrAuthToken).address
 
   return signerOrAuthToken.getAddress()
+}
+
+/** Mutating admin commands are signature-only on the node: an auth token can never authorize one.
+ *  (The read-only FETCH_CONFIG / GET_LOGS accept a scoped token and must NOT call this.) */
+export function assertAdminSigner(
+  signerOrAuthToken: SignerOrAuthTokenOrSignature,
+  command: string
+): void {
+  if (typeof signerOrAuthToken === 'string') {
+    throw new Error(
+      `Admin command "${command}" requires a signer: auth tokens are not accepted`
+    )
+  }
 }
 
 export async function getSignature(
@@ -1026,6 +1043,193 @@ export class BaseProvider {
   }
 
   /**
+   * Stops the node process. Admin only: the signer must be in the node's ALLOWED_ADMINS / admin access list; auth tokens are not accepted (signature-only).
+   * The node replies, then calls process.exit() about 2 seconds later; it only comes back if a
+   * supervisor restarts it. Over P2P, a transport error after the command was sent can mean the
+   * node has already stopped.
+   * @param {OceanNode} nodeUri - The node URI / peerId / multiaddr.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken - Admin signer (a string auth token is rejected).
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<void>}
+   */
+  public async stopNode(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    signal?: AbortSignal
+  ): Promise<void> {
+    return this.getImpl(nodeUri).stopNode(nodeUri, signerOrAuthToken, signal)
+  }
+  /**
+   * Stops a compute job of any owner (admin override of `computeStop`). Admin only: the signer must be in the node's ALLOWED_ADMINS / admin access list; auth tokens are not accepted (signature-only).
+   * @param {OceanNode} nodeUri - The node URI / peerId / multiaddr.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken - Admin signer (a string auth token is rejected).
+   * @param {string} jobId - Composite `<clusterHash>-<jobId>`; the node answers 400 without a `-`.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<any>} The node's reply.
+   */
+  public async adminStopJob(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    jobId: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    return this.getImpl(nodeUri).adminStopJob(nodeUri, signerOrAuthToken, jobId, signal)
+  }
+  /**
+   * Reindexes a single transaction. Admin only: the signer must be in the node's ALLOWED_ADMINS / admin access list; auth tokens are not accepted (signature-only).
+   * @param {OceanNode} nodeUri - The node URI / peerId / multiaddr.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken - Admin signer (a string auth token is rejected).
+   * @param {number} chainId - A chain the node supports and indexes.
+   * @param {string} txId - Transaction hash (`0x` + 64 hex chars; validated by the node).
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<NodeAdminJobStatus>} The node's job descriptor.
+   */
+  public async reindexTx(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    chainId: number,
+    txId: string,
+    signal?: AbortSignal
+  ): Promise<NodeAdminJobStatus> {
+    return this.getImpl(nodeUri).reindexTx(
+      nodeUri,
+      signerOrAuthToken,
+      chainId,
+      txId,
+      signal
+    )
+  }
+  /**
+   * Reindexes a chain. Admin only: the signer must be in the node's ALLOWED_ADMINS / admin access list; auth tokens are not accepted (signature-only).
+   * Without `block` the node reindexes from the deployment block, which stalls indexing for a while.
+   * @param {OceanNode} nodeUri - The node URI / peerId / multiaddr.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken - Admin signer (a string auth token is rejected).
+   * @param {number} chainId - A chain the node supports and indexes.
+   * @param {number} [block] - Block to start from; omit for the deployment block (0 is sent as 0).
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<NodeAdminJobStatus>} The node's job descriptor.
+   */
+  public async reindexChain(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    chainId: number,
+    block?: number,
+    signal?: AbortSignal
+  ): Promise<NodeAdminJobStatus> {
+    return this.getImpl(nodeUri).reindexChain(
+      nodeUri,
+      signerOrAuthToken,
+      chainId,
+      block,
+      signal
+    )
+  }
+  /**
+   * Starts or stops the node's indexing thread. Admin only: the signer must be in the node's ALLOWED_ADMINS / admin access list; auth tokens are not accepted (signature-only).
+   * @param {OceanNode} nodeUri - The node URI / peerId / multiaddr.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken - Admin signer (a string auth token is rejected).
+   * @param {IndexingThreadAction} action - `START_THREAD` or `STOP_THREAD`.
+   * @param {number} [chainId] - Chain to act on; omit to act on every chain.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<void>}
+   */
+  public async handleIndexingThread(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    action: IndexingThreadAction,
+    chainId?: number,
+    signal?: AbortSignal
+  ): Promise<void> {
+    return this.getImpl(nodeUri).handleIndexingThread(
+      nodeUri,
+      signerOrAuthToken,
+      action,
+      chainId,
+      signal
+    )
+  }
+  /**
+   * Transfers collected node fees to a destination address. Admin only: the signer must be in the node's ALLOWED_ADMINS / admin access list; auth tokens are not accepted (signature-only).
+   * Omitting `tokenAmount` sweeps the node's whole balance of the token; `0` transfers zero.
+   * @param {OceanNode} nodeUri - The node URI / peerId / multiaddr.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken - Admin signer (a string auth token is rejected).
+   * @param {CollectFeesParams} params - chainId, tokenAddress, destinationAddress, optional tokenAmount.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<CollectFeesResult>} The transaction hash and a message.
+   */
+  public async collectFees(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    params: CollectFeesParams,
+    signal?: AbortSignal
+  ): Promise<CollectFeesResult> {
+    return this.getImpl(nodeUri).collectFees(nodeUri, signerOrAuthToken, params, signal)
+  }
+  /**
+   * Fetches one node log entry by id. Admin only: accepts a signer or a scoped auth token (the token's `scope` must include this command, and its address must be an allowed admin).
+   * @param {OceanNode} nodeUri - The node URI / peerId / multiaddr.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken - Admin signer or scoped auth token.
+   * @param {string} logId - The log entry id.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<NodeLogEntry>} The log entry.
+   */
+  public async getNodeLog(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    logId: string,
+    signal?: AbortSignal
+  ): Promise<NodeLogEntry> {
+    return this.getImpl(nodeUri).getNodeLog(nodeUri, signerOrAuthToken, logId, signal)
+  }
+  /**
+   * Fetches the node's configuration (secrets are masked by the node). Admin only: accepts a signer or a scoped auth token (the token's `scope` must include this command, and its address must be an allowed admin).
+   * @param {OceanNode} nodeUri - The node URI / peerId / multiaddr.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken - Admin signer or scoped auth token.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<Record<string, any>>} The node configuration.
+   */
+  public async getNodeConfig(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    signal?: AbortSignal
+  ): Promise<Record<string, any>> {
+    return this.getImpl(nodeUri).getNodeConfig(nodeUri, signerOrAuthToken, signal)
+  }
+  /**
+   * Updates the node's configuration. Admin only: the signer must be in the node's ALLOWED_ADMINS / admin access list; auth tokens are not accepted (signature-only).
+   * The node shallow-merges the top-level keys over its config file, validates, writes the file,
+   * reloads and re-adds C2D engines. A `keys` block replaces the node's keys wholesale.
+   * @param {OceanNode} nodeUri - The node URI / peerId / multiaddr.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken - Admin signer (a string auth token is rejected).
+   * @param {Record<string, any>} config - Top-level config keys to set.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<Record<string, any>>} The node's reply.
+   */
+  public async setNodeConfig(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    config: Record<string, any>,
+    signal?: AbortSignal
+  ): Promise<Record<string, any>> {
+    return this.getImpl(nodeUri).setNodeConfig(nodeUri, signerOrAuthToken, config, signal)
+  }
+
+  /**
+   * Returns the node's detailed status. Public, unsigned: no admin gate.
+   * @param {OceanNode} nodeUri - The node URI / peerId / multiaddr.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<NodeStatus | null>} The detailed status (maintenance counters, C2D
+   *   clusters, ...). Over the HTTP transport this resolves to `null` on failure (mirrors
+   *   `getNodeStatus`); the P2P transport rejects on failure instead.
+   */
+  public async getNodeDetailedStatus(
+    nodeUri: OceanNode,
+    signal?: AbortSignal
+  ): Promise<NodeStatus | null> {
+    return this.getImpl(nodeUri).getNodeDetailedStatus(nodeUri, signal)
+  }
+
+  /**
    * @param detailed when true, requests the node's DETAILED status (adds `indexer`,
    * `c2dClusters`, `supportedSchemas`). Basic status (the default) stays cheap and returns
    * `indexer: []`. Mirrors ocean-node's `status` vs `detailedStatus` split.
@@ -1528,6 +1732,11 @@ export class BaseProvider {
     )
   }
 
+  /**
+   * @deprecated Use {@link getNodeConfig}, which signs internally — pass the credential
+   * directly instead of a pre-signed payload:
+   * `getNodeConfig(nodeUri, adminSignerOrAuthToken)`.
+   */
   public async fetchConfig(
     nodeUri: OceanNode,
     payload: Record<string, any>
@@ -1535,6 +1744,11 @@ export class BaseProvider {
     return this.p2pProvider.fetchConfig(nodeUri, payload)
   }
 
+  /**
+   * @deprecated Use {@link setNodeConfig}, which signs internally — pass the credential and
+   * the config separately instead of a single pre-signed payload:
+   * `setNodeConfig(nodeUri, adminSigner, { unsafeURLs: [] })`.
+   */
   public async pushConfig(
     nodeUri: OceanNode,
     payload: Record<string, any>

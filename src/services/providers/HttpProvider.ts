@@ -1,7 +1,7 @@
 import { Signer, isAddress } from 'ethers'
 import { LoggerInstance } from '../../utils/Logger.js'
 import { OceanNodeProviderError } from '../../utils/ProviderErrors.js'
-import { redactSensitiveFields } from '../../utils/General.js'
+import { redactSensitiveFields, buildCollectFeesParams } from '../../utils/General.js'
 import {
   StorageObject,
   FileInfo,
@@ -22,6 +22,10 @@ import {
   NodeStatus,
   NodeComputeJob,
   NodeLogEntry,
+  NodeAdminJobStatus,
+  IndexingThreadAction,
+  CollectFeesParams,
+  CollectFeesResult,
   NodeMetricsSnapshot,
   NodeMetricsHistoryResult,
   PersistentStorageAccessList,
@@ -61,7 +65,8 @@ import {
   getConsumerAddress,
   getSignature,
   getAuthorization,
-  isAgentSignature
+  isAgentSignature,
+  assertAdminSigner
 } from './BaseProvider.js'
 import { type P2PRequestBodyStream } from './P2pProvider.js'
 
@@ -1523,11 +1528,12 @@ export class HttpProvider {
       PROTOCOL_COMMANDS.GET_LOGS,
       signal
     )
-    let url = logsUrl + `?startTime=${startTime}&endTime=${endTime}`
-    if (maxLogs) url += `&maxLogs=${maxLogs}`
-    if (moduleName) url += `&moduleName=${moduleName}`
-    if (level) url += `&level=${level}`
-    if (page) url += `&page=${page}`
+    const query = new URLSearchParams({ startTime, endTime })
+    if (maxLogs) query.set('maxLogs', String(maxLogs))
+    if (moduleName) query.set('moduleName', moduleName)
+    if (level) query.set('level', level)
+    if (page) query.set('page', String(page))
+    const url = `${logsUrl}?${query.toString()}`
 
     let response
     try {
@@ -1579,6 +1585,255 @@ export class HttpProvider {
       body = JSON.parse(text)
     } catch {}
     return new OceanNodeProviderError(body, response.status, text)
+  }
+
+  /**
+   * Sends a signed (or, for read-only commands, token-authenticated) admin command through
+   * POST /directCommand. Returns the parsed JSON reply, or the raw text when the reply is not
+   * JSON ("OK"). Throws OceanNodeProviderError on a non-2xx reply (the body is plain text there).
+   *
+   * @param allowAuthToken - false (default) for mutating admin commands: a string auth token is
+   *   rejected up front. true for the read-only commands (FETCH_CONFIG, GET_LOGS): a JWT is accepted
+   *   and sent in the Authorization header; getSignedCommandParams then returns an undefined
+   *   nonce/signature and no peerId round-trip happens (the token carries the auth).
+   */
+  private async sendAdminCommand(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    command: string,
+    params: Record<string, any>,
+    signal?: AbortSignal,
+    allowAuthToken = false
+  ): Promise<any> {
+    if (!allowAuthToken) assertAdminSigner(signerOrAuthToken, command)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      command,
+      signal
+    )
+    // For a signer this is undefined and the body signature authenticates; for a read-only token
+    // it is the raw JWT (getAuthorization adds no "Bearer " prefix) and nonce/signature are
+    // undefined.
+    const authHeader = this.getAuthorization(signerOrAuthToken)
+    let response
+    try {
+      response = await fetch(this.baseUrl(nodeUri) + '/directCommand', {
+        method: 'POST',
+        // The `/directCommand` dispatcher authenticates off the parsed request body, so a
+        // read-only token must ride IN the body as `authorization` (exactly as the P2P
+        // transport sends it) — the Authorization header alone is not read for this route, and
+        // the node would otherwise fall through to demanding nonce/address/signature. The
+        // header is kept too for any middleware that reads it. For a signer `authHeader` is
+        // undefined, so nothing is added and the body signature authenticates as before.
+        body: JSON.stringify({
+          command,
+          ...params,
+          address: consumerAddress,
+          nonce,
+          signature,
+          ...(authHeader ? { authorization: authHeader } : {})
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authHeader ? { Authorization: authHeader } : {})
+        },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error(`Admin command ${command} failed:`)
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+    if (!response?.ok) {
+      const error = await this.toProviderError(response)
+      LoggerInstance.error(
+        `Admin command ${command} failed: `,
+        response.status,
+        error.body
+      )
+      throw error
+    }
+    const text = await response.text()
+    try {
+      return JSON.parse(text)
+    } catch {
+      return text
+    }
+  }
+
+  /** Admin: stops the node process (mutating, signer only). The node exits about 2 seconds after replying. */
+  public async stopNode(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    signal?: AbortSignal
+  ): Promise<void> {
+    await this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.STOP_NODE,
+      {},
+      signal
+    )
+  }
+
+  /** Admin: stops a compute job of any owner. `jobId` is `<clusterHash>-<jobId>` (mutating, signer only). */
+  public async adminStopJob(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    jobId: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.STOP_JOB,
+      { jobId },
+      signal
+    )
+  }
+
+  /** Admin: reindexes one transaction (mutating, signer only). */
+  public async reindexTx(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    chainId: number,
+    txId: string,
+    signal?: AbortSignal
+  ): Promise<NodeAdminJobStatus> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.REINDEX_TX,
+      { chainId, txId },
+      signal
+    )
+  }
+
+  /** Admin: reindexes a chain, optionally from `block` (mutating, signer only). */
+  public async reindexChain(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    chainId: number,
+    block?: number,
+    signal?: AbortSignal
+  ): Promise<NodeAdminJobStatus> {
+    const params: Record<string, any> = { chainId }
+    if (block !== undefined && block !== null) params.block = block
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.REINDEX_CHAIN,
+      params,
+      signal
+    )
+  }
+
+  /** Admin: starts or stops the indexing thread, optionally for one chain (mutating, signer only). */
+  public async handleIndexingThread(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    action: IndexingThreadAction,
+    chainId?: number,
+    signal?: AbortSignal
+  ): Promise<void> {
+    const params: Record<string, any> = { action }
+    if (chainId !== undefined && chainId !== null) params.chainId = chainId
+    await this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.HANDLE_INDEXING_THREAD,
+      params,
+      signal
+    )
+  }
+
+  /** Admin: transfers collected fees; omitting `tokenAmount` sweeps the balance (mutating, signer only). */
+  public async collectFees(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    p: CollectFeesParams,
+    signal?: AbortSignal
+  ): Promise<CollectFeesResult> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.COLLECT_FEES,
+      buildCollectFeesParams(p),
+      signal
+    )
+  }
+
+  /** Admin: fetches one log entry by id (read-only: accepts a signer or a scoped auth token). */
+  public async getNodeLog(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    logId: string,
+    signal?: AbortSignal
+  ): Promise<NodeLogEntry> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.GET_LOGS,
+      { logId },
+      signal,
+      true
+    )
+  }
+
+  /** Admin: fetches the node config (read-only: accepts a signer or a scoped auth token). */
+  public async getNodeConfig(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    signal?: AbortSignal
+  ): Promise<Record<string, any>> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.FETCH_CONFIG,
+      {},
+      signal,
+      true
+    )
+  }
+
+  /** Admin: shallow-merges `config` into the node config (mutating, signer only). */
+  public async setNodeConfig(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    config: Record<string, any>,
+    signal?: AbortSignal
+  ): Promise<Record<string, any>> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PUSH_CONFIG,
+      { config },
+      signal
+    )
+  }
+
+  /** Public, unsigned: returns the node's detailed status, or null on failure. */
+  public async getNodeDetailedStatus(
+    nodeUri: string,
+    signal?: AbortSignal
+  ): Promise<NodeStatus | null> {
+    const path = this.baseUrl(nodeUri) + '/directCommand'
+    try {
+      const response = await fetch(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: PROTOCOL_COMMANDS.DETAILED_STATUS }),
+        signal
+      })
+      // Await the parse INSIDE the try so a malformed body / read failure routes through the
+      // catch and returns null, instead of escaping as an unhandled rejection.
+      if (response?.ok) return await response.json()
+      return null
+    } catch (e) {
+      LoggerInstance.error('getNodeDetailedStatus failed:', e)
+      return null
+    }
   }
 
   /**

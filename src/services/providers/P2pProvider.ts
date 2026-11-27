@@ -13,7 +13,7 @@ import { isLoopback, isPrivate } from '@libp2p/utils'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { Signer, isAddress } from 'ethers'
-import { sleep } from '../../utils/General.js'
+import { sleep, buildCollectFeesParams } from '../../utils/General.js'
 import { LoggerInstance } from '../../utils/Logger.js'
 import { concatUint8Arrays } from '../../utils/bytes.js'
 import {
@@ -75,6 +75,10 @@ import {
 import {
   PROTOCOL_COMMANDS,
   NodeLogEntry,
+  NodeAdminJobStatus,
+  IndexingThreadAction,
+  CollectFeesParams,
+  CollectFeesResult,
   AuthTokenOptions
 } from '../../@types/Provider.js'
 import { signRequest } from '../../utils/SignatureUtils.js'
@@ -88,7 +92,8 @@ import {
   getConsumerAddress,
   getSignature,
   getAuthorization,
-  isAgentSignature
+  isAgentSignature,
+  assertAdminSigner
 } from './BaseProvider.js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
 import { assertServiceResultTarget } from './serviceResult.js'
@@ -2315,7 +2320,13 @@ export class P2pProvider {
     body: Record<string, any>,
     signerOrAuthToken?: SignerOrAuthTokenOrSignature | null,
     signal?: AbortSignal,
-    requestBody?: P2PRequestBodyStream
+    requestBody?: P2PRequestBodyStream,
+    // Admin commands opt in: a dial-failure reply ("Cannot connect to peer") must RAISE a typed
+    // error rather than be handed back as a result. Returning the body lets a mutating admin call
+    // (reindex, collectFees, handleIndexingThread, ...) resolve as a false success even though the
+    // peer never reached — and could not apply the command on — the target node. Default false
+    // keeps the general-command contract, where the body is returned so `.error` readers still work.
+    raiseDialFailureAsError: boolean = false
   ): Promise<any> {
     const maxRetries = this.maxRetryAttempts()
     let timeoutRetries = 0
@@ -2332,7 +2343,8 @@ export class P2pProvider {
           signerOrAuthToken,
           signal,
           requestBody,
-          lastAttempt
+          lastAttempt,
+          raiseDialFailureAsError
         )
       } catch (err: any) {
         const type = classifyP2pError(err)
@@ -2343,8 +2355,14 @@ export class P2pProvider {
         if (!isRetryableP2pError(type) || spent) {
           // The peer reported the failure inside a well-formed reply, and with the
           // budget gone the untyped code returned that reply to the caller rather than
-          // raising. Kept, so a consumer reading `.error` off the result still can.
-          if (err instanceof P2pError && err.peerResponse != null) {
+          // raising. Kept, so a consumer reading `.error` off the result still can — except
+          // for an admin command that opted in (see `raiseDialFailureAsError`), which must
+          // surface the typed dial failure instead of a false success.
+          if (
+            err instanceof P2pError &&
+            err.peerResponse != null &&
+            !raiseDialFailureAsError
+          ) {
             return err.peerResponse.value
           }
           throw asP2pCommandError(err, type)
@@ -2367,7 +2385,10 @@ export class P2pProvider {
     signerOrAuthToken?: SignerOrAuthTokenOrSignature | null,
     signal?: AbortSignal,
     requestBody?: P2PRequestBodyStream,
-    lastAttempt: boolean = true
+    lastAttempt: boolean = true,
+    // See sendP2pCommand: when set, a final-attempt "Cannot connect to peer" reply is thrown as a
+    // typed dial_failed error instead of being returned as the command result.
+    raiseDialFailureAsError: boolean = false
   ): Promise<any> {
     // The concurrency slot is owned by `dialAndStream` now — see the comment there.
     // This method only decides *when* to hand it back: at the end of the buffered read
@@ -2546,7 +2567,13 @@ export class P2pProvider {
       }
 
       const errText = (typeof response === 'string' ? response : res?.error) ?? ''
-      if (errText.includes('Cannot connect to peer') && !lastAttempt) {
+      // Throw the typed dial failure when another attempt could still fix it (`!lastAttempt`), or
+      // when an admin caller asked for the failure to be raised rather than returned
+      // (`raiseDialFailureAsError`) — otherwise fall through and hand the body back as before.
+      if (
+        errText.includes('Cannot connect to peer') &&
+        (!lastAttempt || raiseDialFailureAsError)
+      ) {
         // The peer answered, and what it says is that *it* could not reach the node
         // this command was addressed to: a dial failure one hop further out, and the
         // one thing another attempt can plausibly fix.
@@ -2557,7 +2584,8 @@ export class P2pProvider {
         // type — nothing downstream re-reads the wording to decide anything.
         //
         // The slot goes back before the error leaves, so the next attempt queues behind
-        // other callers instead of holding two.
+        // other callers instead of holding two. (On a raised final attempt there is no next
+        // attempt; the `finally` below still resets the stream since `completed` stays false.)
         releaseSlot?.()
         releaseSlot = null
         throw new P2pError('dial_failed', errText, {
@@ -3714,6 +3742,217 @@ export class P2pProvider {
   }
 
   /**
+   * Sends a signed (or, for read-only commands, token-authenticated) admin command over P2P.
+   * A node rejection is already thrown by sendP2pCommand as a P2pError with `httpStatus`.
+   * Over P2P, a transport error after the command was sent can mean the node has already
+   * stopped (`stopNode`).
+   *
+   * @param allowAuthToken - false (default) for mutating admin commands: a string auth token is
+   *   rejected up front. true for the read-only commands (FETCH_CONFIG, GET_LOGS).
+   */
+  private async sendAdminCommand(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    command: string,
+    params: Record<string, any>,
+    signal?: AbortSignal,
+    allowAuthToken = false
+  ): Promise<any> {
+    if (!allowAuthToken) assertAdminSigner(signerOrAuthToken, command)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      command,
+      signal
+    )
+    // sendP2pCommand already folds `authorization: getAuthorization(signerOrAuthToken)` into the
+    // payload, so a read-only token is carried automatically; passing it as the 4th arg is enough.
+    // raiseDialFailureAsError=true: an admin command that could not reach the node must throw, not
+    // return a "Cannot connect to peer" body that would read as a false success.
+    const reply = await this.sendP2pCommand(
+      nodeUri,
+      command,
+      { ...params, address: consumerAddress, nonce, signature },
+      signerOrAuthToken,
+      signal,
+      undefined,
+      true
+    )
+    // A non-JSON body ("OK", "EXIT OK") comes back as raw bytes.
+    return reply instanceof Uint8Array ? new TextDecoder().decode(reply) : reply
+  }
+
+  /** Admin: stops the node process (mutating, signer only). The node exits about 2 seconds after replying. */
+  public async stopNode(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    signal?: AbortSignal
+  ): Promise<void> {
+    await this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.STOP_NODE,
+      {},
+      signal
+    )
+  }
+
+  /** Admin: stops a compute job of any owner. `jobId` is `<clusterHash>-<jobId>` (mutating, signer only). */
+  public async adminStopJob(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    jobId: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.STOP_JOB,
+      { jobId },
+      signal
+    )
+  }
+
+  /** Admin: reindexes one transaction (mutating, signer only). */
+  public async reindexTx(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    chainId: number,
+    txId: string,
+    signal?: AbortSignal
+  ): Promise<NodeAdminJobStatus> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.REINDEX_TX,
+      { chainId, txId },
+      signal
+    )
+  }
+
+  /** Admin: reindexes a chain, optionally from `block` (mutating, signer only). */
+  public async reindexChain(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    chainId: number,
+    block?: number,
+    signal?: AbortSignal
+  ): Promise<NodeAdminJobStatus> {
+    const params: Record<string, any> = { chainId }
+    if (block !== undefined && block !== null) params.block = block
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.REINDEX_CHAIN,
+      params,
+      signal
+    )
+  }
+
+  /** Admin: starts or stops the indexing thread, optionally for one chain (mutating, signer only). */
+  public async handleIndexingThread(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    action: IndexingThreadAction,
+    chainId?: number,
+    signal?: AbortSignal
+  ): Promise<void> {
+    const params: Record<string, any> = { action }
+    if (chainId !== undefined && chainId !== null) params.chainId = chainId
+    await this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.HANDLE_INDEXING_THREAD,
+      params,
+      signal
+    )
+  }
+
+  /** Admin: transfers collected fees; omitting `tokenAmount` sweeps the balance (mutating, signer only). */
+  public async collectFees(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    p: CollectFeesParams,
+    signal?: AbortSignal
+  ): Promise<CollectFeesResult> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.COLLECT_FEES,
+      buildCollectFeesParams(p),
+      signal
+    )
+  }
+
+  /** Admin: fetches one log entry by id (read-only: accepts a signer or a scoped auth token). */
+  public async getNodeLog(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    logId: string,
+    signal?: AbortSignal
+  ): Promise<NodeLogEntry> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.GET_LOGS,
+      { logId },
+      signal,
+      true
+    )
+  }
+
+  /** Admin: fetches the node config (read-only: accepts a signer or a scoped auth token). */
+  public async getNodeConfig(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    signal?: AbortSignal
+  ): Promise<Record<string, any>> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.FETCH_CONFIG,
+      {},
+      signal,
+      true
+    )
+  }
+
+  /** Admin: shallow-merges `config` into the node config (mutating, signer only). */
+  public async setNodeConfig(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    config: Record<string, any>,
+    signal?: AbortSignal
+  ): Promise<Record<string, any>> {
+    return this.sendAdminCommand(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PUSH_CONFIG,
+      { config },
+      signal
+    )
+  }
+
+  /** Public, unsigned: returns the node's detailed status. Rethrows on failure. */
+  public async getNodeDetailedStatus(
+    nodeUri: OceanNode,
+    signal?: AbortSignal
+  ): Promise<NodeStatus> {
+    try {
+      return await this.sendP2pCommand(
+        nodeUri,
+        PROTOCOL_COMMANDS.DETAILED_STATUS,
+        {},
+        null,
+        signal
+      )
+    } catch (e) {
+      LoggerInstance.error('P2P getNodeDetailedStatus (DETAILED_STATUS) failed:', e)
+      throw e
+    }
+  }
+
+  /**
    * Enables or disables the node's maintenance (drain) mode via P2P. Admin only.
    *
    * While enabled the node rejects new `computeStart`, `freeComputeStart`,
@@ -3739,12 +3978,16 @@ export class P2pProvider {
       PROTOCOL_COMMANDS.SET_MAINTENANCE,
       signal
     )
+    // Admin mutating command: raise a dial failure rather than returning a body that would read
+    // as a successful maintenance toggle (see sendP2pCommand's raiseDialFailureAsError).
     return this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.SET_MAINTENANCE,
       { enabled, signature, nonce, address: consumerAddress },
       signerOrAuthToken,
-      signal
+      signal,
+      undefined,
+      true
     )
   }
 
@@ -3793,6 +4036,7 @@ export class P2pProvider {
   /**
    * Fetch node configuration via P2P. Accepts a pre-signed payload —
    * the caller is responsible for nonce retrieval and signing.
+   * @deprecated Use getNodeConfig
    */
   public async fetchConfig(
     nodeUri: OceanNode,
@@ -3804,6 +4048,7 @@ export class P2pProvider {
   /**
    * Push node configuration via P2P. Accepts a pre-signed payload —
    * the caller is responsible for nonce retrieval and signing.
+   * @deprecated Use setNodeConfig
    */
   public async pushConfig(
     nodeUri: OceanNode,

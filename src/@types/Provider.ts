@@ -130,6 +130,10 @@ export interface NodeStatus {
   claimDurationTimeout?: number
   /** Maintenance (drain) mode. Absent on nodes that predate the feature. */
   maintenance?: NodeStatusMaintenance
+  /** Detailed status only (`getNodeDetailedStatus`): configured C2D clusters (opaque shape). */
+  c2dClusters?: unknown[]
+  /** Detailed status only (`getNodeDetailedStatus`): schemas the node supports (opaque shape). */
+  supportedSchemas?: unknown
   supportedStorage: Record<string, boolean>
   platform: {
     cpus: number
@@ -342,6 +346,31 @@ export interface NodeLogsParams {
   moduleName?: string
   level?: string
   page?: number
+}
+
+export type IndexingThreadAction = 'START_THREAD' | 'STOP_THREAD'
+
+/** Job descriptor returned by the node's reindexTx / reindexChain admin commands. */
+export interface NodeAdminJobStatus {
+  command: string
+  timestamp: string
+  jobId: string
+  status: string
+  hash: string
+}
+
+export interface CollectFeesParams {
+  chainId: number
+  /** ERC20 address, or the zero address for the chain's native token. */
+  tokenAddress: string
+  destinationAddress: string
+  /** Human units (scaled by the token's decimals on the node). Omit to sweep the whole balance. */
+  tokenAmount?: string | number
+}
+
+export interface CollectFeesResult {
+  tx: string
+  message: string
 }
 
 export interface NodeLogEntry {
