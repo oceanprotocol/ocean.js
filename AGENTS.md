@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents (Claude Code, Codex, Copilot, et
 
 ## What this is
 
-`@oceanprotocol/lib` (currently v10.x) — the JavaScript/TypeScript client library for Ocean Protocol. It lets apps publish data as ERC721 data NFTs + ERC20 datatokens, price them (fixed-rate exchange, free dispenser), and consume them (download or Compute-to-Data), talking to on-chain contracts via ethers and to off-chain Ocean Node services (Provider / Aquarius) over HTTP or libp2p P2P.
+`@oceanprotocol/lib` (currently v10.x) — the JavaScript/TypeScript client library for Ocean Protocol. It lets apps publish data as ERC721 data NFTs + ERC20 datatokens, price them (fixed-rate exchange, free dispenser), and consume them (download or Compute-to-Data), talking to on-chain contracts via ethers and to off-chain Ocean Node over HTTP or libp2p P2P.
 
 - Pure **ESM-only** package: `"type": "module"`, entry `src/index.ts`, Node `>=22` (`engines.node: ">=22"`, `.nvmrc` = 24). There is **no CommonJS/UMD build** — most runtime deps (libp2p, `multiformats`, `uint8arrays`) are ESM-only. CJS consumers use Node's `require(esm)` (Node ≥ 22.12) or a dynamic `import()`.
 - Blockchain layer is **ethers v6** (the `web3` peerDependency is legacy and not used by the wrappers).
@@ -51,13 +51,13 @@ Running a SINGLE test:
 
 ### Unit vs integration split
 
-- `test/unit/**` — pure contract-wrapper tests (Datatoken, Nft, NftFactory, FixedRateExchange, Dispenser, Router, Escrow, EnterpriseFeeCollector, OPFSubsidyProvider, AssetUtils). These still hit a **local chain** (they deploy/interact via the barge Ganache node) but don't require the full Node/Aquarius/Indexer stack the way integration does. `mock-local-storage` and `source-map-support` are auto-required (mocharc).
+- `test/unit/**` — pure contract-wrapper tests (Datatoken, Nft, NftFactory, FixedRateExchange, Dispenser, Router, Escrow, EnterpriseFeeCollector, OPFSubsidyProvider, AssetUtils). These still hit a **local chain** (they deploy/interact via the barge Ganache node) but don't require the full Ocean Node stack the way integration does. `mock-local-storage` and `source-map-support` are auto-required (mocharc).
 - `test/integration/**` — end-to-end flows against the whole Ocean stack: `PublishFlows`, `PublishEditConsume`, `ComputeFlow`, `Provider`, `Auth`, `Sapphire`, plus `CodeExamples`/`ComputeExamples` (see "Generated guides"). `_P2PWarmup.test.ts` warms up the libp2p transport first.
 - Shared test setup is in `test/config.ts` (`getTestConfig`, `getAddresses`, a default `JsonRpcProvider` on the development network) and `test/integration/helpers.ts`.
 
 ### Integration tests need Barge (local Ocean stack)
 
-Integration tests run against [Barge](https://github.com/oceanprotocol/barge), which spins up a local blockchain (chainId `8996`, network name `development`), an Ocean Node (Provider + Aquarius + Indexer), and an Elasticsearch DB in Docker.
+Integration tests run against [Barge](https://github.com/oceanprotocol/barge), which spins up a local blockchain (chainId `8996`, network name `development`), an Ocean Node, and an Elasticsearch DB in Docker.
 
 ```bash
 git clone https://github.com/oceanprotocol/barge && cd barge
@@ -122,15 +122,15 @@ Read-only methods are plain `getX`. `ReceiptOrEstimate<G>` lives in `@types/Retu
 ### services/ — off-chain Ocean Node clients
 
 - `Provider` / `ProviderInstance` — exported names for `BaseProvider`, a **transport-dispatching façade**. Every method takes an `OceanNode` target and routes to `HttpProvider` (REST) or `P2pProvider` (libp2p) based on `isP2pUri()` (URL → HTTP; peerId/multiaddr/NodeP2P → P2P). Surface includes: `getNonce`, `encrypt`, `getFileInfo`/`checkDidFiles`, `initialize` (returns provider fees for an order), `getDownloadUrl` (consume), the full compute lifecycle (`getComputeEnvironments`, `initializeCompute`, `computeStart`, `freeComputeStart`, `computeStatus`, `computeStop`, `computeStreamableLogs`, `getComputeResultUrl`, `getComputeResult`), JWT auth tokens (`generateAuthToken`, `generateSignedAuthToken`, `invalidateAuthToken`), P2P DDO `resolveDdo`/`validateDdo`, node status/jobs/logs, policy-server passthrough, persistent-storage buckets, and the signed-admin maintenance/drain toggle `setMaintenance` (routed over both transports; PR #2203). When a node is in maintenance it rejects the five new-commitment commands (`computeStart`, `freeComputeStart`, `initializeCompute`, `serviceStart`, `serviceExtend`) with HTTP `503` + `code: 'MAINTENANCE_MODE'`; those now throw `OceanNodeProviderError` (keeps `.message` byte-identical but adds `httpStatus`/`code`/`body`), and `isMaintenanceError(e)`/`MAINTENANCE_MODE_CODE` (`utils/ProviderErrors.ts`) discriminate it across both transports. `NodeStatus.maintenance` surfaces the state (optional, degrades against older nodes). Auth params accept a `SignerOrAuthTokenOrSignature` (an ethers `Signer`, a JWT string, or a precomputed `CompleteSignature`). `computeStart`, `serviceStart` and `serviceExtend` accept an optional consumer-selected `subsidyProviders: string[]`, resolved **tri-state** by the node (omit = node default, `[]` = none, populated = only these; ocean-node #1485). On compute start it also fire-and-forgets a notification to an incentive backend if `INCENTIVE_BACKEND_URL` is set. Request signing scheme throughout = `address + nonce + command` (see `SignatureUtils.signRequest` and `@types/Provider` `PROTOCOL_COMMANDS`).
-- `Aquarius` — metadata/DDO index client: `resolve(did)`, `waitForIndexer(did, txid?)` (polls until the indexer has cached the asset/update), `validate(ddo, signer, providerUrl)`, `querySearch(query)`, `getAssetMetadata(did)`. Transparently supports a P2P node URI (delegates to `ProviderInstance.resolveDdo/validateDdo`). DDO shape handling is via `@oceanprotocol/ddo-js`.
+- DDO methods of `ProviderInstance`: `resolveDdo(nodeUri, did)`, `waitForIndexer(nodeUri, did, txid?)` (polls until the node has indexed the asset/update), `validateDdo(nodeUri, ddo, signer)`, `query(nodeUri, request)` (typed search: `SearchQuery` / `AssetFilter` in `src/@types/Query.ts`, answer `{ results, totalResults }`). HTTP and P2P. DDO shape handling is via `@oceanprotocol/ddo-js`.
 
 ### utils/ — flows + helpers (the flows live here)
 
-- `Assets.ts` → `createAsset(...)`: the canonical **publish** flow. Chooses pricing from the DDO stats price (no price → plain bundle; `'0'` → dispenser; `>0` → fixed rate), deploys the NFT+datatoken bundle via `NftFactory.createNftWithDatatoken*`, reads `NFTCreated`/`TokenCreated` events for the new addresses, encrypts the files object + DDO via `ProviderInstance.encrypt` and validates via `Aquarius.validate` (or, on Oasis, stores the files object on-chain through `ERC20Template4.setFilesObject` and leaves `files` empty), then writes it with `Nft.setMetadata`. Returns the DID. Also `createAccessListFactory`, `useOasisSDK`.
+- `Assets.ts` → `createAsset(...)`: the canonical **publish** flow. Chooses pricing from the DDO stats price (no price → plain bundle; `'0'` → dispenser; `>0` → fixed rate), deploys the NFT+datatoken bundle via `NftFactory.createNftWithDatatoken*`, reads `NFTCreated`/`TokenCreated` events for the new addresses, encrypts the files object + DDO via `ProviderInstance.encrypt` and validates via `ProviderInstance.validateDdo` (or, on Oasis, stores the files object on-chain through `ERC20Template4.setFilesObject` and leaves `files` empty), then writes it with `Nft.setMetadata`. Returns the DID. Also `createAccessListFactory`, `useOasisSDK`.
 - `OrderUtils.ts` → `orderAsset(...)`: the canonical **consume/order** flow. Detects pricing type from the datatoken (`getFixedRates` vs `getDispensers`), gets provider fees from `Provider.initialize`, approves fee tokens, then branches on the datatoken **template index**: template `1` (base `ERC20Template`) does buy-then-`startOrder` in separate steps; templates `2`/`4` (Enterprise/Template4) do atomic `buyFromFreAndOrder` / `buyFromDispenserAndOrder`. After ordering, callers use `Provider.getDownloadUrl` (download) or `Provider.initializeCompute` + `computeStart` (compute).
 - `ContractUtils.ts` — `sendPreparedTransaction`, `buildUnsignedTx`, `buildTxOverrides`, `getEventFromTx`, `getFairGasPrice`, `amountToUnits`/`unitsToAmount`, `getTokenDecimals`, `setContractDefaults`.
 - `TokenUtils.ts` — ERC20 `approve`/`approveWei`/`allowance`/`balance`/`transfer`/`decimals`.
-- `SignatureUtils.ts` — `signRequest`/`signHash` (the address+nonce+command signing used by Provider/Aquarius). `DdoHelpers.ts` — `generateDid`, `getHash`. Plus `Jwt`, `Logger` (`LoggerInstance`, `LogLevel`), `Constants` (`ZERO_ADDRESS`), `bytes`, `Addresses` (`calculateActiveTemplateIndex`), `eciesencrypt`, and `minAbi` (a minimal ERC20 ABI for token utils).
+- `SignatureUtils.ts` — `signRequest`/`signHash` (the address+nonce+command signing used by Ocean Node). `DdoHelpers.ts` — `generateDid`, `getHash`. Plus `Jwt`, `Logger` (`LoggerInstance`, `LogLevel`), `Constants` (`ZERO_ADDRESS`), `bytes`, `Addresses` (`calculateActiveTemplateIndex`), `eciesencrypt`, and `minAbi` (a minimal ERC20 ABI for token utils).
 
 ### @types/ — shared types
 
@@ -138,8 +138,8 @@ All public interfaces/types (Assets, Compute, Datatoken, Provider, NFTFactory, F
 
 ### End-to-end flow summaries
 
-- **Publish**: `ConfigHelper.getConfig` → build a DDO (ddo-js) → `createAsset()` [NftFactory bundle → `Provider.encrypt` → `Aquarius.validate` → `Nft.setMetadata`] → `Aquarius.waitForIndexer`.
-- **Consume (download)**: `Aquarius.resolve(did)` → `orderAsset()` [`Provider.initialize` fees → FRE/Dispenser buy → `Datatoken.startOrder`] → `Provider.getDownloadUrl` → download.
+- **Publish**: `ConfigHelper.getConfig` → build a DDO (ddo-js) → `createAsset()` [NftFactory bundle → `Provider.encrypt` → `Provider.validateDdo` → `Nft.setMetadata`] → `Provider.waitForIndexer`.
+- **Consume (download)**: `Provider.resolveDdo(nodeUri, did)` → `orderAsset()` [`Provider.initialize` fees → FRE/Dispenser buy → `Datatoken.startOrder`] → `Provider.getDownloadUrl` → download.
 - **Compute-to-Data**: resolve dataset + algorithm → `Provider.getComputeEnvironments` → `Provider.initializeCompute` → (paid) order dataset+algo, or (free) `Provider.freeComputeStart` → `Provider.computeStart` → poll `computeStatus` → `getComputeResultUrl`/`getComputeResult`.
 
 ## Conventions & gotchas

@@ -34,7 +34,7 @@ const PREDEFINED_ERRORS = {
     meta_oneof_url_rawcode_remote:
       'Either algorithm metadata, or algorithm DID are missing.',
     file_unavailable:
-      'One possibility is that the asset could not be retrieved from Aquariuss database. Otherwise, there are issues related to services'
+      'One possibility is that the asset could not be retrieved from the node database. Otherwise, there are issues related to services'
   },
   error: {
     not_trusted_algo_publisher:

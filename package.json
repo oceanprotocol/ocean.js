@@ -1,7 +1,7 @@
 {
   "name": "@oceanprotocol/lib",
   "source": "./src/index.ts",
-  "version": "10.1.0",
+  "version": "11.0.0-next.2",
   "description": "JavaScript client library for Ocean Protocol",
   "module": "./dist/lib.module.mjs",
   "type": "module",
@@ -91,7 +91,7 @@
     "@libp2p/websockets": "^10.1.21",
     "@multiformats/multiaddr": "^13.0.3",
     "@oasisprotocol/sapphire-ethers-v6": "^6.0.1",
-    "@oceanprotocol/ddo-js": "^1.0.0",
+    "@oceanprotocol/ddo-js": "^1.1.0",
     "bignumber.js": "^11.1.5",
     "cross-fetch": "^4.1.0",
     "crypto-js": "^4.2.0",
@@ -106,6 +106,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@libp2p/crypto": "^5.1.23",
     "@oceanprotocol/contracts": "^3.2.0",
     "@types/chai": "^5.2.3",
     "@types/crypto-js": "^4.2.2",

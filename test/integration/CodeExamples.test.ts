@@ -38,9 +38,9 @@
 
 /// ## 1. Initialize services
 
-/// Ocean.js uses off-chain services for metadata (Aquarius) and consuming datasets (Provider).
+/// Ocean.js uses Ocean Node, an off-chain service, for metadata and for consuming datasets.
 
-/// We start by initializing the services. To do this, we clone the Barge repository and run it. This will run the current default versions of [Aquarius](https://github.com/oceanprotocol/aquarius), [Provider](https://github.com/oceanprotocol/provider), and [Ganache](https://github.com/trufflesuite/ganache) with [our contracts](https://github.com/oceanprotocol/contracts) deployed to it.
+/// We start by initializing the services. To do this, we clone the Barge repository and run it. This will run the current default versions of [Ocean Node](https://github.com/oceanprotocol/ocean-node) and [Ganache](https://github.com/trufflesuite/ganache) with [our contracts](https://github.com/oceanprotocol/contracts) deployed to it.
 
 /// ```bash
 /// git clone https://github.com/oceanprotocol/barge.git
@@ -83,7 +83,6 @@ import crypto from 'crypto-js'
 import { homedir } from 'os'
 import {
   approve,
-  Aquarius,
   balance,
   Config,
   Datatoken,
@@ -122,7 +121,6 @@ describe('Marketplace flow tests', async () => {
   /// ```Typescript
   let provider: JsonRpcProvider
   let config: Config
-  let aquarius: Aquarius
   let datatoken: Datatoken
   let providerUrl: any
   let publisherAccount: Signer
@@ -208,7 +206,6 @@ describe('Marketplace flow tests', async () => {
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
     Object.assign(config, getNodeEndpointConfig())
-    aquarius = new Aquarius(config?.oceanNodeUri)
     providerUrl = config?.oceanNodeUri
     addresses = JSON.parse(
       // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -397,10 +394,10 @@ describe('Marketplace flow tests', async () => {
     )
     const encryptedDDO = await providerResponse
 
-    const isAssetValid: ValidateMetadata = await aquarius.validate(
+    const isAssetValid: ValidateMetadata = await ProviderInstance.validateDdo(
+      providerUrl,
       fixedDDO,
-      publisherAccount,
-      providerUrl
+      publisherAccount
     )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
@@ -505,8 +502,11 @@ describe('Marketplace flow tests', async () => {
     )
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance after swap: ${consumerDTBalance}`)
 
-    const resolvedDDO = await aquarius.waitForIndexer(fixedDDO.id)
-    assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
+    const resolvedDDO = await ProviderInstance.waitForIndexer(
+      config.oceanNodeUri,
+      fixedDDO.id
+    )
+    assert(resolvedDDO, 'Cannot fetch DDO from the node')
 
     /// ```
     /// Next, we need to initialize the provider
@@ -693,10 +693,10 @@ describe('Marketplace flow tests', async () => {
       providerUrl,
       publisherAccount
     )
-    const isAssetValid: ValidateMetadata = await aquarius.validate(
+    const isAssetValid: ValidateMetadata = await ProviderInstance.validateDdo(
+      providerUrl,
       fixedDDO,
-      publisherAccount,
-      providerUrl
+      publisherAccount
     )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
@@ -746,8 +746,11 @@ describe('Marketplace flow tests', async () => {
       `Consumer ${DISP_NFT_SYMBOL} balance after dispense: ${consumerDTBalance}`
     )
 
-    const resolvedDDO = await aquarius.waitForIndexer(fixedDDO.id)
-    assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
+    const resolvedDDO = await ProviderInstance.waitForIndexer(
+      config.oceanNodeUri,
+      fixedDDO.id
+    )
+    assert(resolvedDDO, 'Cannot fetch DDO from the node')
 
     datatoken = new Datatoken(consumerAccount, Number(chainId))
 
@@ -869,7 +872,7 @@ describe('Marketplace flow tests', async () => {
     }
     /// ```
 
-    /// That's it! Note the simplicity. All data was stored and retrieved from on-chain. We don't need Ocean Provider or Ocean Aquarius for these use cases (though the latter can help for fast querying & retrieval).
+    /// That's it! Note the simplicity. All data was stored and retrieved from on-chain. We don't need Ocean Node for these use cases (though it can help for fast querying & retrieval).
     /// <!--
   }).timeout(40000)
   /// -->

@@ -1,7 +1,5 @@
 import { ethers, hexlify, Signer, toBeHex, toUtf8Bytes } from 'ethers'
 import { ConfigHelper } from '../../src/config/index.js'
-import SHA256 from 'crypto-js/sha256.js'
-import { Aquarius } from '../services/Aquarius.js'
 import { NftFactory } from '../contracts/NFTFactory.js'
 import { Nft } from '../contracts/NFT.js'
 import { DatatokenCreateParams, AssetFiles } from '../@types/Datatoken.js'
@@ -15,7 +13,7 @@ import { ProviderInstance } from '../services/Provider.js'
 import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
 import { calculateActiveTemplateIndex } from './Addresses.js'
-import { DDOManager, type DDO } from '@oceanprotocol/ddo-js'
+import { DDOManager, hashSerializedDdo, type DDO } from '@oceanprotocol/ddo-js'
 import { StorageObject } from '../@types/File.js'
 
 export const DEVELOPMENT_CHAIN_ID = 8996
@@ -36,7 +34,6 @@ export function useOasisSDK(network: string | number): boolean {
  * @param encryptDDO encrypt or not?
  * @param providerUrl the provider URL
  * @param providerFeeToken the provider fee token
- * @param aquariusInstance aquarius, could be node instance url
  * @param allowAccessList?: string,
  * @param denyAccessList?: string
  * @returns ddo id as string
@@ -51,7 +48,6 @@ export async function createAsset(
   encryptDDO: boolean = true, // default is true
   providerUrl: string,
   providerFeeToken: string,
-  aquariusInstance: Aquarius,
   accessListFactory?: string, // access list factory address
   allowAccessList?: string, // allow list address
   denyAccessList?: string, // deny list address
@@ -235,13 +231,13 @@ export async function createAsset(
       owner,
       null
     )
-    const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
+    const validateResult = await ProviderInstance.validateDdo(providerUrl, ddo, owner)
     metadataHash = validateResult.hash
     flags = 2
   } else {
     const stringDDO = JSON.stringify(ddo)
     metadata = hexlify(toUtf8Bytes(stringDDO))
-    metadataHash = '0x' + SHA256(metadata).toString()
+    metadataHash = hashSerializedDdo(stringDDO, 'hex-json-text')
     flags = 0
   }
 

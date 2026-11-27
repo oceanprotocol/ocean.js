@@ -68,6 +68,25 @@ export interface NodeStatusMaintenance {
   latestExpectedEndTime?: number
 }
 
+/**
+ * Node auth-token policy, read from `status.authTokenPolicy` (companion node plan §17.2). Lets a
+ * client discover what a node requires/accepts before minting or presenting a token.
+ */
+export interface AuthTokenPolicy {
+  /** seconds — hard cap on token lifetime; clients cap `validUntil` to this. */
+  maxTokenLifetime: number
+  /** 'disabled' = foreign tokens rejected; 'allowlist' = honored only from `trustedIssuers`. */
+  crossNode: 'disabled' | 'allowlist'
+  /** present only when crossNode === 'allowlist' — the issuer peerIds this node honors. */
+  trustedIssuers?: string[]
+  /** behaviour when a token's issuer is unreachable. */
+  revocationFallback: 'closed' | 'cache' | 'open'
+  /** seconds; present only when revocationFallback === 'cache'. */
+  softFailGrace?: number
+  /** OJ-03: node supports the status clientChallenge / signedChallenge proof-of-possession. */
+  challengeSupported: true
+}
+
 export interface NodeStatus {
   id: string
   publicKey: string
@@ -76,7 +95,19 @@ export interface NodeStatus {
   version: string
   http: boolean
   p2p: boolean
+  /**
+   * OJ-03: present only when the status request included a `clientChallenge`. The node's
+   * libp2p-identity-key signature (0x-hex) over utf8(STATUS_CHALLENGE_DOMAIN + clientChallenge),
+   * proving control of the key the peerId commits to. Verify with {@link verifyNodeChallenge}.
+   */
+  signedChallenge?: string
+  /** Node auth-token policy (plan §17.2). Absent on nodes that predate scoped tokens. */
+  authTokenPolicy?: AuthTokenPolicy
   provider: NodeStatusProvider[]
+  /**
+   * Per-chain last-indexed-block info. Populated by DETAILED status only (the node reads it from
+   * its metadata DB per chain); basic status — what `getNodeStatus()` requests — returns `[]`.
+   */
   indexer: NodeStatusIndexer[]
   escrowAddress: Record<string, string>
   /** chainId -> subsidy-provider contract addresses the node applies. Absent on older nodes. */
@@ -91,17 +122,18 @@ export interface NodeStatus {
    * only subsidizes a job whose image matches; `{}` / absent = unrestricted. Absent on older nodes.
    */
   subsidyProviderAllowedImages?: Record<string, string[]>
+  /**
+   * Seconds reserved to claim an escrow payment (the node's `ESCROW_CLAIM_TIMEOUT`, default 3600).
+   * Added to a job's `maxJobDuration` when locking escrow funds, so the caller can tell how long
+   * funds stay locked beyond the job's runtime. Absent on older nodes.
+   */
+  claimDurationTimeout?: number
   /** Maintenance (drain) mode. Absent on nodes that predate the feature. */
   maintenance?: NodeStatusMaintenance
   /** Detailed status only (`getNodeDetailedStatus`): configured C2D clusters. */
   c2dClusters?: any[]
   /** Detailed status only (`getNodeDetailedStatus`): schemas the node supports. */
   supportedSchemas?: any
-  /**
-   * Auth-token policy advertised by the node (`maxTokenLifetime`, `crossNode`,
-   * `challengeSupported`, ...). Absent on nodes that predate scoped auth tokens.
-   */
-  authTokenPolicy?: any
   supportedStorage: Record<string, boolean>
   platform: {
     cpus: number
@@ -280,6 +312,7 @@ export const PROTOCOL_COMMANDS = {
   FIND_PEER: 'findPeer',
   CREATE_AUTH_TOKEN: 'createAuthToken',
   INVALIDATE_AUTH_TOKEN: 'invalidateAuthToken',
+  VALIDATE_AUTH_TOKEN: 'validateAuthToken',
   FETCH_CONFIG: 'fetchConfig',
   PUSH_CONFIG: 'pushConfig',
   GET_LOGS: 'getLogs',
@@ -355,3 +388,81 @@ export interface CompleteSignature {
 }
 
 export type SignerOrAuthTokenOrSignature = string | Signer | CompleteSignature
+
+// ──────────────────────────────────────────────────────────────────────────────────────────
+// Scoped auth tokens (companion node plan; ocean.js plan §4 / §9 / §10)
+// ──────────────────────────────────────────────────────────────────────────────────────────
+
+/** Sentinel to opt a token OUT of the node-scoped default audience (mint an UNRESTRICTED token). */
+export const UNRESTRICTED_AUDIENCE = 'any'
+
+/**
+ * Options for {@link Provider.generateAuthToken}. All optional, but when any of audience/scope is
+ * set (or when the node-scoped default applies) a `validUntil` is REQUIRED and must be signed —
+ * ocean.js does not default it (approved breaking change, plan §10.1).
+ */
+export interface AuthTokenOptions {
+  /**
+   * Node peerIds the token may be used at. Omitted ⇒ ocean.js defaults to `[verifiedIssuerPeerId]`
+   * (node-scoped, secure by default). Pass {@link UNRESTRICTED_AUDIENCE} to opt out (unrestricted,
+   * a reusable network-wide bearer). An explicit `[]` is rejected.
+   */
+  audience?: string[] | typeof UNRESTRICTED_AUDIENCE
+  /** Protocol commands the token may perform (PROTOCOL_COMMANDS values). Omitted ⇒ any command. */
+  scope?: string[]
+  /** Absolute expiry, epoch-milliseconds integer. REQUIRED for every v2 token. */
+  validUntil?: number
+  /**
+   * Escape hatch for talking to pre-OJ-03 nodes: when true, skip the issuer identity challenge and
+   * trust the status `id`. OFF by default; per-call only (never a global/env default). Reintroduces
+   * OJ-03 risk — logged loudly. (plan §8.1 / §11 L1)
+   */
+  allowUnverifiedIssuer?: boolean
+}
+
+/** Command category for the user-facing catalog. */
+export type CommandCategory =
+  | 'data'
+  | 'compute'
+  | 'service'
+  | 'storage'
+  | 'auth'
+  | 'admin'
+  | 'p2p'
+  | 'status'
+  | 'other'
+
+/** One entry of the scope-UX command catalog (plan §9.2). */
+export interface CommandInfo {
+  /** PROTOCOL_COMMANDS value, e.g. 'download'. */
+  command: string
+  /** one-line human description. */
+  description: string
+  /** may appear in an auth-token scope (false ⇒ in TOKEN_SCOPE_DISALLOWED). */
+  scopable: boolean
+  category: CommandCategory
+  /** true for the two read-only admin commands (fetchConfig, getLogs). */
+  adminReadonly?: boolean
+  /** false for commands that reject bearer tokens entirely (mutating admin, decryptDDO). */
+  tokenAuth?: boolean
+}
+
+/**
+ * Commands that may NOT appear in an auth-token `scope` — the client-side mirror of the node's
+ * `DISALLOWED_TOKEN_SCOPE_COMMANDS`. No shared package: keep in sync by hand with ocean-node
+ * `src/utils/constants.ts`. `fetchConfig`/`getLogs` are NOT here (they are scopable).
+ */
+export const TOKEN_SCOPE_DISALLOWED: string[] = [
+  PROTOCOL_COMMANDS.DECRYPT_DDO,
+  PROTOCOL_COMMANDS.STOP_NODE,
+  PROTOCOL_COMMANDS.STOP_JOB,
+  PROTOCOL_COMMANDS.REINDEX_TX,
+  PROTOCOL_COMMANDS.REINDEX_CHAIN,
+  PROTOCOL_COMMANDS.HANDLE_INDEXING_THREAD,
+  PROTOCOL_COMMANDS.COLLECT_FEES,
+  PROTOCOL_COMMANDS.PUSH_CONFIG,
+  PROTOCOL_COMMANDS.SET_MAINTENANCE,
+  PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN,
+  PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN,
+  PROTOCOL_COMMANDS.VALIDATE_AUTH_TOKEN
+]
