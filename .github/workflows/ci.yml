@@ -12,10 +12,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-env:
-  # ocean-node#1601 image; remove after its release
-  NODE_VERSION: pr-1601
-
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -64,7 +60,7 @@ jobs:
         run: |
           bash -x start_ocean.sh 2>&1 > start_ocean.log &
         env:
-          NODE_VERSION: pr-1641
+          NODE_VERSION: pr-1601
       - name: Install deps & build
         run: npm ci && npm run build:metadata
       - name: Wait for node to be ready
@@ -147,7 +143,7 @@ jobs:
         run: |
           bash -x start_ocean.sh 2>&1 > start-node.log &
         env:
-          NODE_VERSION: pr-1641
+          NODE_VERSION: pr-1601
       - name: Install deps & build
         run: npm ci && npm run build:metadata
 
