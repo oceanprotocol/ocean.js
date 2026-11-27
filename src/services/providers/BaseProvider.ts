@@ -1218,13 +1218,14 @@ export class BaseProvider {
    * Returns the node's detailed status. Public, unsigned: no admin gate.
    * @param {OceanNode} nodeUri - The node URI / peerId / multiaddr.
    * @param {AbortSignal} [signal] - An optional abort signal.
-   * @returns {Promise<NodeStatus>} The detailed status (maintenance counters, C2D clusters, ...).
-   *   Over the HTTP transport this resolves to `null` on failure (mirrors `getNodeStatus`).
+   * @returns {Promise<NodeStatus | null>} The detailed status (maintenance counters, C2D
+   *   clusters, ...). Over the HTTP transport this resolves to `null` on failure (mirrors
+   *   `getNodeStatus`); the P2P transport rejects on failure instead.
    */
   public async getNodeDetailedStatus(
     nodeUri: OceanNode,
     signal?: AbortSignal
-  ): Promise<NodeStatus> {
+  ): Promise<NodeStatus | null> {
     return this.getImpl(nodeUri).getNodeDetailedStatus(nodeUri, signal)
   }
 
@@ -1732,7 +1733,9 @@ export class BaseProvider {
   }
 
   /**
-   * @deprecated Use getNodeConfig
+   * @deprecated Use {@link getNodeConfig}, which signs internally — pass the credential
+   * directly instead of a pre-signed payload:
+   * `getNodeConfig(nodeUri, adminSignerOrAuthToken)`.
    */
   public async fetchConfig(
     nodeUri: OceanNode,
@@ -1742,7 +1745,9 @@ export class BaseProvider {
   }
 
   /**
-   * @deprecated Use setNodeConfig
+   * @deprecated Use {@link setNodeConfig}, which signs internally — pass the credential and
+   * the config separately instead of a single pre-signed payload:
+   * `setNodeConfig(nodeUri, adminSigner, { unsafeURLs: [] })`.
    */
   public async pushConfig(
     nodeUri: OceanNode,

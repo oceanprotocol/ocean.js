@@ -419,10 +419,11 @@ await ProviderInstance.setMaintenance(providerUrl, adminSigner, false)
 
 ### Node administration (admin)
 
-Every call works over HTTP and P2P node URIs and takes the admin `Signer` (it signs internally,
-bound to the target node's peerId). The signer must be one of the node's admins. The read-only
-`getNodeConfig` and `getNodeLog` also accept a scoped auth token; every mutating call is
-signature-only and rejects a token client-side (`requires a signer`).
+`getNodeDetailedStatus` is public and unsigned — it takes no signer. Every other call here works
+over HTTP and P2P node URIs and takes the admin `Signer` (it signs internally, bound to the target
+node's peerId); that signer must be one of the node's admins. The read-only `getNodeConfig` and
+`getNodeLog` also accept a scoped auth token; every mutating call is signature-only and rejects a
+token client-side (`requires a signer`).
 
 ```javascript
 // public, unsigned

@@ -13,7 +13,7 @@ import { isLoopback, isPrivate } from '@libp2p/utils'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { Signer, isAddress } from 'ethers'
-import { sleep } from '../../utils/General.js'
+import { sleep, buildCollectFeesParams } from '../../utils/General.js'
 import { LoggerInstance } from '../../utils/Logger.js'
 import { concatUint8Arrays } from '../../utils/bytes.js'
 import {
@@ -3848,19 +3848,11 @@ export class P2pProvider {
     p: CollectFeesParams,
     signal?: AbortSignal
   ): Promise<CollectFeesResult> {
-    const params: Record<string, any> = {
-      chainId: p.chainId,
-      tokenAddress: p.tokenAddress,
-      destinationAddress: p.destinationAddress
-    }
-    if (p.tokenAmount !== undefined && p.tokenAmount !== null) {
-      params.tokenAmount = p.tokenAmount
-    }
     return this.sendAdminCommand(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.COLLECT_FEES,
-      params,
+      buildCollectFeesParams(p),
       signal
     )
   }

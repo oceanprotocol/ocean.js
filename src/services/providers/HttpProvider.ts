@@ -1,7 +1,7 @@
 import { Signer, isAddress } from 'ethers'
 import { LoggerInstance } from '../../utils/Logger.js'
 import { OceanNodeProviderError } from '../../utils/ProviderErrors.js'
-import { redactSensitiveFields } from '../../utils/General.js'
+import { redactSensitiveFields, buildCollectFeesParams } from '../../utils/General.js'
 import {
   StorageObject,
   FileInfo,
@@ -1748,19 +1748,11 @@ export class HttpProvider {
     p: CollectFeesParams,
     signal?: AbortSignal
   ): Promise<CollectFeesResult> {
-    const params: Record<string, any> = {
-      chainId: p.chainId,
-      tokenAddress: p.tokenAddress,
-      destinationAddress: p.destinationAddress
-    }
-    if (p.tokenAmount !== undefined && p.tokenAmount !== null) {
-      params.tokenAmount = p.tokenAmount
-    }
     return this.sendAdminCommand(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.COLLECT_FEES,
-      params,
+      buildCollectFeesParams(p),
       signal
     )
   }
@@ -1818,7 +1810,7 @@ export class HttpProvider {
   public async getNodeDetailedStatus(
     nodeUri: string,
     signal?: AbortSignal
-  ): Promise<NodeStatus> {
+  ): Promise<NodeStatus | null> {
     const path = this.baseUrl(nodeUri) + '/directCommand'
     try {
       const response = await fetch(path, {
@@ -1827,7 +1819,9 @@ export class HttpProvider {
         body: JSON.stringify({ command: PROTOCOL_COMMANDS.DETAILED_STATUS }),
         signal
       })
-      if (response?.ok) return response.json()
+      // Await the parse INSIDE the try so a malformed body / read failure routes through the
+      // catch and returns null, instead of escaping as an unhandled rejection.
+      if (response?.ok) return await response.json()
       return null
     } catch (e) {
       LoggerInstance.error('getNodeDetailedStatus failed:', e)

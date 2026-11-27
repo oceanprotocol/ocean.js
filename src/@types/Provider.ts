@@ -130,10 +130,10 @@ export interface NodeStatus {
   claimDurationTimeout?: number
   /** Maintenance (drain) mode. Absent on nodes that predate the feature. */
   maintenance?: NodeStatusMaintenance
-  /** Detailed status only (`getNodeDetailedStatus`): configured C2D clusters. */
-  c2dClusters?: any[]
-  /** Detailed status only (`getNodeDetailedStatus`): schemas the node supports. */
-  supportedSchemas?: any
+  /** Detailed status only (`getNodeDetailedStatus`): configured C2D clusters (opaque shape). */
+  c2dClusters?: unknown[]
+  /** Detailed status only (`getNodeDetailedStatus`): schemas the node supports (opaque shape). */
+  supportedSchemas?: unknown
   supportedStorage: Record<string, boolean>
   platform: {
     cpus: number

@@ -12,6 +12,48 @@ export function isDefined(something: any): boolean {
   return something !== undefined && something !== null
 }
 
+/**
+ * Builds the wire params for the admin `collectFees` command. Shared by the HTTP and P2P
+ * transports so both validate an explicit amount identically before signing or sending.
+ *
+ * `tokenAmount` is optional: omitting it (undefined/null) is an intentional full-balance
+ * sweep, so the key is left off the payload entirely. When present it must be finite — a
+ * non-finite number (NaN/Infinity) serializes to JSON `null`, which the node would read as a
+ * sweep, so it is rejected up front rather than silently sweeping. Zero is a valid explicit
+ * amount and is preserved. The original value is sent unchanged (a string keeps its exact
+ * precision); the numeric coercion is only for the finiteness check.
+ *
+ * @param {CollectFeesParams} p - the collectFees parameters.
+ * @return {Record<string, any>} the validated params to send to the node.
+ */
+export function buildCollectFeesParams(p: {
+  chainId: number
+  tokenAddress: string
+  destinationAddress: string
+  tokenAmount?: string | number
+}): Record<string, any> {
+  const params: Record<string, any> = {
+    chainId: p.chainId,
+    tokenAddress: p.tokenAddress,
+    destinationAddress: p.destinationAddress
+  }
+  if (isDefined(p.tokenAmount)) {
+    const numeric =
+      typeof p.tokenAmount === 'string'
+        ? Number(p.tokenAmount)
+        : (p.tokenAmount as number)
+    if (!Number.isFinite(numeric)) {
+      throw new Error(
+        `collectFees: tokenAmount must be a finite value (omit it to sweep the balance), got ${String(
+          p.tokenAmount
+        )}`
+      )
+    }
+    params.tokenAmount = p.tokenAmount
+  }
+  return params
+}
+
 // credentials present on (almost) any payload we send to a node. these must never reach
 // the logs, since they are what authorizes the request in the first place.
 // lowercase: keys are matched case-insensitively, since a header-cased "Authorization" or a

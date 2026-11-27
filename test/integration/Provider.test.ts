@@ -5,7 +5,7 @@ import {
   ProviderInstance,
   isP2pUri,
   isMaintenanceError,
-  LoggerInstance
+  PROTOCOL_COMMANDS
 } from '../../src/index.js'
 import { Signer, Wallet, ZeroAddress } from 'ethers'
 import { FileInfo } from '../../src/@types/index.js'
@@ -430,6 +430,9 @@ describe('Provider admin commands tests', function () {
   let providerUrl: string
   let status: any
   let isAdmin = false
+  // Set true only once a test has actually asked the node to STOP its indexer, so the
+  // teardown restarts it precisely when it was stopped — never just because we are admin.
+  let indexerRestartNeeded = false
 
   before(async function () {
     const signer = (await provider.getSigner(0)) as Signer
@@ -456,8 +459,10 @@ describe('Provider admin commands tests', function () {
   })
 
   after(async () => {
-    // never leave the shared node's indexer stopped (mocha bail is on)
-    if (isAdmin) {
+    // Never leave the shared node's indexer stopped (mocha bail is on). Only restart it when a
+    // test actually stopped it — a blanket restart on `isAdmin` could start an indexer the
+    // node fixture never had running.
+    if (isAdmin && indexerRestartNeeded) {
       try {
         await ProviderInstance.handleIndexingThread(
           providerUrl,
@@ -466,8 +471,9 @@ describe('Provider admin commands tests', function () {
           8996
         )
       } catch (e) {
-        // surface it: a swallowed failure here leaves the shared indexer stopped for later files
-        LoggerInstance.error(`admin after-hook: failed to restart indexer: ${e}`)
+        // Fail loudly: a swallowed failure here leaves the shared indexer stopped for every
+        // later test file, so reject the hook with context instead of only logging.
+        throw new Error(`admin after-hook: failed to restart indexer (chain 8996): ${e}`)
       }
     }
   })
@@ -484,12 +490,16 @@ describe('Provider admin commands tests', function () {
     assert(config && typeof config === 'object', 'config should be an object')
     assert(config.keys, 'config should include a keys block')
     const pk = config.keys.privateKey
-    // the node returns a masked placeholder, never the real 0x-prefixed key
-    assert(pk !== undefined, 'config.keys.privateKey should be present (masked)')
+    // the node returns a masked placeholder string, never the real 0x-prefixed key. Assert the
+    // documented mask shape (present, a string, not the raw key) without ever putting the
+    // returned value into a diagnostic message.
     assert(
-      !String(pk).startsWith('0x'),
-      'private key should be masked, not the raw 0x key'
+      pk !== undefined && pk !== null,
+      'config.keys.privateKey should be present (masked)'
     )
+    assert(typeof pk === 'string', 'masked private key should be a string placeholder')
+    assert(pk.length > 0, 'masked private key should be a non-empty placeholder')
+    assert(!pk.startsWith('0x'), 'private key should be masked, not the raw 0x key')
   })
 
   it('setNodeConfig re-sends an existing harmless key unchanged', async function () {
@@ -522,6 +532,9 @@ describe('Provider admin commands tests', function () {
   })
 
   it('handleIndexingThread stops and restarts the indexer', async () => {
+    // Mark the restart needed BEFORE the stop: if the STOP_THREAD reply is lost after the node
+    // has already acted on it, the teardown still restores the indexer.
+    indexerRestartNeeded = true
     await ProviderInstance.handleIndexingThread(
       providerUrl,
       adminSigner,
@@ -573,15 +586,37 @@ describe('Provider admin commands tests', function () {
       thrown = e
     }
     assert(thrown !== undefined, 'getNodeLog should reject for an unknown id')
+    // adminSigner is a valid admin, so this must be the node's own unknown-id rejection, not a
+    // client-side auth failure. Prove the node actually answered (the lookup was reached) by
+    // requiring a numeric httpStatus, and that it is not the signer/auth short-circuit.
+    assert(
+      typeof thrown.httpStatus === 'number',
+      `expected the node to answer the log lookup, got ${thrown.message}`
+    )
+    assert(
+      !String(thrown.message).includes('requires a signer'),
+      'rejection must come from the node log lookup, not client-side auth'
+    )
   })
 
   describe('read-only auth tokens', function () {
     let token: string
 
+    // v2 tokens REQUIRE an explicit validUntil (epoch ms), capped at the node's maxTokenLifetime
+    // (seconds). Keep tokens short-lived for the test run.
+    const tokenValidUntil = () => {
+      const maxMs = (status?.authTokenPolicy?.maxTokenLifetime || 300) * 1000
+      return Date.now() + Math.min(5 * 60 * 1000, maxMs)
+    }
+
     before(async function () {
       // Needs a node release with scoped auth tokens (ocean-node #1616).
       if (!isAdmin || !status?.authTokenPolicy) this.skip()
-      token = await ProviderInstance.generateAuthToken(adminSigner, providerUrl)
+      // Scope the token to the two read-only admin commands these tests exercise.
+      token = await ProviderInstance.generateAuthToken(adminSigner, providerUrl, {
+        validUntil: tokenValidUntil(),
+        scope: [PROTOCOL_COMMANDS.FETCH_CONFIG, PROTOCOL_COMMANDS.GET_LOGS]
+      })
     })
 
     it('getNodeConfig accepts the token', async () => {
@@ -603,11 +638,36 @@ describe('Provider admin commands tests', function () {
         !String(thrown.message).includes('requires a signer'),
         'the token must be accepted, not rejected client-side'
       )
+      // Prove the node authenticated the token and reached the log lookup (it answered with a
+      // status), rather than failing earlier.
+      assert(
+        typeof thrown.httpStatus === 'number',
+        `expected the node to answer the log lookup, got ${thrown.message}`
+      )
     })
 
-    // The lib's generateAuthToken cannot request a `scope`, so a token limited to `getLogs`
-    // cannot be minted here; the out-of-scope rejection is left pending until it can.
-    it.skip('a token scoped to getLogs only is rejected by getNodeConfig', async () => {})
+    it('a token scoped to getLogs only is rejected by getNodeConfig', async () => {
+      // Mint a token whose scope is GET_LOGS only, then use it for fetchConfig: the node must
+      // reject the out-of-scope command.
+      const logsOnly = await ProviderInstance.generateAuthToken(
+        adminSigner,
+        providerUrl,
+        {
+          validUntil: tokenValidUntil(),
+          scope: [PROTOCOL_COMMANDS.GET_LOGS]
+        }
+      )
+      let thrown: any
+      try {
+        await ProviderInstance.getNodeConfig(providerUrl, logsOnly)
+      } catch (e) {
+        thrown = e
+      }
+      assert(
+        thrown !== undefined,
+        'a getLogs-scoped token must be rejected for the fetchConfig command'
+      )
+    })
 
     it('a mutating call with the token is rejected client-side', async () => {
       let thrown: any
