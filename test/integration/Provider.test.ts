@@ -586,16 +586,26 @@ describe('Provider admin commands tests', function () {
       thrown = e
     }
     assert(thrown !== undefined, 'getNodeLog should reject for an unknown id')
-    // adminSigner is a valid admin, so this must be the node's own unknown-id rejection, not a
-    // client-side auth failure. Prove the node actually answered (the lookup was reached) by
-    // requiring a numeric httpStatus, and that it is not the signer/auth short-circuit.
+    // adminSigner is a valid admin, so this must be the node's own log-lookup rejection, not an
+    // auth/scope failure. The node answers an unknown/unavailable log with HTTP 404 and a
+    // log-specific message; a 401/403 would mean the request never reached the log lookup, so
+    // fail explicitly on those rather than accepting any rejection.
+    const { httpStatus } = thrown
     assert(
-      typeof thrown.httpStatus === 'number',
+      typeof httpStatus === 'number',
       `expected the node to answer the log lookup, got ${thrown.message}`
     )
     assert(
-      !String(thrown.message).includes('requires a signer'),
-      'rejection must come from the node log lookup, not client-side auth'
+      httpStatus !== 401 && httpStatus !== 403,
+      `getNodeLog failed on auth/scope (${httpStatus}), not the log lookup: ${thrown.message}`
+    )
+    assert(
+      httpStatus === 404,
+      `expected the node's 404 log-lookup rejection, got ${httpStatus}: ${thrown.message}`
+    )
+    assert(
+      /log/i.test(String(thrown.message)),
+      `expected a log-specific error message, got ${thrown.message}`
     )
   })
 
@@ -625,8 +635,9 @@ describe('Provider admin commands tests', function () {
     })
 
     it('getNodeLog accepts the token (read-only admin, unknown id still rejects)', async () => {
-      // An unscoped admin token is accepted for GET_LOGS; the node then rejects the unknown id,
-      // proving the token authenticated (a token-rejection would surface before the lookup).
+      // The token is scoped to include GET_LOGS, so the node accepts it and then rejects the
+      // unknown/unavailable log itself — proving the token authenticated and the request reached
+      // the log lookup rather than being turned away at auth/scope.
       let thrown: any
       try {
         await ProviderInstance.getNodeLog(providerUrl, token, 'does-not-exist')
@@ -638,11 +649,24 @@ describe('Provider admin commands tests', function () {
         !String(thrown.message).includes('requires a signer'),
         'the token must be accepted, not rejected client-side'
       )
-      // Prove the node authenticated the token and reached the log lookup (it answered with a
-      // status), rather than failing earlier.
+      // Not proof on its own (see the signer test): pin to the node's actual 404 log-lookup
+      // rejection and explicitly fail on a 401/403, which would mean the token was NOT accepted.
+      const { httpStatus } = thrown
       assert(
-        typeof thrown.httpStatus === 'number',
+        typeof httpStatus === 'number',
         `expected the node to answer the log lookup, got ${thrown.message}`
+      )
+      assert(
+        httpStatus !== 401 && httpStatus !== 403,
+        `token rejected on auth/scope (${httpStatus}), not the log lookup: ${thrown.message}`
+      )
+      assert(
+        httpStatus === 404,
+        `expected the node's 404 log-lookup rejection, got ${httpStatus}: ${thrown.message}`
+      )
+      assert(
+        /log/i.test(String(thrown.message)),
+        `expected a log-specific error message, got ${thrown.message}`
       )
     })
 

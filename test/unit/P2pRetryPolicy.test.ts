@@ -250,6 +250,34 @@ describe('P2P retry policy', () => {
     expect(dials.count).to.equal(maxRetries + 1)
   }).timeout(60_000)
 
+  it('raises the dial failure for an admin command instead of returning the body', async () => {
+    // The admin path opts into `raiseDialFailureAsError`: a status-less "Cannot connect to peer"
+    // reply must surface as a typed dial_failed error, not be handed back as a result — otherwise
+    // a mutating admin call (reindex, collectFees, handleIndexingThread, setMaintenance) would
+    // resolve as a false success even though the peer never reached the target node. This is the
+    // companion to the general-command test above, which still returns the body.
+    const maxRetries = 2
+    ;(provider as any).p2pConfig = { maxRetries, retryDelay: 0 }
+    const dials = scriptDials(
+      replyWith({ httpStatus: 200, error: 'Cannot connect to peer' })
+    )
+    const err = await failing(
+      (provider as any).sendP2pCommand(
+        'test-peer',
+        'reindexTx',
+        {},
+        null,
+        undefined,
+        undefined,
+        true // raiseDialFailureAsError (the admin opt-in)
+      )
+    )
+    expect(err.type).to.equal('dial_failed')
+    expect(dials.count, 'the full budget is still spent before raising').to.equal(
+      maxRetries + 1
+    )
+  }).timeout(60_000)
+
   it('gives every attempt its own deadline', async () => {
     // The backoff here is longer than the dial budget, so an attempt that inherited the
     // previous attempt's signal would start already aborted.

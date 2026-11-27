@@ -2320,7 +2320,13 @@ export class P2pProvider {
     body: Record<string, any>,
     signerOrAuthToken?: SignerOrAuthTokenOrSignature | null,
     signal?: AbortSignal,
-    requestBody?: P2PRequestBodyStream
+    requestBody?: P2PRequestBodyStream,
+    // Admin commands opt in: a dial-failure reply ("Cannot connect to peer") must RAISE a typed
+    // error rather than be handed back as a result. Returning the body lets a mutating admin call
+    // (reindex, collectFees, handleIndexingThread, ...) resolve as a false success even though the
+    // peer never reached — and could not apply the command on — the target node. Default false
+    // keeps the general-command contract, where the body is returned so `.error` readers still work.
+    raiseDialFailureAsError: boolean = false
   ): Promise<any> {
     const maxRetries = this.maxRetryAttempts()
     let timeoutRetries = 0
@@ -2337,7 +2343,8 @@ export class P2pProvider {
           signerOrAuthToken,
           signal,
           requestBody,
-          lastAttempt
+          lastAttempt,
+          raiseDialFailureAsError
         )
       } catch (err: any) {
         const type = classifyP2pError(err)
@@ -2348,8 +2355,14 @@ export class P2pProvider {
         if (!isRetryableP2pError(type) || spent) {
           // The peer reported the failure inside a well-formed reply, and with the
           // budget gone the untyped code returned that reply to the caller rather than
-          // raising. Kept, so a consumer reading `.error` off the result still can.
-          if (err instanceof P2pError && err.peerResponse != null) {
+          // raising. Kept, so a consumer reading `.error` off the result still can — except
+          // for an admin command that opted in (see `raiseDialFailureAsError`), which must
+          // surface the typed dial failure instead of a false success.
+          if (
+            err instanceof P2pError &&
+            err.peerResponse != null &&
+            !raiseDialFailureAsError
+          ) {
             return err.peerResponse.value
           }
           throw asP2pCommandError(err, type)
@@ -2372,7 +2385,10 @@ export class P2pProvider {
     signerOrAuthToken?: SignerOrAuthTokenOrSignature | null,
     signal?: AbortSignal,
     requestBody?: P2PRequestBodyStream,
-    lastAttempt: boolean = true
+    lastAttempt: boolean = true,
+    // See sendP2pCommand: when set, a final-attempt "Cannot connect to peer" reply is thrown as a
+    // typed dial_failed error instead of being returned as the command result.
+    raiseDialFailureAsError: boolean = false
   ): Promise<any> {
     // The concurrency slot is owned by `dialAndStream` now — see the comment there.
     // This method only decides *when* to hand it back: at the end of the buffered read
@@ -2551,7 +2567,13 @@ export class P2pProvider {
       }
 
       const errText = (typeof response === 'string' ? response : res?.error) ?? ''
-      if (errText.includes('Cannot connect to peer') && !lastAttempt) {
+      // Throw the typed dial failure when another attempt could still fix it (`!lastAttempt`), or
+      // when an admin caller asked for the failure to be raised rather than returned
+      // (`raiseDialFailureAsError`) — otherwise fall through and hand the body back as before.
+      if (
+        errText.includes('Cannot connect to peer') &&
+        (!lastAttempt || raiseDialFailureAsError)
+      ) {
         // The peer answered, and what it says is that *it* could not reach the node
         // this command was addressed to: a dial failure one hop further out, and the
         // one thing another attempt can plausibly fix.
@@ -2562,7 +2584,8 @@ export class P2pProvider {
         // type — nothing downstream re-reads the wording to decide anything.
         //
         // The slot goes back before the error leaves, so the next attempt queues behind
-        // other callers instead of holding two.
+        // other callers instead of holding two. (On a raised final attempt there is no next
+        // attempt; the `finally` below still resets the stream since `completed` stays false.)
         releaseSlot?.()
         releaseSlot = null
         throw new P2pError('dial_failed', errText, {
@@ -3744,12 +3767,16 @@ export class P2pProvider {
     )
     // sendP2pCommand already folds `authorization: getAuthorization(signerOrAuthToken)` into the
     // payload, so a read-only token is carried automatically; passing it as the 4th arg is enough.
+    // raiseDialFailureAsError=true: an admin command that could not reach the node must throw, not
+    // return a "Cannot connect to peer" body that would read as a false success.
     const reply = await this.sendP2pCommand(
       nodeUri,
       command,
       { ...params, address: consumerAddress, nonce, signature },
       signerOrAuthToken,
-      signal
+      signal,
+      undefined,
+      true
     )
     // A non-JSON body ("OK", "EXIT OK") comes back as raw bytes.
     return reply instanceof Uint8Array ? new TextDecoder().decode(reply) : reply
@@ -3951,12 +3978,16 @@ export class P2pProvider {
       PROTOCOL_COMMANDS.SET_MAINTENANCE,
       signal
     )
+    // Admin mutating command: raise a dial failure rather than returning a body that would read
+    // as a successful maintenance toggle (see sendP2pCommand's raiseDialFailureAsError).
     return this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.SET_MAINTENANCE,
       { enabled, signature, nonce, address: consumerAddress },
       signerOrAuthToken,
-      signal
+      signal,
+      undefined,
+      true
     )
   }
 
