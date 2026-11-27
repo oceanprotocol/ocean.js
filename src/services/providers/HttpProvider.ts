@@ -73,6 +73,15 @@ export class HttpProvider {
     return nodeUri.replace(/\/+$/, '')
   }
 
+  // `getNodeStatus` swallows a fetch AbortError into a null id, so when the signal has
+  // already fired the missing-peerId branch would otherwise mask the cancellation behind
+  // a generic error. Re-derive the abort from the signal and surface its reason instead.
+  private throwIfAborted(signal?: AbortSignal): void {
+    if (signal?.aborted) {
+      throw signal.reason ?? new Error('The operation was aborted.')
+    }
+  }
+
   private async getSignedCommandParams(
     nodeUri: string,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
@@ -95,7 +104,14 @@ export class HttpProvider {
     }
     const consumerAddress = await getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signature = await getSignature(signerOrAuthToken, nonce, command)
+    // Bind the target node's peerId into the signed message (anti-replay): a signature made for
+    // one node cannot be replayed against another. The node verifies every command this way.
+    const issuerPeerId = (await this.getNodeStatus(nodeUri, signal))?.id
+    if (!issuerPeerId) {
+      this.throwIfAborted(signal)
+      throw new Error('Could not resolve node peerId for signature.')
+    }
+    const signature = await getSignature(signerOrAuthToken, nonce, command, issuerPeerId)
     if (!signature) throw new Error(`Could not sign ${command} request.`)
     return { consumerAddress, nonce, signature }
   }
@@ -1228,6 +1244,9 @@ export class HttpProvider {
     // OJ-03: fetch status WITH a fresh challenge and verify the issuer identity before signing.
     const clientChallenge = generateClientChallenge()
     const status = await this.getNodeStatus(nodeUri, abortSignal, clientChallenge)
+    // getNodeStatus swallows a fetch AbortError into a null status; surface the real abort
+    // reason before resolveVerifiedIssuer masks it as a generic verification failure.
+    this.throwIfAborted(abortSignal)
     const issuerPeerId = await resolveVerifiedIssuer(status, clientChallenge, opts)
 
     const prepared = prepareAuthTokenRequest({
@@ -1284,6 +1303,9 @@ export class HttpProvider {
     // or the node reconstructs `address+nonce+command+peerId` and rejects our empty-peerId signature.
     const clientChallenge = generateClientChallenge()
     const status = await this.getNodeStatus(nodeUri, signal, clientChallenge)
+    // getNodeStatus swallows a fetch AbortError into a null status; surface the real abort
+    // reason before resolveVerifiedIssuer masks it as a generic verification failure.
+    this.throwIfAborted(signal)
     const issuerPeerId = await resolveVerifiedIssuer(status, clientChallenge)
 
     const signature = await getSignature(

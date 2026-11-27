@@ -44,6 +44,10 @@ describe('HTTP transport cancellation', () => {
           if (url.includes('/nonce')) {
             return { ok: true, json: async () => ({ nonce: 7 }) } as any
           }
+          // signing now resolves the node peerId via the status root endpoint (GET /)
+          if (url.replace(/\?.*$/, '').replace(/\/+$/, '') === NODE) {
+            return { ok: true, json: async () => ({ id: 'peer-1' }) } as any
+          }
           return { ok: true, body: null } as any
         }) as any
       }
@@ -102,6 +106,10 @@ describe('HTTP transport cancellation', () => {
     globalThis.fetch = (async (url: string, init?: any) => {
       if (url.includes('/nonce')) {
         return { ok: true, json: async () => ({ nonce: 7 }) } as any
+      }
+      // signing now resolves the node peerId via the status root endpoint (GET /)
+      if (url.replace(/\?.*$/, '').replace(/\/+$/, '') === NODE) {
+        return { ok: true, json: async () => ({ id: 'peer-1' }) } as any
       }
       const signal: AbortSignal | undefined = init?.signal
       let sent = 0
