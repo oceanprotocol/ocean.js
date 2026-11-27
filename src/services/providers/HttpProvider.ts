@@ -1624,12 +1624,16 @@ export class HttpProvider {
   public async resolveDdo(
     nodeUri: string,
     did: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<any> {
     const path = this.baseUrl(nodeUri) + '/api/ddo/' + did
     const response = await fetch(path, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authorization ? { Authorization: authorization } : {})
+      },
       signal
     })
     if (response.ok) return response.json()
@@ -1675,12 +1679,16 @@ export class HttpProvider {
   public async query(
     nodeUri: string,
     request: SearchQuery,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<QueryResult> {
     const response = await fetch(`${this.baseUrl(nodeUri)}/api/query`, {
       method: 'POST',
       body: JSON.stringify(request),
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authorization ? { Authorization: authorization } : {})
+      },
       signal
     })
     if (!response.ok) {

@@ -3394,13 +3394,17 @@ export class P2pProvider {
     request: SearchQuery,
     signal?: AbortSignal
   ): Promise<QueryResult> {
-    return this.sendP2pCommand(
+    const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.QUERY,
       { query: request },
       null,
       signal
     )
+    if (!Array.isArray(result?.results)) {
+      throw new Error(`Query failed: ${JSON.stringify(result)}`)
+    }
+    return result
   }
 
   /**

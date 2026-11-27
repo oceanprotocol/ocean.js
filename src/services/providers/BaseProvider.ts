@@ -870,9 +870,10 @@ export class BaseProvider {
   public async resolveDdo(
     nodeUri: OceanNode,
     did: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<any> {
-    return this.getImpl(nodeUri).resolveDdo(nodeUri, did, signal)
+    return this.getImpl(nodeUri).resolveDdo(nodeUri, did, signal, authorization)
   }
 
   public async validateDdo(
@@ -887,9 +888,10 @@ export class BaseProvider {
   public async query(
     nodeUri: OceanNode,
     request: SearchQuery,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<QueryResult> {
-    return this.getImpl(nodeUri).query(nodeUri, request, signal)
+    return this.getImpl(nodeUri).query(nodeUri, request, signal, authorization)
   }
 
   /** Waits for the DDO (or its `txid` update); null after `maxRetries` (max 500). */
@@ -899,12 +901,13 @@ export class BaseProvider {
     txid?: string,
     signal?: AbortSignal,
     interval: number = 30000,
-    maxRetries: number = 100
+    maxRetries: number = 100,
+    authorization?: string
   ): Promise<Asset> {
     for (let attempt = 0; attempt < Math.min(maxRetries, 500); attempt++) {
       try {
-        const ddo = await this.resolveDdo(nodeUri, did, signal)
-        if (ddo) {
+        const ddo = await this.resolveDdo(nodeUri, did, signal, authorization)
+        if (ddo?.version) {
           const { indexedMetadata } = DDOManager.getDDOClass(ddo).getAssetFields()
           if (!txid || indexedMetadata?.event?.txid === txid) return ddo as Asset
         }
