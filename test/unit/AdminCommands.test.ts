@@ -42,7 +42,7 @@ function mockFetch(
       return { ok: true, json: async () => ({ nonce }) } as any
     }
     const parsed = init?.body ? JSON.parse(init.body) : undefined
-    if (parsed?.command === PROTOCOL_COMMANDS.STATUS) {
+    if (String(url).replace(/\?.*$/, '').replace(/\/+$/, '') === NODE) {
       return { ok: true, status: 200, json: async () => ({ id: NODE_PEER_ID }) } as any
     }
     calls.push({
@@ -77,7 +77,7 @@ function mockFetchWithStatusLog(reply: { ok: boolean; status: number; json?: any
       return { ok: true, json: async () => ({ nonce: 41 }) } as any
     }
     const parsed = init?.body ? JSON.parse(init.body) : undefined
-    if (parsed?.command === PROTOCOL_COMMANDS.STATUS) {
+    if (String(url).replace(/\?.*$/, '').replace(/\/+$/, '') === NODE) {
       state.statusCalls++
       return { ok: true, status: 200, json: async () => ({ id: NODE_PEER_ID }) } as any
     }
@@ -328,12 +328,11 @@ describe('Node admin commands', () => {
     }
 
     it('wraps a network failure in the generic provider error', async () => {
-      globalThis.fetch = (async (url: string, init?: any) => {
+      globalThis.fetch = (async (url: string) => {
         if (String(url).includes('/api/services/nonce')) {
           return { ok: true, json: async () => ({ nonce: 1 }) } as any
         }
-        const parsed = init?.body ? JSON.parse(init.body) : undefined
-        if (parsed?.command === PROTOCOL_COMMANDS.STATUS) {
+        if (String(url).replace(/\?.*$/, '').replace(/\/+$/, '') === NODE) {
           return {
             ok: true,
             status: 200,
